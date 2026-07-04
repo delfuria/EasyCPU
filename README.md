@@ -213,6 +213,14 @@ EasyCPU was developed by **Paolo Meozzi** and **Stefano Del Furia**.
     <p><strong>Special thanks to <a href="https://www.jetbrains.com/?from=EasyCpu">JetBrains</a></strong> for supporting this project with open-source licenses for their IDEs.</p>
 </div>
 
+<div align="center">
+    <a href="https://avaloniaui.net/">
+        <img src="https://raw.githubusercontent.com/delfuria/EasyCPU/main/images/Avalonia_logo.png" alt="Avalonia" width="96">
+    </a>
+    <br/>
+    <p><strong>Special thanks to <a href="https://avaloniaui.net/">Avalonia</a></strong> for providing the cross-platform UI framework that powers EasyCPU across Desktop, Browser, iOS, and Android.</p>
+</div>
+
 ---
 
 ## 📄 License
