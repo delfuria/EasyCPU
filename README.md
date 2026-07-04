@@ -215,7 +215,7 @@ EasyCPU was developed by **Paolo Meozzi** and **Stefano Del Furia**.
 
 <div align="center">
     <a href="https://avaloniaui.net/">
-        <img src="https://raw.githubusercontent.com/delfuria/EasyCPU/main/images/Avalonia_logo.png" alt="Avalonia" width="96">
+        <img src="https://raw.githubusercontent.com/delfuria/EasyCPU/main/images/avalonia.svg" alt="Avalonia" width="96">
     </a>
     <br/>
     <p><strong>Special thanks to <a href="https://avaloniaui.net/">Avalonia</a></strong> for providing the cross-platform UI framework that powers EasyCPU across Desktop, Browser, iOS, and Android.</p>
