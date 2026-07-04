@@ -1,0 +1,21 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:EasyCPU"
+             xmlns:dockTheme="clr-namespace:Dock.Avalonia.Themes.Fluent;assembly=Dock.Avalonia.Themes.Fluent"
+             x:Class="EasyCPU.App"
+             Name="EasyCPU">
+    <NativeMenu.Menu>
+        <NativeMenu>
+            <NativeMenuItem Header="Informazioni su EasyCPU..." Click="OnAboutClick"/>
+        </NativeMenu>
+    </NativeMenu.Menu>
+    <Application.DataTemplates>
+        <local:ViewLocator />
+    </Application.DataTemplates>
+    <Application.Styles>
+        <FluentTheme />
+        <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
+        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.v2.xaml" />
+        <dockTheme:DockFluentTheme />
+    </Application.Styles>
+</Application>

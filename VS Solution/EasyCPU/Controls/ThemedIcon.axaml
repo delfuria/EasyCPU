@@ -1,0 +1,11 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="EasyCPU.Controls.ThemedIcon"
+             x:Name="Root"
+             Width="16" Height="16">
+  <Border Background="{DynamicResource SystemControlForegroundBaseHighBrush}">
+    <Border.OpacityMask>
+      <ImageBrush Source="{Binding #Root.Source}" Stretch="Uniform"/>
+    </Border.OpacityMask>
+  </Border>
+</UserControl>

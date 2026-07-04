@@ -1,0 +1,278 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:Dock.Avalonia.Controls;assembly=Dock.Avalonia"
+        xmlns:icons="clr-namespace:EasyCPU.Controls"
+        xmlns:vm="clr-namespace:EasyCPU.ViewModels"
+        x:Class="EasyCPU.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Title="EasyCPU"
+        Icon="/images/app-icon/icon.png"
+        Width="1400" Height="900"
+        MinWidth="800" MinHeight="600">
+
+    <NativeMenu.Menu>
+        <NativeMenu>
+            <NativeMenuItem Header="File">
+                <NativeMenuItem.Menu>
+                    <NativeMenu>
+                        <NativeMenuItem Header="Nuovo"          Command="{Binding NewCommand}"    Gesture="Meta+N"/>
+                        <NativeMenuItem Header="Apri..."        Command="{Binding OpenCommand}"   Gesture="Meta+O"/>
+                        <NativeMenuItem Header="Salva"          Command="{Binding SaveCommand}"   Gesture="Meta+S"/>
+                        <NativeMenuItem Header="Salva come..."  Command="{Binding SaveAsCommand}" Gesture="Meta+Shift+S"/>
+                        <NativeMenuItemSeparator />
+                        <NativeMenuItem Header="Stampa"         Command="{Binding PrintCommand}"  Gesture="Meta+P"/>
+                        <NativeMenuItemSeparator />
+                        <NativeMenuItem Header="Esci"           Command="{Binding ExitCommand}"   Gesture="Meta+Q"/>
+                    </NativeMenu>
+                </NativeMenuItem.Menu>
+            </NativeMenuItem>
+            <NativeMenuItem Header="Modifica">
+                <NativeMenuItem.Menu>
+                    <NativeMenu>
+                        <NativeMenuItem Header="Annulla"         Command="{Binding UndoCommand}"      Gesture="Meta+Z"/>
+                        <NativeMenuItem Header="Ripristina"      Command="{Binding RedoCommand}"      Gesture="Meta+Shift+Z"/>
+                        <NativeMenuItemSeparator />
+                        <NativeMenuItem Header="Taglia"          Command="{Binding CutCommand}"       Gesture="Meta+X"/>
+                        <NativeMenuItem Header="Copia"           Command="{Binding CopyCommand}"      Gesture="Meta+C"/>
+                        <NativeMenuItem Header="Incolla"         Command="{Binding PasteCommand}"     Gesture="Meta+V"/>
+                        <NativeMenuItemSeparator />
+                        <NativeMenuItem Header="Seleziona tutto" Command="{Binding SelectAllCommand}" Gesture="Meta+A"/>
+                        <NativeMenuItemSeparator />
+                        <NativeMenuItem Header="Trova..."        Command="{Binding FindCommand}"      Gesture="Meta+F"/>
+                    </NativeMenu>
+                </NativeMenuItem.Menu>
+            </NativeMenuItem>
+            <NativeMenuItem Header="Esegui">
+                <NativeMenuItem.Menu>
+                    <NativeMenu>
+                        <NativeMenuItem Header="Compila"                    Command="{Binding CompileCommand}"           Gesture="Meta+B"/>
+                        <NativeMenuItemSeparator />
+                        <NativeMenuItem Header="Avvia"                      Command="{Binding RunCommand}"               Gesture="F5"/>
+                        <NativeMenuItem Header="Avvia fino a..."            Command="{Binding RunUntilCommand}"          Gesture="Ctrl+F5"/>
+                        <NativeMenuItemSeparator />
+                        <NativeMenuItem Header="Esegui istruzione"          Command="{Binding StepIntoCommand}"         Gesture="F11"/>
+                        <NativeMenuItem Header="Passo"                      Command="{Binding StepOverCommand}"         Gesture="F10"/>
+                        <NativeMenuItem Header="Passo uscita"               Command="{Binding StepOutCommand}"          Gesture="Shift+F11"/>
+                        <NativeMenuItemSeparator />
+                        <NativeMenuItem Header="Ferma"                      Command="{Binding StopCommand}"             Gesture="F8"/>
+                        <NativeMenuItemSeparator />
+                        <NativeMenuItem Header="Imposta/Rimuovi breakpoint" Command="{Binding ToggleBreakpointCommand}" Gesture="F9"/>
+                    </NativeMenu>
+                </NativeMenuItem.Menu>
+            </NativeMenuItem>
+            <NativeMenuItem Header="Finestre">
+                <NativeMenuItem.Menu>
+                    <NativeMenu>
+                        <NativeMenuItem Header="Editor codice" Command="{Binding ToggleCodeEditorCommand}"/>
+                        <NativeMenuItem Header="Editor dati"   Command="{Binding ToggleDataEditorCommand}"/>
+                        <NativeMenuItem Header="Registri"      Command="{Binding ToggleRegistersCommand}"/>
+                        <NativeMenuItem Header="Stack"         Command="{Binding ToggleStackCommand}"/>
+                        <NativeMenuItem Header="Memoria"       Command="{Binding ToggleMemoryCommand}"/>
+                        <NativeMenuItem Header="Errori"        Command="{Binding ToggleErrorsCommand}"/>
+                        <NativeMenuItemSeparator />
+                        <NativeMenuItem Header="Ripristina layout" Command="{Binding ResetLayoutCommand}"/>
+                    </NativeMenu>
+                </NativeMenuItem.Menu>
+            </NativeMenuItem>
+            <NativeMenuItem Header="Strumenti">
+                <NativeMenuItem.Menu>
+                    <NativeMenu>
+                        <NativeMenuItem Header="Opzioni..."     Command="{Binding ShowOptionsCommand}"/>
+                        <NativeMenuItemSeparator />
+                        <NativeMenuItem Header="Chiaro"         Command="{Binding SetThemeLightCommand}"/>
+                        <NativeMenuItem Header="Scuro"          Command="{Binding SetThemeDarkCommand}"/>
+                        <NativeMenuItem Header="Blue (VS Code)" Command="{Binding SetThemeBlueCommand}"/>
+                    </NativeMenu>
+                </NativeMenuItem.Menu>
+            </NativeMenuItem>
+        </NativeMenu>
+    </NativeMenu.Menu>
+
+    <DockPanel>
+        <Menu DockPanel.Dock="Top" x:Name="MainMenu">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Nuovo"          Command="{Binding NewCommand}"    InputGesture="Ctrl+N">
+                    <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/new.png"/></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="_Apri..."         Command="{Binding OpenCommand}"   InputGesture="Ctrl+O">
+                    <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/open.png"/></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="_Salva"           Command="{Binding SaveCommand}"   InputGesture="Ctrl+S">
+                    <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/save.png"/></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Salva _come..."   Command="{Binding SaveAsCommand}" InputGesture="Ctrl+Shift+S">
+                    <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/save_as.png"/></MenuItem.Icon>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="_Recenti" ItemsSource="{Binding RecentFileItems}">
+                    <MenuItem.ItemContainerTheme>
+                        <ControlTheme TargetType="MenuItem">
+                            <Setter Property="Header"  Value="{ReflectionBinding Header}"/>
+                            <Setter Property="Command" Value="{ReflectionBinding Command}"/>
+                        </ControlTheme>
+                    </MenuItem.ItemContainerTheme>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="S_tampa"          Command="{Binding PrintCommand}"  InputGesture="Ctrl+P">
+                    <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/print.png"/></MenuItem.Icon>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="E_sci"            Command="{Binding ExitCommand}"   InputGesture="Alt+F4"/>
+            </MenuItem>
+            <MenuItem Header="_Modifica">
+                <MenuItem Header="_Annulla"           Command="{Binding UndoCommand}"      InputGesture="Ctrl+Z">
+                    <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/undo.png"/></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="_Ripristina"         Command="{Binding RedoCommand}"      InputGesture="Ctrl+Y">
+                    <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/redo.png"/></MenuItem.Icon>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="_Taglia"            Command="{Binding CutCommand}"       InputGesture="Ctrl+X">
+                    <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/cut.png"/></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="_Copia"             Command="{Binding CopyCommand}"      InputGesture="Ctrl+C">
+                    <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/copy.png"/></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="_Incolla"           Command="{Binding PasteCommand}"     InputGesture="Ctrl+V">
+                    <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/paste.png"/></MenuItem.Icon>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="Seleziona _tutto"   Command="{Binding SelectAllCommand}" InputGesture="Ctrl+A">
+                    <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/select_all.png"/></MenuItem.Icon>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="_Trova..."          Command="{Binding FindCommand}"      InputGesture="Ctrl+F">
+                    <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/find.png"/></MenuItem.Icon>
+                </MenuItem>
+            </MenuItem>
+            <MenuItem Header="_Esegui">
+                <MenuItem Header="_Compila"                    Command="{Binding CompileCommand}"           InputGesture="Ctrl+B">
+                    <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/compile.png"/></MenuItem.Icon>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="_Avvia"                      Command="{Binding RunCommand}"               InputGesture="F5">
+                    <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/run.png"/></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Avvia _fino a..."            Command="{Binding RunUntilCommand}"          InputGesture="Ctrl+F5">
+                    <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/run_until.png"/></MenuItem.Icon>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="Esegui _istruzione"          Command="{Binding StepIntoCommand}"         InputGesture="F11">
+                    <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/step_into.png"/></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="_Passo"                      Command="{Binding StepOverCommand}"         InputGesture="F10">
+                    <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/step_over.png"/></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Passo u_scita"               Command="{Binding StepOutCommand}"          InputGesture="Shift+F11">
+                    <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/step_out.png"/></MenuItem.Icon>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="_Ferma"                      Command="{Binding StopCommand}"             InputGesture="F8">
+                    <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/stop.png"/></MenuItem.Icon>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="Imposta/Rimuovi _breakpoint" Command="{Binding ToggleBreakpointCommand}" InputGesture="F9">
+                    <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/breakpoint.png"/></MenuItem.Icon>
+                </MenuItem>
+            </MenuItem>
+            <MenuItem Header="Fi_nestre">
+                <MenuItem Header="Editor _codice" ToggleType="CheckBox" Command="{Binding ToggleCodeEditorCommand}" IsChecked="{ReflectionBinding IsCodeEditorVisible, Mode=OneWay}">
+                    <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/panel_code.png"/></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Editor _dati"   ToggleType="CheckBox" Command="{Binding ToggleDataEditorCommand}" IsChecked="{ReflectionBinding IsDataEditorVisible, Mode=OneWay}">
+                    <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/panel_data.png"/></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="_Registri"       ToggleType="CheckBox" Command="{Binding ToggleRegistersCommand}"  IsChecked="{ReflectionBinding IsRegistersVisible,  Mode=OneWay}">
+                    <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/panel_registers.png"/></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="_Stack"          ToggleType="CheckBox" Command="{Binding ToggleStackCommand}"      IsChecked="{ReflectionBinding IsStackVisible,      Mode=OneWay}">
+                    <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/panel_stack.png"/></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="_Memoria"        ToggleType="CheckBox" Command="{Binding ToggleMemoryCommand}"     IsChecked="{ReflectionBinding IsMemoryVisible,     Mode=OneWay}">
+                    <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/panel_memory.png"/></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="_Errori"         ToggleType="CheckBox" Command="{Binding ToggleErrorsCommand}"     IsChecked="{ReflectionBinding IsErrorsVisible,     Mode=OneWay}">
+                    <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/panel_errors.png"/></MenuItem.Icon>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="Ripristina _layout" Command="{Binding ResetLayoutCommand}">
+                    <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/reset_layout.png"/></MenuItem.Icon>
+                </MenuItem>
+            </MenuItem>
+            <MenuItem Header="_Strumenti">
+                <MenuItem Header="_Opzioni..."  Command="{Binding ShowOptionsCommand}">
+                    <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/options.png"/></MenuItem.Icon>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="Tema">
+                    <MenuItem Header="_Chiaro"         ToggleType="Radio" Command="{Binding SetThemeLightCommand}" IsChecked="{Binding IsThemeLight, Mode=OneWay}">
+                        <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/theme_light.png"/></MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="_Scuro"           ToggleType="Radio" Command="{Binding SetThemeDarkCommand}"  IsChecked="{Binding IsThemeDark,  Mode=OneWay}">
+                        <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/theme_dark.png"/></MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="_Blue (VS Code)"  ToggleType="Radio" Command="{Binding SetThemeBlueCommand}"  IsChecked="{Binding IsThemeBlue,  Mode=OneWay}">
+                        <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/theme_blue.png"/></MenuItem.Icon>
+                    </MenuItem>
+                </MenuItem>
+            </MenuItem>
+        </Menu>
+
+        <Border DockPanel.Dock="Top" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+            <StackPanel Orientation="Horizontal" Spacing="4" Margin="4,2">
+                <Button Command="{Binding NewCommand}"           Width="40" Height="40" Padding="8" ToolTip.Tip="Nuovo (Ctrl+N)">
+                    <icons:ThemedIcon Source="/images/toolbar/new.png"         Width="20" Height="20"/>
+                </Button>
+                <Button Command="{Binding OpenCommand}"          Width="40" Height="40" Padding="8" ToolTip.Tip="Apri (Ctrl+O)">
+                    <icons:ThemedIcon Source="/images/toolbar/open.png"        Width="20" Height="20"/>
+                </Button>
+                <Button Command="{Binding SaveCommand}"          Width="40" Height="40" Padding="8" ToolTip.Tip="Salva (Ctrl+S)">
+                    <icons:ThemedIcon Source="/images/toolbar/save.png"        Width="20" Height="20"/>
+                </Button>
+                <Separator Width="1" Height="20" Margin="4,0"/>
+                <Button Command="{Binding CompileCommand}"       Width="40" Height="40" Padding="8" ToolTip.Tip="Compila (Ctrl+B)">
+                    <icons:ThemedIcon Source="/images/toolbar/compile.png"     Width="20" Height="20"/>
+                </Button>
+                <Button Command="{Binding RunCommand}"           Width="40" Height="40" Padding="8" ToolTip.Tip="Avvia (F5)">
+                    <icons:ThemedIcon Source="/images/toolbar/run.png"         Width="20" Height="20"/>
+                </Button>
+                <Button Command="{Binding RunUntilCommand}"      Width="40" Height="40" Padding="8" ToolTip.Tip="Avvia fino a... (Ctrl+F5)">
+                    <icons:ThemedIcon Source="/images/toolbar/run_until.png"   Width="20" Height="20"/>
+                </Button>
+                <Button Command="{Binding StopCommand}"          Width="40" Height="40" Padding="8" ToolTip.Tip="Ferma (F8)">
+                    <icons:ThemedIcon Source="/images/toolbar/stop.png"        Width="20" Height="20"/>
+                </Button>
+                <Button Command="{Binding StepIntoCommand}"      Width="40" Height="40" Padding="8" ToolTip.Tip="Esegui istruzione (F11)">
+                    <icons:ThemedIcon Source="/images/toolbar/step_into.png"   Width="20" Height="20"/>
+                </Button>
+                <Button Command="{Binding StepOverCommand}"      Width="40" Height="40" Padding="8" ToolTip.Tip="Passo (F10)">
+                    <icons:ThemedIcon Source="/images/toolbar/step_over.png"   Width="20" Height="20"/>
+                </Button>
+                <Button Command="{Binding StepOutCommand}"       Width="40" Height="40" Padding="8" ToolTip.Tip="Passo uscita (Shift+F11)">
+                    <icons:ThemedIcon Source="/images/toolbar/step_out.png"    Width="20" Height="20"/>
+                </Button>
+                <Separator Width="1" Height="20" Margin="4,0"/>
+                <Button Command="{Binding SetThemeLightCommand}" Width="40" Height="40" Padding="8" ToolTip.Tip="Tema chiaro">
+                    <icons:ThemedIcon Source="/images/toolbar/theme_light.png" Width="20" Height="20"/>
+                </Button>
+                <Button Command="{Binding SetThemeDarkCommand}"  Width="40" Height="40" Padding="8" ToolTip.Tip="Tema scuro">
+                    <icons:ThemedIcon Source="/images/toolbar/theme_dark.png"  Width="20" Height="20"/>
+                </Button>
+                <Button Command="{Binding SetThemeBlueCommand}"  Width="40" Height="40" Padding="8" ToolTip.Tip="Tema Blue (VS Code)">
+                    <icons:ThemedIcon Source="/images/toolbar/theme_blue.png"  Width="20" Height="20"/>
+                </Button>
+            </StackPanel>
+        </Border>
+
+        <Border DockPanel.Dock="Bottom"
+                BorderThickness="0,1,0,0"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                Padding="8,3">
+            <TextBlock Text="{Binding StatusMessage}"
+                       FontSize="12"
+                       VerticalAlignment="Center"
+                       Opacity="0.85"/>
+        </Border>
+        <controls:DockControl Layout="{Binding Layout}" Factory="{Binding DockFactory}" />
+    </DockPanel>
+</Window>

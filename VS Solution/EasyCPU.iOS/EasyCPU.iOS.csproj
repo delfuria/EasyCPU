@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net10.0-ios</TargetFramework>
+        <SupportedOSPlatformVersion>13.0</SupportedOSPlatformVersion>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <CodesignKey>iPhone Developer</CodesignKey>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia.Fonts.Inter" Version="12.0.5" />
+        <PackageReference Include="Avalonia.iOS" Version="12.0.5" />
+        <PackageReference Include="SkiaSharp.NativeAssets.iOS" Version="3.119.4" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\EasyCPU\EasyCPU.csproj"/>
+    </ItemGroup>
+</Project>

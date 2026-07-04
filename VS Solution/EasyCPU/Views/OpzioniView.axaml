@@ -1,0 +1,109 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:EasyCPU.ViewModels"
+             x:Class="EasyCPU.Views.OpzioniView"
+             x:CompileBindings="False">
+    <ScrollViewer>
+        <StackPanel Spacing="10" Margin="0,0,14,0">
+
+            <!-- Generali -->
+            <TextBlock Text="Generali" FontWeight="Bold"/>
+            <Grid ColumnDefinitions="170,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="6">
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Formato dati:"
+                           VerticalAlignment="Center"/>
+                <ComboBox Grid.Row="0" Grid.Column="1"
+                          ItemsSource="{Binding FormatoValoreOptions}"
+                          SelectedItem="{Binding FormatoDati}"
+                          HorizontalAlignment="Stretch"/>
+
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="Formato car zero:"
+                           VerticalAlignment="Center"/>
+                <TextBox Grid.Row="1" Grid.Column="1"
+                         Text="{Binding FormatoCarZero}"/>
+
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="Max errori:"
+                           VerticalAlignment="Center"/>
+                <NumericUpDown Grid.Row="2" Grid.Column="1"
+                               Value="{Binding MaxNumErrori}"
+                               Minimum="1" Maximum="999" Increment="1"
+                               FormatString="0"/>
+            </Grid>
+
+            <Separator Margin="0,2"/>
+
+            <!-- Esecuzione -->
+            <TextBlock Text="Esecuzione" FontWeight="Bold"/>
+            <Grid ColumnDefinitions="170,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="6">
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Colonne stack:"
+                           VerticalAlignment="Center"/>
+                <ComboBox Grid.Row="0" Grid.Column="1"
+                          ItemsSource="{Binding ColonneStackOptions}"
+                          SelectedItem="{Binding ColonneStack}"
+                          HorizontalAlignment="Stretch"/>
+
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="Inizializza registri:"
+                           VerticalAlignment="Center"/>
+                <CheckBox Grid.Row="1" Grid.Column="1"
+                          IsChecked="{Binding InizializzaRegistri}"/>
+
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="Soglia loop infinito:"
+                           VerticalAlignment="Center"/>
+                <NumericUpDown Grid.Row="2" Grid.Column="1"
+                               Value="{Binding LoopInfinito}"
+                               Minimum="0" Maximum="10000000" Increment="1000"
+                               FormatString="0"/>
+            </Grid>
+
+            <Separator Margin="0,2"/>
+
+            <!-- Editor -->
+            <TextBlock Text="Editor" FontWeight="Bold"/>
+            <Grid ColumnDefinitions="170,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="6">
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Margine sinistro:"
+                           VerticalAlignment="Center"/>
+                <NumericUpDown Grid.Row="0" Grid.Column="1"
+                               Value="{Binding MargineSinistro}"
+                               Minimum="0" Maximum="15" Increment="1"
+                               FormatString="0"/>
+
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="Font nome:"
+                           VerticalAlignment="Center"/>
+                <TextBox Grid.Row="1" Grid.Column="1"
+                         Text="{Binding FontEditorNome}"/>
+
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="Font dimensione:"
+                           VerticalAlignment="Center"/>
+                <NumericUpDown Grid.Row="2" Grid.Column="1"
+                               Value="{Binding FontEditorSize}"
+                               Minimum="6" Maximum="72" Increment="1"
+                               FormatString="0"/>
+
+                <TextBlock Grid.Row="3" Grid.Column="0" Text="Font stile (bitmask):"
+                           VerticalAlignment="Center"/>
+                <NumericUpDown Grid.Row="3" Grid.Column="1"
+                               Value="{Binding FontEditorStyle}"
+                               Minimum="0" Maximum="15" Increment="1"
+                               FormatString="0"/>
+
+                <TextBlock Grid.Row="4" Grid.Column="0" Text="Font pannelli (pt):"
+                           VerticalAlignment="Center"/>
+                <NumericUpDown Grid.Row="4" Grid.Column="1"
+                               Value="{Binding FontPanelliSize}"
+                               Minimum="6" Maximum="72" Increment="1"
+                               FormatString="0"/>
+            </Grid>
+
+            <Separator Margin="0,2"/>
+
+            <!-- Visualizzazione -->
+            <TextBlock Text="Visualizzazione" FontWeight="Bold"/>
+            <StackPanel Spacing="6">
+                <CheckBox Content="Mostra pannello memoria"
+                          IsChecked="{Binding MostraMemoria}"/>
+                <CheckBox Content="Avvia a tutto schermo"
+                          IsChecked="{Binding PienoSchermo}"/>
+            </StackPanel>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

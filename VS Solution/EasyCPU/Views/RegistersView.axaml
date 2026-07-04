@@ -1,0 +1,10 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:EasyCPU.ViewModels"
+             x:Class="EasyCPU.Views.RegistersView"
+             x:DataType="vm:RegistersViewModel">
+    <ScrollViewer>
+        <TextBlock x:Name="DumpText" Text="{Binding Dump}" FontFamily="Courier New,Monospace"
+                   Margin="4" TextWrapping="NoWrap" />
+    </ScrollViewer>
+</UserControl>

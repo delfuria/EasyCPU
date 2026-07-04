@@ -1,0 +1,20 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:EasyCPU.ViewModels"
+             x:Class="EasyCPU.Views.ErrorsView"
+             x:DataType="vm:ErrorsViewModel">
+    <DataGrid Name="ErrorsGrid"
+              ItemsSource="{Binding Errors}"
+              IsReadOnly="True"
+              CanUserResizeColumns="True"
+              CanUserReorderColumns="False"
+              CanUserSortColumns="False"
+              AutoGenerateColumns="False"
+              SelectionMode="Single">
+        <DataGrid.Columns>
+            <DataGridTextColumn Header="Tipo"      Binding="{Binding TipoDisplay}" Width="105" />
+            <DataGridTextColumn Header="Riga"      Binding="{Binding RigaDisplay}" Width="75" />
+            <DataGridTextColumn Header="Messaggio" Binding="{Binding Msg}"         Width="*"  />
+        </DataGrid.Columns>
+    </DataGrid>
+</UserControl>

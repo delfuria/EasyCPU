@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
+        <ApplicationIcon>..\..\images\app-icon\icon.ico</ApplicationIcon>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia" Version="12.0.5" />
+        <PackageReference Include="Avalonia.Desktop" Version="12.0.5" />
+<PackageReference Include="Avalonia.Fonts.Inter" Version="12.0.5" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\EasyCPU\EasyCPU.csproj" />
+    </ItemGroup>
+
+    <!-- macOS has no notion of an .exe icon: Finder/Dock only show a custom icon when the
+         app is a real .app bundle with Info.plist + .icns. This target assembles that bundle
+         after `dotnet publish -r osx-arm64` (or osx-x64). Running via Rider's default launcher
+         or `dotnet run` executes the raw binary, so the Dock icon stays generic there regardless. -->
+    <Target Name="CreateMacOSAppBundle" AfterTargets="Publish" Condition="$(RuntimeIdentifier.StartsWith('osx'))">
+        <PropertyGroup>
+            <AppBundleDir>$(PublishDir)$(AssemblyName).app</AppBundleDir>
+        </PropertyGroup>
+        <MakeDir Directories="$(AppBundleDir)/Contents/MacOS" />
+        <MakeDir Directories="$(AppBundleDir)/Contents/Resources" />
+        <Copy SourceFiles="Info.plist" DestinationFolder="$(AppBundleDir)/Contents" />
+        <Copy SourceFiles="..\..\images\app-icon\AppIcon.icns" DestinationFolder="$(AppBundleDir)/Contents/Resources" />
+        <ItemGroup>
+            <PublishedFiles Include="$(PublishDir)**\*" Exclude="$(AppBundleDir)\**\*" />
+        </ItemGroup>
+        <Copy SourceFiles="@(PublishedFiles)" DestinationFolder="$(AppBundleDir)/Contents/MacOS/%(RecursiveDir)" />
+        <Exec Command="chmod +x &quot;$(AppBundleDir)/Contents/MacOS/$(AssemblyName)&quot;" />
+    </Target>
+</Project>

@@ -1,0 +1,12 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:EasyCPU.ViewModels"
+             xmlns:avaloniaEdit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+             x:Class="EasyCPU.Views.CodeEditorView"
+             x:DataType="vm:CodeEditorViewModel">
+    <avaloniaEdit:TextEditor
+        Name="Editor"
+        FontFamily="Cascadia Code, Courier New, Consolas, monospace"
+        FontSize="14"
+        ShowLineNumbers="True" />
+</UserControl>

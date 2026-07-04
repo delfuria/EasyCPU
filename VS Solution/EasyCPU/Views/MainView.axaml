@@ -1,0 +1,378 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Dock.Avalonia.Controls;assembly=Dock.Avalonia"
+             xmlns:icons="clr-namespace:EasyCPU.Controls"
+             xmlns:vm="clr-namespace:EasyCPU.ViewModels"
+             xmlns:views="clr-namespace:EasyCPU.Views"
+             x:Class="EasyCPU.Views.MainView"
+             x:DataType="vm:MainViewModel">
+  <UserControl.Styles>
+    <Style Selector="Button.drawer-item">
+      <Setter Property="HorizontalAlignment" Value="Stretch"/>
+      <Setter Property="HorizontalContentAlignment" Value="Left"/>
+      <Setter Property="MinHeight" Value="44"/>
+      <Setter Property="Padding" Value="16,8"/>
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="CornerRadius" Value="0"/>
+    </Style>
+    <Style Selector="CheckBox.drawer-item, RadioButton.drawer-item">
+      <Setter Property="HorizontalAlignment" Value="Stretch"/>
+      <Setter Property="MinHeight" Value="44"/>
+      <Setter Property="Padding" Value="16,8"/>
+    </Style>
+    <Style Selector="TextBlock.drawer-header">
+      <Setter Property="FontSize" Value="12"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="Opacity" Value="0.6"/>
+      <Setter Property="Margin" Value="16,12,16,4"/>
+    </Style>
+  </UserControl.Styles>
+  <Grid>
+    <SplitView IsPaneOpen="False"
+               DisplayMode="Overlay"
+               UseLightDismissOverlayMode="True"
+               OpenPaneLength="280"
+               PanePlacement="Left">
+      <SplitView.Pane>
+        <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}">
+          <ScrollViewer>
+            <StackPanel x:Name="DrawerItems" Margin="0,8">
+                <TextBlock Classes="drawer-header" Text="FILE"/>
+                <Button Classes="drawer-item" Command="{Binding NewCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <icons:ThemedIcon Source="/images/toolbar/new.png" Width="20" Height="20"/>
+                        <TextBlock Text="Nuovo" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                <Button Classes="drawer-item" Command="{Binding OpenCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <icons:ThemedIcon Source="/images/toolbar/open.png" Width="20" Height="20"/>
+                        <TextBlock Text="Apri..." VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                <Button Classes="drawer-item" Command="{Binding SaveCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <icons:ThemedIcon Source="/images/toolbar/save.png" Width="20" Height="20"/>
+                        <TextBlock Text="Salva" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                <Button Classes="drawer-item" Command="{Binding SaveAsCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <icons:ThemedIcon Source="/images/toolbar/save_as.png" Width="20" Height="20"/>
+                        <TextBlock Text="Salva come..." VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                <Separator/>
+                <Button Classes="drawer-item" Command="{Binding PrintCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <icons:ThemedIcon Source="/images/toolbar/print.png" Width="20" Height="20"/>
+                        <TextBlock Text="Stampa" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <TextBlock Classes="drawer-header" Text="MODIFICA"/>
+                <Button Classes="drawer-item" Command="{Binding UndoCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <icons:ThemedIcon Source="/images/toolbar/undo.png" Width="20" Height="20"/>
+                        <TextBlock Text="Annulla" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                <Button Classes="drawer-item" Command="{Binding RedoCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <icons:ThemedIcon Source="/images/toolbar/redo.png" Width="20" Height="20"/>
+                        <TextBlock Text="Ripristina" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                <Separator/>
+                <Button Classes="drawer-item" Command="{Binding CutCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <icons:ThemedIcon Source="/images/toolbar/cut.png" Width="20" Height="20"/>
+                        <TextBlock Text="Taglia" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                <Button Classes="drawer-item" Command="{Binding CopyCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <icons:ThemedIcon Source="/images/toolbar/copy.png" Width="20" Height="20"/>
+                        <TextBlock Text="Copia" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                <Button Classes="drawer-item" Command="{Binding PasteCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <icons:ThemedIcon Source="/images/toolbar/paste.png" Width="20" Height="20"/>
+                        <TextBlock Text="Incolla" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                <Separator/>
+                <Button Classes="drawer-item" Command="{Binding SelectAllCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <icons:ThemedIcon Source="/images/toolbar/select_all.png" Width="20" Height="20"/>
+                        <TextBlock Text="Seleziona tutto" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                <Separator/>
+                <Button Classes="drawer-item" Command="{Binding FindCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <icons:ThemedIcon Source="/images/toolbar/find.png" Width="20" Height="20"/>
+                        <TextBlock Text="Trova..." VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <TextBlock Classes="drawer-header" Text="ESEGUI"/>
+                <Button Classes="drawer-item" Command="{Binding CompileCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <icons:ThemedIcon Source="/images/toolbar/compile.png" Width="20" Height="20"/>
+                        <TextBlock Text="Compila" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                <Separator/>
+                <Button Classes="drawer-item" Command="{Binding RunCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <icons:ThemedIcon Source="/images/toolbar/run.png" Width="20" Height="20"/>
+                        <TextBlock Text="Avvia" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                <Button Classes="drawer-item" Command="{Binding RunUntilCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <icons:ThemedIcon Source="/images/toolbar/run_until.png" Width="20" Height="20"/>
+                        <TextBlock Text="Avvia fino a..." VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                <Separator/>
+                <Button Classes="drawer-item" Command="{Binding StepIntoCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <icons:ThemedIcon Source="/images/toolbar/step_into.png" Width="20" Height="20"/>
+                        <TextBlock Text="Esegui istruzione" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                <Button Classes="drawer-item" Command="{Binding StepOverCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <icons:ThemedIcon Source="/images/toolbar/step_over.png" Width="20" Height="20"/>
+                        <TextBlock Text="Passo" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                <Button Classes="drawer-item" Command="{Binding StepOutCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <icons:ThemedIcon Source="/images/toolbar/step_out.png" Width="20" Height="20"/>
+                        <TextBlock Text="Passo uscita" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                <Separator/>
+                <Button Classes="drawer-item" Command="{Binding StopCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <icons:ThemedIcon Source="/images/toolbar/stop.png" Width="20" Height="20"/>
+                        <TextBlock Text="Ferma" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                <Separator/>
+                <Button Classes="drawer-item" Command="{Binding ToggleBreakpointCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <icons:ThemedIcon Source="/images/toolbar/breakpoint.png" Width="20" Height="20"/>
+                        <TextBlock Text="Imposta/Rimuovi breakpoint" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <TextBlock Classes="drawer-header" Text="FINESTRE"/>
+                <CheckBox Classes="drawer-item" Command="{Binding ToggleCodeEditorCommand}" IsChecked="{ReflectionBinding IsCodeEditorVisible, Mode=OneWay}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <icons:ThemedIcon Source="/images/toolbar/panel_code.png" Width="20" Height="20"/>
+                        <TextBlock Text="Editor codice" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </CheckBox>
+                <CheckBox Classes="drawer-item" Command="{Binding ToggleDataEditorCommand}" IsChecked="{ReflectionBinding IsDataEditorVisible, Mode=OneWay}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <icons:ThemedIcon Source="/images/toolbar/panel_data.png" Width="20" Height="20"/>
+                        <TextBlock Text="Editor dati" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </CheckBox>
+                <CheckBox Classes="drawer-item" Command="{Binding ToggleRegistersCommand}" IsChecked="{ReflectionBinding IsRegistersVisible, Mode=OneWay}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <icons:ThemedIcon Source="/images/toolbar/panel_registers.png" Width="20" Height="20"/>
+                        <TextBlock Text="Registri" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </CheckBox>
+                <CheckBox Classes="drawer-item" Command="{Binding ToggleStackCommand}" IsChecked="{ReflectionBinding IsStackVisible, Mode=OneWay}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <icons:ThemedIcon Source="/images/toolbar/panel_stack.png" Width="20" Height="20"/>
+                        <TextBlock Text="Stack" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </CheckBox>
+                <CheckBox Classes="drawer-item" Command="{Binding ToggleMemoryCommand}" IsChecked="{ReflectionBinding IsMemoryVisible, Mode=OneWay}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <icons:ThemedIcon Source="/images/toolbar/panel_memory.png" Width="20" Height="20"/>
+                        <TextBlock Text="Memoria" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </CheckBox>
+                <CheckBox Classes="drawer-item" Command="{Binding ToggleErrorsCommand}" IsChecked="{ReflectionBinding IsErrorsVisible, Mode=OneWay}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <icons:ThemedIcon Source="/images/toolbar/panel_errors.png" Width="20" Height="20"/>
+                        <TextBlock Text="Errori" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </CheckBox>
+                <Separator/>
+                <Button Classes="drawer-item" Command="{Binding ResetLayoutCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <icons:ThemedIcon Source="/images/toolbar/reset_layout.png" Width="20" Height="20"/>
+                        <TextBlock Text="Ripristina layout" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <TextBlock Classes="drawer-header" Text="STRUMENTI"/>
+                <Button Classes="drawer-item" Command="{Binding ShowOptionsCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <icons:ThemedIcon Source="/images/toolbar/options.png" Width="20" Height="20"/>
+                        <TextBlock Text="Opzioni..." VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                <Separator/>
+                <RadioButton Classes="drawer-item" GroupName="Tema" Command="{Binding SetThemeLightCommand}" IsChecked="{Binding IsThemeLight, Mode=OneWay}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <icons:ThemedIcon Source="/images/toolbar/theme_light.png" Width="20" Height="20"/>
+                        <TextBlock Text="Chiaro" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </RadioButton>
+                <RadioButton Classes="drawer-item" GroupName="Tema" Command="{Binding SetThemeDarkCommand}" IsChecked="{Binding IsThemeDark, Mode=OneWay}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <icons:ThemedIcon Source="/images/toolbar/theme_dark.png" Width="20" Height="20"/>
+                        <TextBlock Text="Scuro" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </RadioButton>
+                <RadioButton Classes="drawer-item" GroupName="Tema" Command="{Binding SetThemeBlueCommand}" IsChecked="{Binding IsThemeBlue, Mode=OneWay}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <icons:ThemedIcon Source="/images/toolbar/theme_blue.png" Width="20" Height="20"/>
+                        <TextBlock Text="Blue (VS Code)" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </RadioButton>
+            </StackPanel>
+          </ScrollViewer>
+        </Border>
+      </SplitView.Pane>
+      <SplitView.Content>
+        <DockPanel>
+            <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*" Height="48">
+                <Button Classes="hamburger-button" Grid.Column="0" Click="OnHamburgerClick" Width="48" Height="48" Padding="0" Background="Transparent" ToolTip.Tip="Menu">
+                    <StackPanel Orientation="Vertical" Spacing="4" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <Rectangle Width="20" Height="2" Fill="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+                        <Rectangle Width="20" Height="2" Fill="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+                        <Rectangle Width="20" Height="2" Fill="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+                    </StackPanel>
+                </Button>
+                <TextBlock Grid.Column="1" Text="EasyCPU" VerticalAlignment="Center" Margin="4,0,0,0" FontWeight="SemiBold"/>
+            </Grid>
+            <ScrollViewer DockPanel.Dock="Top"
+                          HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Disabled">
+                <StackPanel Orientation="Horizontal" Spacing="4" Margin="4,2">
+                    <Button Command="{Binding NewCommand}"     Width="40" Height="40" Padding="8" ToolTip.Tip="Nuovo">
+                        <icons:ThemedIcon Source="/images/toolbar/new.png"     Width="20" Height="20"/>
+                    </Button>
+                    <Button Command="{Binding OpenCommand}"    Width="40" Height="40" Padding="8" ToolTip.Tip="Apri">
+                        <icons:ThemedIcon Source="/images/toolbar/open.png"    Width="20" Height="20"/>
+                    </Button>
+                    <Button Command="{Binding SaveCommand}"    Width="40" Height="40" Padding="8" ToolTip.Tip="Salva">
+                        <icons:ThemedIcon Source="/images/toolbar/save.png"    Width="20" Height="20"/>
+                    </Button>
+                    <Separator Width="1" Height="20" Margin="4,0"/>
+                    <Button Command="{Binding CompileCommand}" Width="40" Height="40" Padding="8" ToolTip.Tip="Compila">
+                        <icons:ThemedIcon Source="/images/toolbar/compile.png"   Width="20" Height="20"/>
+                    </Button>
+                    <Button Command="{Binding RunCommand}"     Width="40" Height="40" Padding="8" ToolTip.Tip="Avvia">
+                        <icons:ThemedIcon Source="/images/toolbar/run.png"       Width="20" Height="20"/>
+                    </Button>
+                    <Button Command="{Binding RunUntilCommand}" Width="40" Height="40" Padding="8" ToolTip.Tip="Avvia fino a...">
+                        <icons:ThemedIcon Source="/images/toolbar/run_until.png" Width="20" Height="20"/>
+                    </Button>
+                    <Button Command="{Binding StopCommand}"    Width="40" Height="40" Padding="8" ToolTip.Tip="Ferma">
+                        <icons:ThemedIcon Source="/images/toolbar/stop.png"      Width="20" Height="20"/>
+                    </Button>
+                    <Button Command="{Binding StepIntoCommand}" Width="40" Height="40" Padding="8" ToolTip.Tip="Esegui istruzione (Step Into)">
+                        <icons:ThemedIcon Source="/images/toolbar/step_into.png" Width="20" Height="20"/>
+                    </Button>
+                    <Button Command="{Binding StepOverCommand}" Width="40" Height="40" Padding="8" ToolTip.Tip="Passo (Step Over)">
+                        <icons:ThemedIcon Source="/images/toolbar/step_over.png" Width="20" Height="20"/>
+                    </Button>
+                    <Button Command="{Binding StepOutCommand}"  Width="40" Height="40" Padding="8" ToolTip.Tip="Passo uscita (Step Out)">
+                        <icons:ThemedIcon Source="/images/toolbar/step_out.png"  Width="20" Height="20"/>
+                    </Button>
+                    <Separator Width="1" Height="20" Margin="4,0"/>
+                    <Button Command="{Binding SetThemeLightCommand}" Width="40" Height="40" Padding="8" ToolTip.Tip="Tema Chiaro">
+                        <icons:ThemedIcon Source="/images/toolbar/theme_light.png" Width="20" Height="20"/>
+                    </Button>
+                    <Button Command="{Binding SetThemeDarkCommand}"  Width="40" Height="40" Padding="8" ToolTip.Tip="Tema Scuro">
+                        <icons:ThemedIcon Source="/images/toolbar/theme_dark.png"  Width="20" Height="20"/>
+                    </Button>
+                    <Button Command="{Binding SetThemeBlueCommand}"  Width="40" Height="40" Padding="8" ToolTip.Tip="Tema Blue (VS Code)">
+                        <icons:ThemedIcon Source="/images/toolbar/theme_blue.png"  Width="20" Height="20"/>
+                    </Button>
+                </StackPanel>
+            </ScrollViewer>
+            <Border DockPanel.Dock="Bottom"
+                    BorderThickness="0,1,0,0"
+                    BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                    Padding="8,3">
+                <TextBlock Text="{Binding StatusMessage}"
+                           FontSize="12"
+                           VerticalAlignment="Center"
+                           Opacity="0.85"/>
+            </Border>
+            <controls:DockControl Layout="{Binding Layout}" Factory="{Binding DockFactory}" />
+        </DockPanel>
+      </SplitView.Content>
+    </SplitView>
+
+    <Border Background="#AA000000" IsVisible="{Binding IsOptionsOpen}">
+      <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+              BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+              BorderThickness="1" CornerRadius="4"
+              Width="460" MaxHeight="600" Padding="16"
+              HorizontalAlignment="Center" VerticalAlignment="Center">
+        <DockPanel>
+          <TextBlock DockPanel.Dock="Top" Text="Opzioni" FontWeight="Bold" FontSize="16" Margin="0,0,0,10"/>
+          <StackPanel DockPanel.Dock="Bottom"
+                      Orientation="Horizontal"
+                      HorizontalAlignment="Right"
+                      Spacing="8" Margin="0,12,0,0">
+            <Button Content="OK"      Command="{Binding ConfirmOptionsCommand}" MinWidth="75" HorizontalContentAlignment="Center"/>
+            <Button Content="Annulla" Command="{Binding CancelOptionsCommand}"  MinWidth="75" HorizontalContentAlignment="Center"/>
+          </StackPanel>
+          <views:OpzioniView DataContext="{Binding OpzioniVm}"/>
+        </DockPanel>
+      </Border>
+    </Border>
+
+    <Border Background="#AA000000" IsVisible="{Binding IsCompileResultOpen}">
+      <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+              BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+              BorderThickness="1" CornerRadius="4"
+              Width="320" Padding="16"
+              HorizontalAlignment="Center" VerticalAlignment="Center">
+        <StackPanel Spacing="16">
+          <TextBlock Text="{Binding CompileResultMessage}" TextWrapping="Wrap"/>
+          <Button Content="OK" Command="{Binding CloseCompileResultCommand}" MinWidth="85" HorizontalAlignment="Center" HorizontalContentAlignment="Center"/>
+        </StackPanel>
+      </Border>
+    </Border>
+
+    <Border Background="#AA000000" IsVisible="{Binding IsConfirmDiscardOpen}">
+      <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+              BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+              BorderThickness="1" CornerRadius="4"
+              Width="320" Padding="16"
+              HorizontalAlignment="Center" VerticalAlignment="Center">
+        <StackPanel Spacing="16">
+          <TextBlock Text="Ci sono modifiche non salvate. Vuoi salvarle?" TextWrapping="Wrap"/>
+          <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+            <Button Content="Salva" MinWidth="85" HorizontalContentAlignment="Center"
+                    Command="{Binding ConfirmDiscardRespondCommand}"
+                    CommandParameter="{x:Static vm:RispostaSalvataggio.Salva}"/>
+            <Button Content="Non salvare" MinWidth="85" HorizontalContentAlignment="Center"
+                    Command="{Binding ConfirmDiscardRespondCommand}"
+                    CommandParameter="{x:Static vm:RispostaSalvataggio.NonSalvare}"/>
+            <Button Content="Annulla" MinWidth="85" HorizontalContentAlignment="Center"
+                    Command="{Binding ConfirmDiscardRespondCommand}"
+                    CommandParameter="{x:Static vm:RispostaSalvataggio.Annulla}"/>
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Border>
+  </Grid>
+</UserControl>

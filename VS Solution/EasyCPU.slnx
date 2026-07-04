@@ -1,0 +1,70 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="..\images\.DS_Store" />
+    <File Path="..\images\app-icon\.DS_Store" />
+    <File Path="..\images\jetbrains.svg" />
+    <File Path="Directory.Build.props" />
+  </Folder>
+  <Project Path="EasyCPU/EasyCPU.csproj" />
+  <Project Path="EasyCPU.Desktop/EasyCPU.Desktop.csproj" />
+  <Project Path="EasyCPU.Browser/EasyCPU.Browser.csproj" />
+  <Project Path="EasyCPU.iOS/EasyCPU.iOS.csproj" />
+  <Folder Name="/Solution Items/app-icon/">
+    <File Path="..\images\app-icon\AppIcon.icns" />
+    <File Path="..\images\app-icon\icon.ico" />
+    <File Path="..\images\app-icon\icon.png" />
+    <File Path="..\images\app-icon\icon.svg" />
+  </Folder>
+  <Folder Name="/Solution Items/app-icon/linux/">
+    <File Path="..\images\app-icon\linux\icon-128.png" />
+    <File Path="..\images\app-icon\linux\icon-16.png" />
+    <File Path="..\images\app-icon\linux\icon-24.png" />
+    <File Path="..\images\app-icon\linux\icon-256.png" />
+    <File Path="..\images\app-icon\linux\icon-32.png" />
+    <File Path="..\images\app-icon\linux\icon-48.png" />
+    <File Path="..\images\app-icon\linux\icon-512.png" />
+    <File Path="..\images\app-icon\linux\icon-64.png" />
+  </Folder>
+  <Folder Name="/Solution Items/toolbar/">
+    <File Path="..\images\toolbar\breakpoint.png" />
+    <File Path="..\images\toolbar\compile.png" />
+    <File Path="..\images\toolbar\copy.png" />
+    <File Path="..\images\toolbar\cut.png" />
+    <File Path="..\images\toolbar\find.png" />
+    <File Path="..\images\toolbar\new.png" />
+    <File Path="..\images\toolbar\open.png" />
+    <File Path="..\images\toolbar\options.png" />
+    <File Path="..\images\toolbar\panel_code.png" />
+    <File Path="..\images\toolbar\panel_data.png" />
+    <File Path="..\images\toolbar\panel_errors.png" />
+    <File Path="..\images\toolbar\panel_memory.png" />
+    <File Path="..\images\toolbar\panel_registers.png" />
+    <File Path="..\images\toolbar\panel_stack.png" />
+    <File Path="..\images\toolbar\paste.png" />
+    <File Path="..\images\toolbar\print.png" />
+    <File Path="..\images\toolbar\redo.png" />
+    <File Path="..\images\toolbar\reset_layout.png" />
+    <File Path="..\images\toolbar\run.png" />
+    <File Path="..\images\toolbar\run_until.png" />
+    <File Path="..\images\toolbar\save.png" />
+    <File Path="..\images\toolbar\save_as.png" />
+    <File Path="..\images\toolbar\select_all.png" />
+    <File Path="..\images\toolbar\step_into.png" />
+    <File Path="..\images\toolbar\step_out.png" />
+    <File Path="..\images\toolbar\step_over.png" />
+    <File Path="..\images\toolbar\stop.png" />
+    <File Path="..\images\toolbar\theme_blue.png" />
+    <File Path="..\images\toolbar\theme_dark.png" />
+    <File Path="..\images\toolbar\theme_light.png" />
+    <File Path="..\images\toolbar\undo.png" />
+  </Folder>
+  <Project Path="EasyCPU.Android/EasyCPU.Android.csproj" />
+  <Folder Name="/BusinessLogic/">
+    <Project Path="EasyCpu.Assembler/EasyCpu.Assembler.csproj" />
+    <Project Path="EasyCpu.Common/EasyCpu.Common.csproj" />
+    <Project Path="EasyCpu.Assembler.Tests/EasyCpu.Assembler.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Backend/">
+    <Project Path="EasyCpu.Backend/EasyCpu.Backend.csproj" />
+  </Folder>
+</Solution>

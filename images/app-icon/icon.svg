@@ -1,0 +1,38 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2dd4bf"/>
+      <stop offset="1" stop-color="#0d9488"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1024" height="1024" fill="url(#bg)"/>
+
+  <g>
+    <!-- chip body -->
+    <rect x="352" y="352" width="320" height="320" rx="36" fill="#f8fafc"/>
+
+    <!-- top pins -->
+    <rect x="424" y="176" width="36" height="72" rx="8" fill="#f8fafc"/>
+    <rect x="494" y="176" width="36" height="72" rx="8" fill="#f8fafc"/>
+    <rect x="564" y="176" width="36" height="72" rx="8" fill="#f8fafc"/>
+
+    <!-- bottom pins -->
+    <rect x="424" y="776" width="36" height="72" rx="8" fill="#f8fafc"/>
+    <rect x="494" y="776" width="36" height="72" rx="8" fill="#f8fafc"/>
+    <rect x="564" y="776" width="36" height="72" rx="8" fill="#f8fafc"/>
+
+    <!-- left pins -->
+    <rect x="176" y="424" width="72" height="36" rx="8" fill="#f8fafc"/>
+    <rect x="176" y="494" width="72" height="36" rx="8" fill="#f8fafc"/>
+    <rect x="176" y="564" width="72" height="36" rx="8" fill="#f8fafc"/>
+
+    <!-- right pins -->
+    <rect x="776" y="424" width="72" height="36" rx="8" fill="#f8fafc"/>
+    <rect x="776" y="494" width="72" height="36" rx="8" fill="#f8fafc"/>
+    <rect x="776" y="564" width="72" height="36" rx="8" fill="#f8fafc"/>
+
+    <!-- play triangle -->
+    <polygon points="462,432 462,592 610,512" fill="#0f766e"/>
+  </g>
+</svg>

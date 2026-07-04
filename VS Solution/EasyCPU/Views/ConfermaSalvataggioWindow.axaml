@@ -1,0 +1,17 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="EasyCPU.Views.ConfermaSalvataggioWindow"
+        Title="EasyCPU"
+        Width="380" Height="160"
+        CanResize="False"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner">
+    <StackPanel Margin="20" Spacing="16" VerticalAlignment="Center">
+        <TextBlock Text="Ci sono modifiche non salvate. Vuoi salvarle?" TextWrapping="Wrap"/>
+        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+            <Button Content="Salva"       Click="OnSalva"      MinWidth="85" HorizontalContentAlignment="Center" IsDefault="True"/>
+            <Button Content="Non salvare" Click="OnNonSalvare" MinWidth="85" HorizontalContentAlignment="Center"/>
+            <Button Content="Annulla"     Click="OnAnnulla"    MinWidth="85" HorizontalContentAlignment="Center" IsCancel="True"/>
+        </StackPanel>
+    </StackPanel>
+</Window>

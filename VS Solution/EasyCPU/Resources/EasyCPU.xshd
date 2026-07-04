@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SyntaxDefinition name="EasyCPU" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
+
+  <Color name="Comment"    foreground="#008000" />
+  <Color name="Register"   foreground="#007070" />
+  <Color name="Indirect"   foreground="#2B91AF" />
+  <Color name="Directive"  foreground="#800080" fontWeight="bold" />
+  <Color name="Number"     foreground="#098658" />
+  <Color name="CharConst"  foreground="#A31515" />
+  <Color name="Label"      foreground="#795E26" />
+
+  <!-- Opcode per categoria -->
+  <Color name="OpcodeMove"  foreground="#1565C0" fontWeight="bold" />  <!-- mov movs         — blu -->
+  <Color name="OpcodeArith" foreground="#5D2906" fontWeight="bold" />  <!-- add sub mul div… — marrone scuro -->
+  <Color name="OpcodeLogic" foreground="#0F766E" fontWeight="bold" />  <!-- and or xor not… — teal -->
+  <Color name="OpcodeCmp"   foreground="#AD1457" fontWeight="bold" />  <!-- cmp              — rosa scuro -->
+  <Color name="OpcodeStack" foreground="#4527A0" fontWeight="bold" />  <!-- push pop…        — indaco -->
+  <Color name="OpcodeJump"  foreground="#C62828" fontWeight="bold" />  <!-- jmp j* call ret  — rosso -->
+  <Color name="OpcodeMisc"  foreground="#546E7A" fontWeight="bold" />  <!-- nop stop         — grigio-blu -->
+
+  <RuleSet ignoreCase="true">
+
+    <!-- Commenti: // fino a fine riga -->
+    <Span color="Comment" multiline="false">
+      <Begin>//</Begin>
+    </Span>
+
+    <!-- Costanti carattere: 'c' -->
+    <Span color="CharConst" multiline="false">
+      <Begin>'</Begin>
+      <End>'</End>
+    </Span>
+
+    <!-- Indirizzamento indiretto: [bx], [bp+n], [si-n], [di] -->
+    <Span color="Indirect" multiline="false">
+      <Begin>\[</Begin>
+      <End>\]</End>
+    </Span>
+
+    <!-- Marcatore sezione dati -->
+    <Rule color="Directive">\.DATA\b</Rule>
+
+    <!-- Movimento dati -->
+    <Keywords color="OpcodeMove">
+      <Word>mov</Word>
+      <Word>movs</Word>
+    </Keywords>
+
+    <!-- Aritmetica -->
+    <Keywords color="OpcodeArith">
+      <Word>add</Word>
+      <Word>sub</Word>
+      <Word>mul</Word>
+      <Word>div</Word>
+      <Word>inc</Word>
+      <Word>dec</Word>
+      <Word>neg</Word>
+    </Keywords>
+
+    <!-- Logica e shift -->
+    <Keywords color="OpcodeLogic">
+      <Word>and</Word>
+      <Word>or</Word>
+      <Word>xor</Word>
+      <Word>not</Word>
+      <Word>shl</Word>
+      <Word>shr</Word>
+    </Keywords>
+
+    <!-- Confronto -->
+    <Keywords color="OpcodeCmp">
+      <Word>cmp</Word>
+    </Keywords>
+
+    <!-- Stack -->
+    <Keywords color="OpcodeStack">
+      <Word>push</Word>
+      <Word>pop</Word>
+      <Word>pushf</Word>
+      <Word>popf</Word>
+    </Keywords>
+
+    <!-- Salti, chiamate e ritorno -->
+    <Keywords color="OpcodeJump">
+      <Word>jmp</Word>
+      <Word>je</Word>
+      <Word>jne</Word>
+      <Word>jg</Word>
+      <Word>jl</Word>
+      <Word>jge</Word>
+      <Word>jle</Word>
+      <Word>jo</Word>
+      <Word>jno</Word>
+      <Word>js</Word>
+      <Word>jns</Word>
+      <Word>jcxz</Word>
+      <Word>call</Word>
+      <Word>ret</Word>
+    </Keywords>
+
+    <!-- Varie -->
+    <Keywords color="OpcodeMisc">
+      <Word>nop</Word>
+      <Word>stop</Word>
+    </Keywords>
+
+    <!-- Registri -->
+    <Keywords color="Register">
+      <Word>ax</Word>
+      <Word>bx</Word>
+      <Word>cx</Word>
+      <Word>dx</Word>
+      <Word>si</Word>
+      <Word>di</Word>
+      <Word>bp</Word>
+      <Word>sp</Word>
+      <Word>ip</Word>
+    </Keywords>
+
+    <!-- Numeri esadecimali con suffisso h: es. 1Ah, 0FFh -->
+    <Rule color="Number">\b[0-9][0-9a-fA-F]*h\b</Rule>
+
+    <!-- Numeri decimali -->
+    <Rule color="Number">\b[0-9]+\b</Rule>
+
+    <!-- Definizione etichetta: nome: -->
+    <Rule color="Label">\b[a-zA-Z_]\w*(?=\s*:)</Rule>
+
+  </RuleSet>
+
+</SyntaxDefinition>
