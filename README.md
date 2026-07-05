@@ -4,6 +4,22 @@ A comprehensive, cross-platform IDE for teaching Assembly language programming a
 
 EasyCPU is an educational tool designed to make learning assembly language and CPU architecture accessible and intuitive. It provides a simplified but functional virtual CPU that implements a subset of X86 instructions, allowing students to write, execute, and debug assembly programs with immediate visual feedback on CPU state.
 
+## 📑 Table of Contents
+
+- [Key Features](#-key-features)
+- [What is EasyCPU?](#-what-is-easycpu)
+- [What You Can Do](#-what-you-can-do-with-easycpu)
+- [Assembly Instruction Set](#-assembly-instruction-set)
+- [IDE Overview](#-ide-overview)
+- [Documentation](#-documentation)
+- [Project Structure](#-project-structure)
+- [Requirements](#-requirements)
+- [Supported Platforms](#-supported-platforms)
+- [Architecture](#-architecture)
+- [Build](#-build)
+- [Credits](#-credits)
+- [License](#-license)
+
 ---
 
 ## 🎯 Key Features
@@ -23,41 +39,6 @@ EasyCPU is an educational tool designed to make learning assembly language and C
 - **Run-to-Instruction** – Execute all instructions up to a selected line for faster iteration
 - **Execution State Indicators** – Visual feedback on whether program is running, paused, or stopped
 - **Error Highlighting** – Clicking compilation errors jumps directly to problematic code
-
----
-
-## 🖥️ Supported Platforms
-
-EasyCPU is implemented for multiple platforms with a shared core:
-
-| Platform | Status | Features |
-|----------|--------|----------|
-| **Desktop** (Windows/macOS/Linux) | ✅ Implemented | Full IDE with all features |
-| **Browser** (WebAssembly) | ✅ Implemented | Complete IDE running in browser via WASM |
-| **iOS** | ✅ Implemented | Touch-optimized interface for iPad/iPhone |
-| **Android** | ✅ Implemented | Native Android app interface |
-
-All platforms share the same assembly compiler and virtual CPU core, ensuring consistent behavior across devices.
-
----
-
-## 🏗️ Architecture
-
-EasyCPU is built on a modular architecture with clear separation of concerns:
-
-### Core Components
-
-- **EasyCpu.Assembler** – Assembly language parser and compiler; translates assembly source to internal instruction format
-- **EasyCpu.Backend** – Virtual CPU implementation; simulates X86-subset processor with registers, memory, stack, and instruction execution
-- **EasyCpu.Common** – Shared data structures and utilities used across projects
-- **EasyCPU.* (UI Projects)** – Platform-specific front-ends (Desktop, Browser, iOS, Android)
-
-### Technology Stack
-
-- **Framework:** .NET SDK 10
-- **UI Framework:** [AvaloniaUI](https://avaloniaui.net/) – Cross-platform, XAML-based UI for Desktop, Browser, iOS, and Android
-- **Language:** C#
-- **Browser Target:** WebAssembly (Emscripten compilation)
 
 ---
 
@@ -152,6 +133,18 @@ For detailed step-by-step tutorials and screenshots, see the [**EasyCPU IDE Tuto
 
 ---
 
+## 📝 Documentation
+
+Complete documentation is available in the `Docs/` folder:
+
+- **[Easy CPU Assembly Reference](./Docs/Easy%20CPU%20%20Assembly%20Reference.md)** – Complete instruction set documentation with syntax, examples, and flag behavior
+- **[EasyCPU IDE Tutorial](./Docs/EasyCPU%20%20IDE%20Tutorial.md)** – Step-by-step guide to using the IDE, debugging, and managing programs
+- **[Toolbar Icons Reference](./ICONE-TOOLBAR.md)** – Visual guide to IDE toolbar buttons
+
+Additional examples and subroutine patterns are available in `Docs/Subroutines/`.
+
+---
+
 ## 🚀 Project Structure
 
 ```
@@ -177,18 +170,6 @@ EasyCPU/
 
 ---
 
-## 📝 Documentation
-
-Complete documentation is available in the `Docs/` folder:
-
-- **[Easy CPU Assembly Reference](./Docs/Easy%20CPU%20%20Assembly%20Reference.md)** – Complete instruction set documentation with syntax, examples, and flag behavior
-- **[EasyCPU IDE Tutorial](./Docs/EasyCPU%20%20IDE%20Tutorial.md)** – Step-by-step guide to using the IDE, debugging, and managing programs
-- **[Toolbar Icons Reference](./ICONE-TOOLBAR.md)** – Visual guide to IDE toolbar buttons
-
-Additional examples and subroutine patterns are available in `Docs/Subroutines/`.
-
----
-
 ## 🛠️ Requirements
 
 - **.NET SDK 10** or later
@@ -196,8 +177,141 @@ Additional examples and subroutine patterns are available in `Docs/Subroutines/`
 - Platform-specific requirements:
   - **Desktop:** Windows 10+, macOS 10.13+, or Linux (GTK 3.0+)
   - **Browser:** Modern web browser with WebAssembly support
-  - **iOS:** iOS 12.0+
-  - **Android:** Android 5.0+ (API level 21+)
+  - **iOS:** iOS 12.0+ with Xcode
+  - **Android:** Android 5.0+ (API level 21+) with Android SDK
+
+### Install Required Workloads
+
+To build for specific platforms, install the necessary .NET workloads:
+
+```bash
+# Desktop support (Windows/macOS/Linux)
+dotnet workload install desktop
+
+# Browser/WebAssembly support
+dotnet workload install wasm-tools
+
+# iOS support
+dotnet workload install ios
+
+# Android support
+dotnet workload install android
+
+# Install all at once
+dotnet workload install desktop wasm-tools ios android
+```
+
+After installing workloads, restore NuGet dependencies:
+
+```bash
+dotnet restore
+```
+
+---
+
+## 🖥️ Supported Platforms
+
+EasyCPU is implemented for multiple platforms with a shared core:
+
+| Platform | Status | Features |
+|----------|--------|----------|
+| **Desktop** (Windows/macOS/Linux) | ✅ Implemented | Full IDE with all features |
+| **Browser** (WebAssembly) | ✅ Implemented | Complete IDE running in browser via WASM |
+| **iOS** | ✅ Implemented | Touch-optimized interface for iPad/iPhone |
+| **Android** | ✅ Implemented | Native Android app interface |
+
+All platforms share the same assembly compiler and virtual CPU core, ensuring consistent behavior across devices.
+
+---
+
+## 🏗️ Architecture
+
+EasyCPU is built on a modular architecture with clear separation of concerns:
+
+### Core Components
+
+- **EasyCpu.Assembler** – Assembly language parser and compiler; translates assembly source to internal instruction format
+- **EasyCpu.Backend** – Virtual CPU implementation; simulates X86-subset processor with registers, memory, stack, and instruction execution
+- **EasyCpu.Common** – Shared data structures and utilities used across projects
+- **EasyCPU.* (UI Projects)** – Platform-specific front-ends (Desktop, Browser, iOS, Android)
+
+### Technology Stack
+
+- **Framework:** .NET SDK 10
+- **UI Framework:** [AvaloniaUI](https://avaloniaui.net/) – Cross-platform, XAML-based UI for Desktop, Browser, iOS, and Android
+- **Language:** C#
+- **Browser Target:** WebAssembly (Emscripten compilation)
+
+---
+
+## 🔨 Build
+
+### Build for Desktop (Windows/macOS/Linux)
+
+```bash
+# Restore dependencies
+dotnet restore EasyCPU.Desktop
+
+# Build
+dotnet build EasyCPU.Desktop -c Release
+
+# Or directly run
+dotnet run --project EasyCPU.Desktop -c Release
+```
+
+### Build for Browser (WebAssembly)
+
+```bash
+# Restore dependencies
+dotnet restore EasyCPU.Browser
+
+# Publish for WebAssembly (creates wwwroot output)
+dotnet publish EasyCPU.Browser -c Release
+
+# The output will be in EasyCPU.Browser/bin/Release/net10.0/publish/wwwroot
+```
+
+### Build for iOS
+
+```bash
+# Restore dependencies
+dotnet restore EasyCPU.iOS
+
+# Build
+dotnet build EasyCPU.iOS -c Release -f net10.0-ios
+
+# Or create an IPA for deployment
+dotnet publish EasyCPU.iOS -c Release -f net10.0-ios
+```
+
+### Build for Android
+
+```bash
+# Restore dependencies
+dotnet restore EasyCPU.Android
+
+# Build
+dotnet build EasyCPU.Android -c Release -f net10.0-android
+
+# Or create an APK for deployment
+dotnet publish EasyCPU.Android -c Release -f net10.0-android
+```
+
+### Clean Build
+
+To perform a clean rebuild across all projects:
+
+```bash
+# Clean all build artifacts
+dotnet clean
+
+# Restore workloads and dependencies
+dotnet workload restore
+dotnet restore
+
+# Rebuild all projects
+dotnet build -c Release
+```
 
 ---
 
