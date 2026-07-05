@@ -1,4 +1,5 @@
 #nullable enable
+using Avalonia;
 using Avalonia.Media;
 using AvaloniaEdit.Rendering;
 using EasyCPU.ViewModels;
@@ -24,8 +25,13 @@ public class DebugCurrentLineRenderer : IBackgroundRenderer
         if (lineNumber < 1 || textView.Document == null) return;
         if (lineNumber > textView.Document.LineCount) return;
 
-        var docLine = textView.Document.GetLineByNumber(lineNumber);
-        foreach (var rect in BackgroundGeometryBuilder.GetRectsForSegment(textView, docLine))
-            drawingContext.FillRectangle(HighlightBrush, rect);
+        textView.EnsureVisualLines();
+        var visualLine = textView.GetVisualLine(lineNumber);
+        if (visualLine == null) return;
+
+        // Copre l'intera larghezza visibile, non solo il testo della riga
+        double y = visualLine.VisualTop - textView.ScrollOffset.Y;
+        var rect = new Rect(0, y, textView.Bounds.Width, visualLine.Height);
+        drawingContext.FillRectangle(HighlightBrush, rect);
     }
 }

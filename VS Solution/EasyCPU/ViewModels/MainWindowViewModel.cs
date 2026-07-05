@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -46,6 +47,17 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty] private string _statusMessage = "Pronto";
     [ObservableProperty] private bool _isDirty;
     [ObservableProperty] private bool _hasCode;
+
+    private static readonly IBrush CpuStatusRed = new SolidColorBrush(Color.Parse("#F44336"));
+    private static readonly IBrush CpuStatusGreen = new SolidColorBrush(Color.Parse("#4CAF50"));
+    private static readonly IBrush CpuStatusYellow = new SolidColorBrush(Color.Parse("#FFEB3B"));
+
+    // Rosso: programma non in esecuzione. Verde: sospeso sulla prima istruzione.
+    // Giallo: sospeso su un'istruzione qualsiasi.
+    public IBrush CpuStatusColor =>
+        Cpu.stop ? CpuStatusRed : Cpu.IP == 0 ? CpuStatusGreen : CpuStatusYellow;
+
+    private void NotifyCpuStatusChanged() => OnPropertyChanged(nameof(CpuStatusColor));
 
     partial void OnIsDirtyChanged(bool value)
     {
@@ -120,6 +132,7 @@ public partial class MainViewModel : ObservableObject
         if (Compiler.InstrToLineMap == null || Cpu.stop)
         {
             CurrentSourceLine = -1;
+            NotifyCpuStatusChanged();
             return;
         }
         int ip = Cpu.IP;
@@ -127,6 +140,7 @@ public partial class MainViewModel : ObservableObject
             CurrentSourceLine = Compiler.InstrToLineMap[ip] + 1;
         else
             CurrentSourceLine = -1;
+        NotifyCpuStatusChanged();
     }
 
     // ── Visibilità pannelli ───────────────────────────────────────────────────
@@ -621,6 +635,9 @@ public partial class MainViewModel : ObservableObject
             if (_factory.Registers is { } rv) rv.Dump = "";
             if (_factory.Memory is { } mv) mv.Dump = "";
             if (_factory.Stack is { } sv) sv.Dump = "";
+            Cpu.Stop();
+            CurrentSourceLine = -1;
+            NotifyCpuStatusChanged();
             return false;
         }
 
@@ -629,6 +646,7 @@ public partial class MainViewModel : ObservableObject
         _pendingFirstStep = true;
         Cpu.Init(instructions, memory, Ambiente.InizializzaRegistri, Ambiente.LoopInfinito);
         SyncBreakpointsToCpu();
+        NotifyCpuStatusChanged();
         return true;
     }
 
@@ -863,6 +881,7 @@ public partial class MainViewModel : ObservableObject
         Cpu.Stop();
         _atBreakpoint = false;
         CurrentSourceLine = -1;
+        NotifyCpuStatusChanged();
         RefreshDebugViews();
         StatusMessage = "Esecuzione interrotta";
     }

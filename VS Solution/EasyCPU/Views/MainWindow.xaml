@@ -273,10 +273,14 @@
                 BorderThickness="0,1,0,0"
                 BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
                 Padding="8,3">
-            <TextBlock Text="{Binding StatusMessage}"
-                       FontSize="12"
-                       VerticalAlignment="Center"
-                       Opacity="0.85"/>
+            <StackPanel Orientation="Horizontal" Spacing="6">
+                <Ellipse Width="10" Height="10" VerticalAlignment="Center"
+                         Fill="{Binding CpuStatusColor}"/>
+                <TextBlock Text="{Binding StatusMessage}"
+                           FontSize="12"
+                           VerticalAlignment="Center"
+                           Opacity="0.85"/>
+            </StackPanel>
         </Border>
         <controls:DockControl Layout="{Binding Layout}" Factory="{Binding DockFactory}" />
     </DockPanel>
