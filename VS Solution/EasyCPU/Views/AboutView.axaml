@@ -1,0 +1,12 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="EasyCPU.Views.AboutView">
+    <StackPanel Margin="24" Spacing="8" HorizontalAlignment="Center">
+        <Image Source="avares://EasyCPU/images/app-icon/icon.png" Width="96" Height="96" HorizontalAlignment="Center"/>
+        <TextBlock Name="NameText" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center"/>
+        <TextBlock Name="VersionText" HorizontalAlignment="Center" Opacity="0.7"/>
+        <TextBlock Text="IDE per lo sviluppo di programmi didattici in linguaggio Assembly per un sottoinsieme del processore X86."
+                    TextWrapping="Wrap" TextAlignment="Center" Margin="0,8,0,0"/>
+        <TextBlock Name="CopyrightText" HorizontalAlignment="Center" Opacity="0.7" Margin="0,8,0,0"/>
+    </StackPanel>
+</UserControl>

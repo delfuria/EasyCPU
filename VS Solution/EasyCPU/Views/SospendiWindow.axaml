@@ -10,9 +10,9 @@
         <TextBlock Text="L'esecuzione ha raggiunto il limite di istruzioni configurato."
                    TextWrapping="Wrap"/>
         <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
-            <Button Content="Continua" Click="OnContinua" MinWidth="85"/>
-            <Button Content="Pausa"    Click="OnPausa"    MinWidth="85"/>
-            <Button Content="Arresta"  Click="OnArresta"  MinWidth="85" IsDefault="True"/>
+            <Button Content="Continua" Click="OnContinua" MinWidth="85" HorizontalContentAlignment="Center"/>
+            <Button Content="Pausa"    Click="OnPausa"    MinWidth="85" HorizontalContentAlignment="Center"/>
+            <Button Content="Arresta"  Click="OnArresta"  MinWidth="85" HorizontalContentAlignment="Center" IsDefault="True"/>
         </StackPanel>
     </StackPanel>
 </Window>

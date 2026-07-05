@@ -980,6 +980,26 @@ public partial class MainViewModel : ObservableObject
         OpzioniVm = null;
     }
 
+    [ObservableProperty] private bool _isAboutOpen;
+
+    [RelayCommand]
+    private async Task ShowAbout()
+    {
+        var owner = GetOwnerWindow();
+        if (owner is not null)
+        {
+            await new AboutWindow().ShowDialog(owner);
+            return;
+        }
+
+        // Nessuna Window disponibile (Browser/iOS/Android, single-view lifetime):
+        // mostra le informazioni come overlay all'interno di MainView.
+        IsAboutOpen = true;
+    }
+
+    [RelayCommand]
+    private void CloseAbout() => IsAboutOpen = false;
+
     [RelayCommand] private void SetThemeLight() => Settings.Theme = AppTheme.Light;
     [RelayCommand] private void SetThemeDark()  => Settings.Theme = AppTheme.Dark;
     [RelayCommand] private void SetThemeBlue()  => Settings.Theme = AppTheme.Blue;
