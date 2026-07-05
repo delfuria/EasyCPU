@@ -161,11 +161,10 @@ EasyCPU/
 ├── EasyCPU.iOS/                # iOS platform
 ├── EasyCPU.Android/            # Android platform
 ├── EasyCpu.Assembler.Tests/    # Unit tests for assembler
-├── Docs/                       # Documentation
-│   ├── Easy CPU Assembly Reference.md
-│   ├── EasyCPU IDE Tutorial.md
-│   └── Subroutines/            # Subroutine examples and patterns
-└── MigrationPlan/              # Architecture evolution notes
+└── Docs/                       # Documentation
+    ├── Easy CPU Assembly Reference.md
+    ├── EasyCPU IDE Tutorial.md
+    └── Subroutines/            # Subroutine examples and patterns
 ```
 
 ---
