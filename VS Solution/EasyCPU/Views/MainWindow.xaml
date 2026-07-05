@@ -81,7 +81,6 @@
                         <NativeMenuItemSeparator />
                         <NativeMenuItem Header="Chiaro"         Command="{Binding SetThemeLightCommand}"/>
                         <NativeMenuItem Header="Scuro"          Command="{Binding SetThemeDarkCommand}"/>
-                        <NativeMenuItem Header="Blue (VS Code)" Command="{Binding SetThemeBlueCommand}"/>
                     </NativeMenu>
                 </NativeMenuItem.Menu>
             </NativeMenuItem>
@@ -211,9 +210,6 @@
                     <MenuItem Header="_Scuro"           ToggleType="Radio" Command="{Binding SetThemeDarkCommand}"  IsChecked="{Binding IsThemeDark,  Mode=OneWay}">
                         <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/theme_dark.png"/></MenuItem.Icon>
                     </MenuItem>
-                    <MenuItem Header="_Blue (VS Code)"  ToggleType="Radio" Command="{Binding SetThemeBlueCommand}"  IsChecked="{Binding IsThemeBlue,  Mode=OneWay}">
-                        <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/theme_blue.png"/></MenuItem.Icon>
-                    </MenuItem>
                 </MenuItem>
             </MenuItem>
             <MenuItem Header="_Informazioni..." Command="{Binding ShowAboutCommand}"/>
@@ -263,9 +259,6 @@
                 </Button>
                 <Button Command="{Binding SetThemeDarkCommand}"  Width="40" Height="40" Padding="8" ToolTip.Tip="Tema scuro">
                     <icons:ThemedIcon Source="/images/toolbar/theme_dark.png"  Width="20" Height="20"/>
-                </Button>
-                <Button Command="{Binding SetThemeBlueCommand}"  Width="40" Height="40" Padding="8" ToolTip.Tip="Tema Blue (VS Code)">
-                    <icons:ThemedIcon Source="/images/toolbar/theme_blue.png"  Width="20" Height="20"/>
                 </Button>
             </StackPanel>
         </Border>

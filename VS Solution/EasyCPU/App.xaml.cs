@@ -1,13 +1,10 @@
 using System;
-using System.Linq;
 using System.Xml;
 using EasyCpu.Backend.Local;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using Avalonia.Media;
 using Avalonia.Styling;
-using Avalonia.Themes.Fluent;
 using AvaloniaEdit.Highlighting;
 using AvaloniaEdit.Highlighting.Xshd;
 using EasyCpu.Common;
@@ -76,29 +73,8 @@ public class App : Application
     {
         if (Current is null) return;
 
-        var ft = Current.Styles.OfType<FluentTheme>().FirstOrDefault();
-
-        // Clear any previous Blue accent palette
-        ft?.Palettes.Remove(ThemeVariant.Dark);
-
-        if (theme == AppTheme.Blue)
-        {
-            if (ft is not null)
-                ft.Palettes[ThemeVariant.Dark] = new ColorPaletteResources { Accent = Color.Parse("#007ACC") };
-            // Force variant re-evaluation: if already Dark, a Light→Dark toggle
-            // makes Avalonia pick up the new palette (same-variant assignment is a no-op).
-            Current.RequestedThemeVariant = ThemeVariant.Light;
-            Current.RequestedThemeVariant = ThemeVariant.Dark;
-        }
-        else if (theme == AppTheme.Dark)
-        {
-            // Force re-eval in case we're coming from Blue (also Dark base)
-            Current.RequestedThemeVariant = ThemeVariant.Light;
-            Current.RequestedThemeVariant = ThemeVariant.Dark;
-        }
-        else
-        {
-            Current.RequestedThemeVariant = ThemeVariant.Light;
-        }
+        Current.RequestedThemeVariant = theme == AppTheme.Dark
+            ? ThemeVariant.Dark
+            : ThemeVariant.Light;
     }
 }

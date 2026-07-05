@@ -236,12 +236,6 @@
                         <TextBlock Text="Scuro" VerticalAlignment="Center"/>
                     </StackPanel>
                 </RadioButton>
-                <RadioButton Classes="drawer-item" GroupName="Tema" Command="{Binding SetThemeBlueCommand}" IsChecked="{Binding IsThemeBlue, Mode=OneWay}">
-                    <StackPanel Orientation="Horizontal" Spacing="12">
-                        <icons:ThemedIcon Source="/images/toolbar/theme_blue.png" Width="20" Height="20"/>
-                        <TextBlock Text="Blue (VS Code)" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </RadioButton>
                 <Separator/>
                 <Button Classes="drawer-item" Command="{Binding ShowAboutCommand}">
                     <StackPanel Orientation="Horizontal" Spacing="12">
@@ -311,9 +305,6 @@
                     </Button>
                     <Button Command="{Binding SetThemeDarkCommand}"  Width="40" Height="40" Padding="8" ToolTip.Tip="Tema Scuro">
                         <icons:ThemedIcon Source="/images/toolbar/theme_dark.png"  Width="20" Height="20"/>
-                    </Button>
-                    <Button Command="{Binding SetThemeBlueCommand}"  Width="40" Height="40" Padding="8" ToolTip.Tip="Tema Blue (VS Code)">
-                        <icons:ThemedIcon Source="/images/toolbar/theme_blue.png"  Width="20" Height="20"/>
                     </Button>
                 </StackPanel>
             </ScrollViewer>

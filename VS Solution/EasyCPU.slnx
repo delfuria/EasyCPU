@@ -53,7 +53,6 @@
     <File Path="..\images\toolbar\step_out.png" />
     <File Path="..\images\toolbar\step_over.png" />
     <File Path="..\images\toolbar\stop.png" />
-    <File Path="..\images\toolbar\theme_blue.png" />
     <File Path="..\images\toolbar\theme_dark.png" />
     <File Path="..\images\toolbar\theme_light.png" />
     <File Path="..\images\toolbar\undo.png" />

@@ -1,3 +1,3 @@
 namespace EasyCPU;
 
-public enum AppTheme { Light, Dark, Blue }
+public enum AppTheme { Light, Dark }

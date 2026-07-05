@@ -213,13 +213,11 @@ public partial class MainViewModel : ObservableObject
 
     public bool IsThemeLight => Settings.Theme == AppTheme.Light;
     public bool IsThemeDark  => Settings.Theme == AppTheme.Dark;
-    public bool IsThemeBlue  => Settings.Theme == AppTheme.Blue;
 
     private void NotifyThemeProps()
     {
         OnPropertyChanged(nameof(IsThemeLight));
         OnPropertyChanged(nameof(IsThemeDark));
-        OnPropertyChanged(nameof(IsThemeBlue));
     }
 
     // ── File ─────────────────────────────────────────────────────────────────
@@ -1002,7 +1000,6 @@ public partial class MainViewModel : ObservableObject
 
     [RelayCommand] private void SetThemeLight() => Settings.Theme = AppTheme.Light;
     [RelayCommand] private void SetThemeDark()  => Settings.Theme = AppTheme.Dark;
-    [RelayCommand] private void SetThemeBlue()  => Settings.Theme = AppTheme.Blue;
 
     // ── Debug views ───────────────────────────────────────────────────────────
 
