@@ -83,6 +83,8 @@ public partial class MainViewModel : ObservableObject
         {
             if (e.PropertyName == nameof(SettingsViewModel.Theme))
                 NotifyThemeProps();
+            if (e.PropertyName == nameof(SettingsViewModel.FormatoDati))
+                RefreshDebugViews();
         };
         Breakpoints.CollectionChanged += (_, _) => SyncBreakpointsToCpu();
     }
