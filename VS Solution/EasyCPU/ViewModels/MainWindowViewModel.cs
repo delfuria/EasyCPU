@@ -670,7 +670,8 @@ public partial class MainViewModel : ObservableObject
     private async Task Compile()
     {
         bool success = DoCompile();
-        await ShowCompileMessageAsync(success ? "Compilazione riuscita" : "Compilazione con errori");
+        if (!success)
+            await ShowCompileMessageAsync("Compilazione con errori");
     }
 
     [RelayCommand]
