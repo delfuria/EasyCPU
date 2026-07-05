@@ -45,6 +45,7 @@ public partial class MainViewModel : ObservableObject
 
     [ObservableProperty] private int _currentSourceLine = -1;
     [ObservableProperty] private string _statusMessage = "Pronto";
+    [ObservableProperty] private string _currentFileName = "Nuovo file";
     [ObservableProperty] private bool _isDirty;
     [ObservableProperty] private bool _hasCode;
 
@@ -278,6 +279,7 @@ public partial class MainViewModel : ObservableObject
         SetEditorText(_factory.CodeEditor, string.Join("\n", code));
         SetEditorText(_factory.DataEditor, string.Join("\n", data));
         _currentFilePath = path;
+        CurrentFileName = Path.GetFileName(path);
         _isLegacyFile = !path.EndsWith(".asj", StringComparison.OrdinalIgnoreCase);
         Breakpoints.Clear();
         LoadBreakpoints(path);
@@ -375,6 +377,7 @@ public partial class MainViewModel : ObservableObject
         _currentFilePath = null;
         _currentFile = null;
         _isLegacyFile = false;
+        CurrentFileName = "Nuovo file";
         IsDirty = false;
         StatusMessage = "Nuovo file";
     }
@@ -447,6 +450,7 @@ public partial class MainViewModel : ObservableObject
 
         _currentFile = file;
         _currentFilePath = GetDisplayPath(file);
+        CurrentFileName = Path.GetFileName(_currentFilePath);
         _isLegacyFile = false;
         await SaveToPath(_currentFilePath);
     }

@@ -314,9 +314,15 @@
                     BorderThickness="0,1,0,0"
                     BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
                     Padding="8,3">
-                <StackPanel Orientation="Horizontal" Spacing="6">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="{Binding CurrentFileName}"
+                               FontSize="12"
+                               VerticalAlignment="Center"
+                               Opacity="0.85"/>
+                    <Separator Width="1" Height="14"/>
                     <Ellipse Width="10" Height="10" VerticalAlignment="Center"
                              Fill="{Binding CpuStatusColor}"/>
+                    <Separator Width="1" Height="14"/>
                     <TextBlock Text="{Binding StatusMessage}"
                                FontSize="12"
                                VerticalAlignment="Center"
