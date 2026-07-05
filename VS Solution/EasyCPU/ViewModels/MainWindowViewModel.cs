@@ -341,6 +341,28 @@ public partial class MainViewModel : ObservableObject
         _confirmDiscardTcs?.TrySetResult(risposta);
     }
 
+    [ObservableProperty] private bool _isSospendiOpen;
+    private TaskCompletionSource<ModoSospendi>? _sospendiTcs;
+
+    // Mostra il dialog di loop infinito: finestra modale su desktop, overlay su mobile/browser.
+    private async Task<ModoSospendi> ShowSospendiAsync()
+    {
+        var owner = GetOwnerWindow();
+        if (owner is not null)
+            return await new SospendiWindow().ShowDialog<ModoSospendi>(owner);
+
+        _sospendiTcs = new TaskCompletionSource<ModoSospendi>();
+        IsSospendiOpen = true;
+        return await _sospendiTcs.Task;
+    }
+
+    [RelayCommand]
+    private void SospendiRespond(ModoSospendi modo)
+    {
+        IsSospendiOpen = false;
+        _sospendiTcs?.TrySetResult(modo);
+    }
+
     [RelayCommand]
     private async Task New()
     {
@@ -703,7 +725,6 @@ public partial class MainViewModel : ObservableObject
         }
 
         _pendingFirstStep = false;
-        var owner = GetOwnerWindow();
         while (true)
         {
             try
@@ -714,9 +735,7 @@ public partial class MainViewModel : ObservableObject
             catch (CpuTrapException) { _atBreakpoint = true; break; }
             catch (CpuLoopException)
             {
-                var modo = owner is not null
-                    ? await new SospendiWindow().ShowDialog<ModoSospendi>(owner)
-                    : ModoSospendi.Arresta;
+                var modo = await ShowSospendiAsync();
                 if (modo == ModoSospendi.Continua) continue;
                 if (modo == ModoSospendi.Pausa) { _atBreakpoint = true; break; }
                 Cpu.Stop();
@@ -770,7 +789,6 @@ public partial class MainViewModel : ObservableObject
         bool tempBreakpoint = instrIdx >= 0 && Cpu.Breakpoints.Add(instrIdx);
 
         _pendingFirstStep = false;
-        var owner = GetOwnerWindow();
         while (true)
         {
             try
@@ -781,9 +799,7 @@ public partial class MainViewModel : ObservableObject
             catch (CpuTrapException) { _atBreakpoint = true; break; }
             catch (CpuLoopException)
             {
-                var modo = owner is not null
-                    ? await new SospendiWindow().ShowDialog<ModoSospendi>(owner)
-                    : ModoSospendi.Arresta;
+                var modo = await ShowSospendiAsync();
                 if (modo == ModoSospendi.Continua) continue;
                 if (modo == ModoSospendi.Pausa) { _atBreakpoint = true; break; }
                 Cpu.Stop();

@@ -57,7 +57,7 @@ namespace EasyCpu.Assembler.Processore
 
         public bool IPOverRun
         {
-            get { return ip > Code.Count || ip < 1; }
+            get { return ip > Code.Count || ip < 0; }
         }
 
         public short IP => ip;

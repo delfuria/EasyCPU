@@ -383,5 +383,28 @@
         </StackPanel>
       </Border>
     </Border>
+
+    <Border Background="#AA000000" IsVisible="{Binding IsSospendiOpen}">
+      <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+              BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+              BorderThickness="1" CornerRadius="4"
+              Width="320" Padding="16"
+              HorizontalAlignment="Center" VerticalAlignment="Center">
+        <StackPanel Spacing="16">
+          <TextBlock Text="L'esecuzione ha raggiunto il limite di istruzioni configurato." TextWrapping="Wrap"/>
+          <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+            <Button Content="Continua" MinWidth="85" HorizontalContentAlignment="Center"
+                    Command="{Binding SospendiRespondCommand}"
+                    CommandParameter="{x:Static vm:ModoSospendi.Continua}"/>
+            <Button Content="Pausa" MinWidth="85" HorizontalContentAlignment="Center"
+                    Command="{Binding SospendiRespondCommand}"
+                    CommandParameter="{x:Static vm:ModoSospendi.Pausa}"/>
+            <Button Content="Arresta" MinWidth="85" HorizontalContentAlignment="Center"
+                    Command="{Binding SospendiRespondCommand}"
+                    CommandParameter="{x:Static vm:ModoSospendi.Arresta}"/>
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Border>
   </Grid>
 </UserControl>
