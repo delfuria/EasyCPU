@@ -7,7 +7,7 @@
     <key>CFBundleDisplayName</key>
     <string>EasyCPU</string>
     <key>CFBundleIdentifier</key>
-    <string>CyberFranchetty.EasyCPU</string>
+    <string>com.easycpu.app</string>
     <key>CFBundleVersion</key>
     <string>1.0</string>
     <key>CFBundleShortVersionString</key>

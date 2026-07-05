@@ -294,6 +294,11 @@
                         <icons:ThemedIcon Source="/images/toolbar/step_out.png"  Width="20" Height="20"/>
                     </Button>
                     <Separator Width="1" Height="20" Margin="4,0"/>
+                    <ComboBox ItemsSource="{Binding Settings.FormatoValoreOptions}"
+                              SelectedItem="{Binding Settings.FormatoDati}"
+                              Width="80" VerticalAlignment="Center"
+                              ToolTip.Tip="Formato di visualizzazione dati"/>
+                    <Separator Width="1" Height="20" Margin="4,0"/>
                     <Button Command="{Binding SetThemeLightCommand}" Width="40" Height="40" Padding="8" ToolTip.Tip="Tema Chiaro">
                         <icons:ThemedIcon Source="/images/toolbar/theme_light.png" Width="20" Height="20"/>
                     </Button>

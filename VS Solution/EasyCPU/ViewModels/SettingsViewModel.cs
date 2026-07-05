@@ -1,3 +1,4 @@
+using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using EasyCpu.Common;
 
@@ -6,6 +7,9 @@ namespace EasyCPU.ViewModels;
 public partial class SettingsViewModel : ObservableObject
 {
     public static SettingsViewModel Instance { get; } = new();
+
+    public FormatoValore[] FormatoValoreOptions { get; } =
+        (FormatoValore[])Enum.GetValues(typeof(FormatoValore));
 
     [ObservableProperty] private AppTheme _theme = AppTheme.Light;
     [ObservableProperty] private FormatoValore _formatoDati;
