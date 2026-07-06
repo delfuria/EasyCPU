@@ -208,6 +208,11 @@
                         <TextBlock Text="Errori" VerticalAlignment="Center"/>
                     </StackPanel>
                 </CheckBox>
+                <CheckBox Classes="drawer-item" Command="{Binding ToggleConsoleCommand}" IsChecked="{ReflectionBinding IsConsoleVisible, Mode=OneWay}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <TextBlock Text="Console" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </CheckBox>
                 <Separator/>
                 <Button Classes="drawer-item" Command="{Binding ResetLayoutCommand}">
                     <StackPanel Orientation="Horizontal" Spacing="12">

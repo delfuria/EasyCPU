@@ -28,7 +28,7 @@ namespace EasyCpu.Common
 		StackUnderflow,
 		ViolazioneMemoria,
 		IPNonValido,
-
+		InterruptNonValido,
 
 	}
 
@@ -47,7 +47,7 @@ namespace EasyCpu.Common
 				case CodiceErrore.AttesaCostante: return "E' atteso un numero";
 				case CodiceErrore.CostanteFuoriIntervallo: return "Valore fuori dall'intervallo consentito";
 				case CodiceErrore.NumeroOperandi: return "Numero operandi errato";
-				case CodiceErrore.DestinazioneCostante: return "L'operando destinazione non può essere una costante";
+				case CodiceErrore.DestinazioneCostante: return "L'operando destinazione non puï¿½ essere una costante";
 				case CodiceErrore.Sconosciuto: return "Errore sconosciuto";
 				case CodiceErrore.StackOverflow: return "Stack overflow";
 				case CodiceErrore.StackUnderflow: return "Stack underflow";
@@ -60,6 +60,7 @@ namespace EasyCpu.Common
 				case CodiceErrore.LoopInfinito: return "Il programma si trova in un 'ciclo infinito'";
 				case CodiceErrore.ViolazioneMemoria: return "Violazione dei limiti della memoria";
 				case CodiceErrore.IPNonValido: return "Registro IP non indirizza un'istruzione";
+				case CodiceErrore.InterruptNonValido: return "Numero di interrupt non valido";
 					//case CodiceErrore.: return "";
 					//case CodiceErrore.: return "";
 			}

@@ -105,6 +105,83 @@ public class CpuTests
     }
 
     [Fact]
+    public void Int21h_AX2_ScriveCarattereSuConsole()
+    {
+        var cpu = BuildCpu(new[] { "mov ax,2", "mov dx,65", "int 21h", "stop" });
+        char? scritto = null;
+        cpu.ScriviSuConsole += c => scritto = c;
+
+        cpu.StepInto(); // mov ax,2
+        cpu.StepInto(); // mov dx,65
+        cpu.StepInto(); // int 21h
+
+        Assert.Equal('A', scritto);
+    }
+
+    [Fact]
+    public void Int21h_AX1_LeggeCarattereConEcoAutomatico()
+    {
+        var cpu = BuildCpu(new[] { "mov ax,1", "int 21h", "stop" });
+        char? eco = null;
+        cpu.ScriviSuConsole += c => eco = c;
+        cpu.InviaCarattereTastiera(65); // 'A' già in coda prima della lettura
+
+        cpu.StepInto(); // mov ax,1
+        cpu.StepInto(); // int 21h
+
+        Assert.Equal(65, cpu.AX);
+        Assert.Equal('A', eco);
+    }
+
+    [Fact]
+    public void Int21h_AX1_CRTradottoInNewlineSoloNellEco()
+    {
+        var cpu = BuildCpu(new[] { "mov ax,1", "int 21h", "stop" });
+        char? eco = null;
+        cpu.ScriviSuConsole += c => eco = c;
+        cpu.InviaCarattereTastiera(13); // CR
+
+        cpu.StepInto();
+        cpu.StepInto();
+
+        Assert.Equal(13, cpu.AX);   // valore puro in AX, per "cmp ax, 13"
+        Assert.Equal('\n', eco);    // eco tradotto solo per la visualizzazione
+    }
+
+    [Fact]
+    public void Int_NumeroNonValido_LanciaCpuException()
+    {
+        var cpu = BuildCpu(new[] { "int 99", "stop" }); // 99 decimale != 0x21
+        var ex = Assert.Throws<CpuException>(() => cpu.StepInto());
+        Assert.Equal(CodiceErrore.InterruptNonValido, ex.err);
+    }
+
+    [Fact]
+    public void Init_SvuotaBufferTastiera_CarattereVecchioNonRiletto()
+    {
+        Ambiente.Inizializza();
+        var compiler = new Compiler();
+        var code = new[] { "mov ax,1", "int 21h", "stop" }.ToList();
+        List<CompilerError>? errori = null;
+        var instructions = compiler.CompilaCodice(code, ref errori);
+        Assert.NotNull(instructions);
+        Assert.Null(errori);
+        var memDati = new int[256].ToList();
+
+        var cpu = new Cpu();
+        cpu.Init(instructions, memDati, initRegs: true, 1000);
+        cpu.InviaCarattereTastiera(90); // 'Z', tasto premuto "in anticipo" prima della Run
+
+        cpu.Init(instructions, memDati, initRegs: true, 1000); // nuova Run: deve svuotare il buffer
+        cpu.InviaCarattereTastiera(65); // 'A'
+
+        cpu.StepInto(); // mov ax,1
+        cpu.StepInto(); // int 21h
+
+        Assert.Equal(65, cpu.AX); // non 90: il carattere vecchio è stato scartato
+    }
+
+    [Fact]
     public void LineToInstrMap_RigheNonEseguibiliMappatoA_Meno1()
     {
         // Sorgente con riga vuota, commento e etichetta su riga propria

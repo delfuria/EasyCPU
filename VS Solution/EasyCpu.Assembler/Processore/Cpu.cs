@@ -203,6 +203,7 @@ namespace EasyCpu.Assembler.Processore
         public void Init(List<Instruction> codice, List<int> memoriaDati, bool initRegs, int AloopInfinito)
         {
             stop = false;
+            bufferTastiera.Clear();
             memoria.Imposta(memoriaDati);
             Code = codice;
             ip = 0;
@@ -265,6 +266,7 @@ namespace EasyCpu.Assembler.Processore
                 case "call": Call(); break;
                 case "ret": Ret(); break;
                 case "stop": Stop(); break;
+                case "int": Int(); break;
             }
             ip++;
         }
@@ -518,6 +520,67 @@ namespace EasyCpu.Assembler.Processore
         {
             stop = true;
             Stato = StatoCpu.Ferma;
+        }
+
+        #endregion
+
+        #region interrupt / IO
+
+        // Buffer tastiera thread-safe: riempito dall'host (UI) via InviaCarattereTastiera,
+        // consumato dalla CPU durante l'esecuzione di "int" con AX=1.
+        readonly System.Collections.Concurrent.ConcurrentQueue<short> bufferTastiera = new();
+
+        // Evento verso l'host: la CPU lo invoca per ogni carattere da stampare su console.
+        public event Action<char> ScriviSuConsole;
+
+        // API pubblica chiamata dall'host quando l'utente preme un tasto nel pannello Console.
+        public void InviaCarattereTastiera(short carattere) => bufferTastiera.Enqueue(carattere);
+
+        void Int()
+        {
+            int numero = LoadOp(1); // numero di interrupt (operando costante)
+            switch (numero)
+            {
+                case 0x21:
+                    ServizioSistema();
+                    break;
+                default:
+                    throw new CpuException(CodiceErrore.InterruptNonValido);
+            }
+        }
+
+        // Convenzione stile DOS int 21h: funzione selezionata da AX
+        // (qui AX intero, non AH, perché i registri non sono divisi in byte alto/basso).
+        //   AX = 1  -> leggi carattere da tastiera (bloccante) CON ECO automatico su console,
+        //              risultato in AX (fedele a DOS int 21h AH=01h, che fa eco automatica)
+        //   AX = 2  -> scrivi carattere su console, carattere prelevato da DX
+        void ServizioSistema()
+        {
+            switch (ax)
+            {
+                case 1:
+                    ax = LeggiCarattereBloccante();
+                    // Eco automatico: il carattere letto va anche in output, non solo in AX.
+                    // CR (13) viene tradotto in '\n' SOLO ai fini della visualizzazione
+                    // (il valore in AX resta 13 puro, per non rompere "cmp ax, 13" nei programmi asm).
+                    ScriviSuConsole?.Invoke(ax == 13 ? '\n' : (char)ax);
+                    break;
+                case 2:
+                    ScriviSuConsole?.Invoke((char)dx);
+                    break;
+            }
+        }
+
+        // Blocca il thread chiamante finché non arriva un carattere o la CPU viene fermata.
+        short LeggiCarattereBloccante()
+        {
+            short c;
+            while (!bufferTastiera.TryDequeue(out c))
+            {
+                if (stop) return 0;
+                System.Threading.Thread.Sleep(1);
+            }
+            return c;
         }
 
         short NuovoIp()

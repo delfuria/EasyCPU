@@ -10,6 +10,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Dock.Model.Controls;
@@ -100,6 +101,16 @@ public partial class MainViewModel : ObservableObject
                 RefreshDebugViews();
         };
         Breakpoints.CollectionChanged += (_, _) => SyncBreakpointsToCpu();
+
+        // Wiring CPU -> pannello Console: invocato dal thread di esecuzione CPU (Task.Run),
+        // quindi il post sulla proprietà bindata va marshalled sul thread UI.
+        Cpu.ScriviSuConsole += c =>
+        {
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (_factory.Console is { } cv) cv.Output += c;
+            });
+        };
     }
 
     // ── Breakpoint helpers ────────────────────────────────────────────────────
@@ -154,6 +165,7 @@ public partial class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(IsStackVisible));
         OnPropertyChanged(nameof(IsMemoryVisible));
         OnPropertyChanged(nameof(IsErrorsVisible));
+        OnPropertyChanged(nameof(IsConsoleVisible));
     }
 
     private void SetPanelVisible(IDockable? panel, bool visible)
@@ -207,6 +219,12 @@ public partial class MainViewModel : ObservableObject
     {
         get => _factory.IsPanelVisible(_factory.Errors);
         set => SetPanelVisible(_factory.Errors, value);
+    }
+
+    public bool IsConsoleVisible
+    {
+        get => _factory.IsPanelVisible(_factory.Console);
+        set => SetPanelVisible(_factory.Console, value);
     }
 
     // ── Stato tema (per radio menu) ──────────────────────────────────────────
@@ -550,6 +568,7 @@ public partial class MainViewModel : ObservableObject
                 ["Stack"]      = _factory.Stack,
                 ["Memory"]     = _factory.Memory,
                 ["Errors"]     = _factory.Errors,
+                ["Console"]    = _factory.Console,
             };
 
             var newLayout = _factory.RebuildLayout(node, all);
@@ -620,6 +639,8 @@ public partial class MainViewModel : ObservableObject
 
     private bool DoCompile()
     {
+        if (_factory.Console is { } cv) cv.Output = "";
+
         var codeEditor = _factory.CodeEditor;
         if (codeEditor == null) return false;
 
@@ -707,7 +728,7 @@ public partial class MainViewModel : ObservableObject
         if (_atBreakpoint)
         {
             _atBreakpoint = false;
-            try { Cpu.StepInto(); }
+            try { await Task.Run(() => Cpu.StepInto()); }
             catch (CpuException) { UpdateCurrentSourceLine(); RefreshDebugViews(); return; }
             if (Cpu.stop)
             {
@@ -731,7 +752,7 @@ public partial class MainViewModel : ObservableObject
         {
             try
             {
-                Cpu.Run();
+                await Task.Run(() => Cpu.Run());
                 break;
             }
             catch (CpuTrapException) { _atBreakpoint = true; break; }
@@ -765,7 +786,7 @@ public partial class MainViewModel : ObservableObject
         if (_atBreakpoint)
         {
             _atBreakpoint = false;
-            try { Cpu.StepInto(); }
+            try { await Task.Run(() => Cpu.StepInto()); }
             catch (CpuException) { UpdateCurrentSourceLine(); RefreshDebugViews(); return; }
             if (Cpu.stop)
             {
@@ -795,7 +816,7 @@ public partial class MainViewModel : ObservableObject
         {
             try
             {
-                Cpu.Run();
+                await Task.Run(() => Cpu.Run());
                 break;
             }
             catch (CpuTrapException) { _atBreakpoint = true; break; }
@@ -853,7 +874,7 @@ public partial class MainViewModel : ObservableObject
         _atBreakpoint = false;
         try
         {
-            Cpu.StepInto();
+            await Task.Run(() => Cpu.StepInto());
         }
         catch (CpuTrapException) { _atBreakpoint = true; }
         catch (CpuException) { }
@@ -869,7 +890,7 @@ public partial class MainViewModel : ObservableObject
         _atBreakpoint = false;
         try
         {
-            Cpu.StepOver();
+            await Task.Run(() => Cpu.StepOver());
         }
         catch (CpuTrapException) { _atBreakpoint = true; }
         catch (CpuException) { }
@@ -885,7 +906,7 @@ public partial class MainViewModel : ObservableObject
         _atBreakpoint = false;
         try
         {
-            Cpu.StepOut();
+            await Task.Run(() => Cpu.StepOut());
         }
         catch (CpuTrapException) { _atBreakpoint = true; }
         catch (CpuException) { }
@@ -921,6 +942,7 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand] private void ToggleStack()       => IsStackVisible      = !IsStackVisible;
     [RelayCommand] private void ToggleMemory()      => IsMemoryVisible     = !IsMemoryVisible;
     [RelayCommand] private void ToggleErrors()      => IsErrorsVisible     = !IsErrorsVisible;
+    [RelayCommand] private void ToggleConsole()     => IsConsoleVisible    = !IsConsoleVisible;
 
     [RelayCommand]
     private void ResetLayout()

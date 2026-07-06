@@ -1,0 +1,11 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:EasyCPU.ViewModels"
+             x:Class="EasyCPU.Views.ConsoleView"
+             x:DataType="vm:ConsoleViewModel"
+             Focusable="True">
+    <ScrollViewer>
+        <TextBlock x:Name="OutputText" Text="{Binding Output}" FontFamily="Courier New,Monospace"
+                   Margin="4" TextWrapping="Wrap" />
+    </ScrollViewer>
+</UserControl>

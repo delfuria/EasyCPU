@@ -27,6 +27,7 @@ namespace EasyCpu.Assembler.Parsing
 			new OpCode("dec", 1),
 			new OpCode("push", 1),
 			new OpCode("pop", 1),
+			new OpCode("int", 1),
 			new OpCode("pushf", 0),
 			new OpCode("popf", 0),
 			new OpCode("call", 1, TipoOp.Codice),

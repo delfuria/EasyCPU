@@ -19,6 +19,7 @@ public class DockFactory : Factory
     public StackViewModel?      Stack       { get; private set; }
     public MemoryViewModel?     Memory      { get; private set; }
     public ErrorsViewModel?     Errors      { get; private set; }
+    public ConsoleViewModel?    Console     { get; private set; }
 
     // Container refs — used by panel visibility management
     internal IDock? DocumentContainer { get; private set; }
@@ -188,6 +189,8 @@ public class DockFactory : Factory
         Stack      = new StackViewModel      { Id = "Stack",      Title = "Stack" };
         Memory     = new MemoryViewModel     { Id = "Memory",     Title = "Memoria" };
         Errors     = new ErrorsViewModel(_mainVm) { Id = "Errors", Title = "Errori" };
+        Console    = new ConsoleViewModel { Id = "Console", Title = "Console" };
+        Console.CarattereDigitato += c => _mainVm.Cpu.InviaCarattereTastiera((short)c);
 
         var documentDock = new DocumentDock
         {
@@ -226,7 +229,7 @@ public class DockFactory : Factory
             Title = "Strumenti",
             Proportion = 0.35,
             ActiveDockable = Registers,
-            VisibleDockables = CreateList<IDockable>(Registers, Stack, Memory),
+            VisibleDockables = CreateList<IDockable>(Registers, Stack, Memory, Console),
         };
 
         DocumentContainer = documentDock;
