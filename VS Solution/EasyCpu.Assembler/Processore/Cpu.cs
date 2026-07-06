@@ -1,6 +1,7 @@
 using System;
 using System.Text;
 using System.Collections;
+using System.Threading.Tasks;
 using EasyCpu.Assembler.Parsing;
 using EasyCpu.Assembler.Memoria;
 using EasyCpu.Common;
@@ -74,10 +75,10 @@ namespace EasyCpu.Assembler.Processore
         public bool FlagZero => TestFlag(ZF);
         public bool FlagOverflow => TestFlag(OF);
 
-        public void Run(int IP)
+        public async Task Run(int IP)
         {
             ip = (short)IP;
-            Run();
+            await Run();
         }
 
         static bool LoopInfinito(int numIstruzioni, int limite)
@@ -85,7 +86,7 @@ namespace EasyCpu.Assembler.Processore
             return limite > 0 && numIstruzioni == limite;
         }
 
-        public void Run()
+        public async Task Run()
         {
             Stato = StatoCpu.Attiva;
             int numIstruzioni = 0;
@@ -97,7 +98,7 @@ namespace EasyCpu.Assembler.Processore
                         throw new CpuTrapException();
 
                     Fetch();
-                    Execute();
+                    await Execute();
 
                     if (ip == Code.Count)
                         Stop();
@@ -118,14 +119,14 @@ namespace EasyCpu.Assembler.Processore
         }
 
         // Singolo step senza verifica breakpoint (usa per avanzare dopo un trap)
-        public void StepInto()
+        public async Task StepInto()
         {
             if (stop) return;
             Stato = StatoCpu.Attiva;
             try
             {
                 Fetch();
-                Execute();
+                await Execute();
             }
             catch (Exception)
             {
@@ -137,7 +138,7 @@ namespace EasyCpu.Assembler.Processore
         }
 
         // Esegue finché sp < limite, controllando breakpoint e loop infinito
-        void RunWhileInside(short limite)
+        async Task RunWhileInside(short limite)
         {
             int numIstruzioni = 0;
             while (!stop && sp < limite)
@@ -146,7 +147,7 @@ namespace EasyCpu.Assembler.Processore
                     throw new CpuTrapException();
 
                 Fetch();
-                Execute();
+                await Execute();
 
                 if (ip == Code.Count) { Stop(); break; }
                 if (IPOverRun) throw new CpuException(CodiceErrore.IPNonValido);
@@ -157,13 +158,13 @@ namespace EasyCpu.Assembler.Processore
             }
         }
 
-        public void StepOver()
+        public async Task StepOver()
         {
             if (stop) return;
             // Se l'istruzione corrente non è una call, fa semplicemente StepInto
             if (Code[ip].Code != "call")
             {
-                StepInto();
+                await StepInto();
                 return;
             }
             short S = sp;
@@ -171,9 +172,9 @@ namespace EasyCpu.Assembler.Processore
             try
             {
                 Fetch();
-                Execute(); // esegue la call: sp diminuisce, ip salta alla subroutine
+                await Execute(); // esegue la call: sp diminuisce, ip salta alla subroutine
                 if (ip == Code.Count) { Stop(); return; }
-                RunWhileInside(S); // continua finché sp < S (cioè siamo dentro la subroutine)
+                await RunWhileInside(S); // continua finché sp < S (cioè siamo dentro la subroutine)
             }
             catch (CpuException)
             {
@@ -184,14 +185,14 @@ namespace EasyCpu.Assembler.Processore
 
         // Esegue finché sp <= S (cioè siamo ancora dentro o più in profondità):
         // RunWhileInside(S+1) → loop while sp < S+1 → while sp <= S
-        public void StepOut()
+        public async Task StepOut()
         {
             if (stop) return;
             short S = sp;
             Stato = StatoCpu.Attiva;
             try
             {
-                RunWhileInside((short)(S + 1));
+                await RunWhileInside((short)(S + 1));
             }
             catch (CpuException)
             {
@@ -226,7 +227,7 @@ namespace EasyCpu.Assembler.Processore
             curIstruzione = Code[ip];
         }
 
-        void Execute()
+        async Task Execute()
         {
             switch (curIstruzione.Code)
             {
@@ -266,7 +267,7 @@ namespace EasyCpu.Assembler.Processore
                 case "call": Call(); break;
                 case "ret": Ret(); break;
                 case "stop": Stop(); break;
-                case "int": Int(); break;
+                case "int": await Int(); break;
             }
             ip++;
         }
@@ -543,14 +544,14 @@ namespace EasyCpu.Assembler.Processore
         // API pubblica chiamata dall'host quando l'utente preme un tasto nel pannello Console.
         public void InviaCarattereTastiera(short carattere) => bufferTastiera.Enqueue(carattere);
 
-        void Int()
+        async Task Int()
         {
             int numero = LoadOp(1); // numero di interrupt (operando costante)
             switch (numero)
             {
                 case 0x21:
                     InterruptRichiesto?.Invoke();
-                    ServizioSistema();
+                    await ServizioSistema();
                     break;
                 default:
                     throw new CpuException(CodiceErrore.InterruptNonValido);
@@ -564,12 +565,12 @@ namespace EasyCpu.Assembler.Processore
         //   AX = 2  -> scrivi carattere su console, carattere prelevato da DX
         //   AX = 7  -> leggi carattere da tastiera (bloccante) SENZA eco, risultato in AX
         //              (fedele a DOS int 21h AH=07h, "direct console input without echo")
-        void ServizioSistema()
+        async Task ServizioSistema()
         {
             switch (ax)
             {
                 case 1:
-                    ax = LeggiCarattereBloccante();
+                    ax = await LeggiCarattereBloccante();
                     // Eco automatico: il carattere letto va anche in output, non solo in AX.
                     // CR (13) viene tradotto in '\n' SOLO ai fini della visualizzazione
                     // (il valore in AX resta 13 puro, per non rompere "cmp ax, 13" nei programmi asm).
@@ -579,13 +580,16 @@ namespace EasyCpu.Assembler.Processore
                     ScriviSuConsole?.Invoke((char)dx);
                     break;
                 case 7:
-                    ax = LeggiCarattereBloccante(); // nessun eco: il carattere non va su console
+                    ax = await LeggiCarattereBloccante(); // nessun eco: il carattere non va su console
                     break;
             }
         }
 
-        // Blocca il thread chiamante finché non arriva un carattere o la CPU viene fermata.
-        short LeggiCarattereBloccante()
+        // Attende in modo cooperativo (senza bloccare il thread) finché non arriva un carattere
+        // o la CPU viene fermata. Task.Delay invece di Thread.Sleep: su runtime single-thread
+        // (WASM/Browser) un'attesa sincrona bloccherebbe l'unico thread disponibile, congelando
+        // l'intera UI/tab; l'await cede il controllo al chiamante tra un tentativo e l'altro.
+        async Task<short> LeggiCarattereBloccante()
         {
             AttesaTastieraIniziata?.Invoke();
             try
@@ -594,7 +598,7 @@ namespace EasyCpu.Assembler.Processore
                 while (!bufferTastiera.TryDequeue(out c))
                 {
                     if (stop) return 0;
-                    System.Threading.Thread.Sleep(1);
+                    await Task.Delay(1);
                 }
                 return c;
             }

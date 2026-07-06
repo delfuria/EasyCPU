@@ -742,7 +742,7 @@ public partial class MainViewModel : ObservableObject
         if (_atBreakpoint)
         {
             _atBreakpoint = false;
-            try { await Task.Run(() => Cpu.StepInto()); }
+            try { await Cpu.StepInto(); }
             catch (CpuException) { UpdateCurrentSourceLine(); RefreshDebugViews(); return; }
             if (Cpu.stop)
             {
@@ -766,7 +766,7 @@ public partial class MainViewModel : ObservableObject
         {
             try
             {
-                await Task.Run(() => Cpu.Run());
+                await Cpu.Run();
                 break;
             }
             catch (CpuTrapException) { _atBreakpoint = true; break; }
@@ -800,7 +800,7 @@ public partial class MainViewModel : ObservableObject
         if (_atBreakpoint)
         {
             _atBreakpoint = false;
-            try { await Task.Run(() => Cpu.StepInto()); }
+            try { await Cpu.StepInto(); }
             catch (CpuException) { UpdateCurrentSourceLine(); RefreshDebugViews(); return; }
             if (Cpu.stop)
             {
@@ -830,7 +830,7 @@ public partial class MainViewModel : ObservableObject
         {
             try
             {
-                await Task.Run(() => Cpu.Run());
+                await Cpu.Run();
                 break;
             }
             catch (CpuTrapException) { _atBreakpoint = true; break; }
@@ -888,7 +888,7 @@ public partial class MainViewModel : ObservableObject
         _atBreakpoint = false;
         try
         {
-            await Task.Run(() => Cpu.StepInto());
+            await Cpu.StepInto();
         }
         catch (CpuTrapException) { _atBreakpoint = true; }
         catch (CpuException) { }
@@ -904,7 +904,7 @@ public partial class MainViewModel : ObservableObject
         _atBreakpoint = false;
         try
         {
-            await Task.Run(() => Cpu.StepOver());
+            await Cpu.StepOver();
         }
         catch (CpuTrapException) { _atBreakpoint = true; }
         catch (CpuException) { }
@@ -920,7 +920,7 @@ public partial class MainViewModel : ObservableObject
         _atBreakpoint = false;
         try
         {
-            await Task.Run(() => Cpu.StepOut());
+            await Cpu.StepOut();
         }
         catch (CpuTrapException) { _atBreakpoint = true; }
         catch (CpuException) { }

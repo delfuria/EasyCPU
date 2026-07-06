@@ -25,18 +25,18 @@ public class CpuTests
     }
 
     [Fact]
-    public void StepInto_SequenzaSemplice_AX6()
+    public async Task StepInto_SequenzaSemplice_AX6()
     {
         // mov ax,5 / inc ax / stop → dopo 2 StepInto: AX==6
         var cpu = BuildCpu(new[] { "mov ax,5", "inc ax", "stop" });
-        cpu.StepInto(); // esegue mov ax,5
-        cpu.StepInto(); // esegue inc ax
+        await cpu.StepInto(); // esegue mov ax,5
+        await cpu.StepInto(); // esegue inc ax
         Assert.Equal(6, cpu.AX);
         Assert.False(cpu.stop);
     }
 
     [Fact]
-    public void StepOver_Call_SPInvariatoEAX1()
+    public async Task StepOver_Call_SPInvariatoEAX1()
     {
         // step_over_call: SP deve tornare uguale prima/dopo
         // mov ax,0 / call inc_ax / stop
@@ -50,10 +50,10 @@ public class CpuTests
             "ret", // 4: istruzione 4
         };
         var cpu = BuildCpu(lines);
-        cpu.StepInto(); // esegue mov ax,0  →  ip punta a call
+        await cpu.StepInto(); // esegue mov ax,0  →  ip punta a call
 
         short spPrimaCall = cpu.SP;
-        cpu.StepOver(); // esegue call + tutta la subroutine + ret → ip punta a stop
+        await cpu.StepOver(); // esegue call + tutta la subroutine + ret → ip punta a stop
         short spDopoCall = cpu.SP;
 
         Assert.Equal(1, cpu.AX);
@@ -62,7 +62,7 @@ public class CpuTests
     }
 
     [Fact]
-    public void StepOut_DentroSubroutine_SPAumentaDi1()
+    public async Task StepOut_DentroSubroutine_SPAumentaDi1()
     {
         // Entra nella subroutine con StepInto sulla call, poi StepOut
         var lines = new[]
@@ -74,19 +74,19 @@ public class CpuTests
             "ret", // 4
         };
         var cpu = BuildCpu(lines);
-        cpu.StepInto(); // mov ax,0
+        await cpu.StepInto(); // mov ax,0
         short spPrima = cpu.SP;
 
-        cpu.StepInto(); // call → ip salta alla subroutine, sp--
+        await cpu.StepInto(); // call → ip salta alla subroutine, sp--
         short spDentro = cpu.SP;
         Assert.Equal(spPrima - 1, spDentro); // sp è diminuito di 1
 
-        cpu.StepOut(); // esegue fino al ret → sp torna a spPrima
+        await cpu.StepOut(); // esegue fino al ret → sp torna a spPrima
         Assert.Equal(spPrima, cpu.SP);
     }
 
     [Fact]
-    public void BreakpointMultipli_RunSiFermaAlPrimoPoiAlSecondo()
+    public async Task BreakpointMultipli_RunSiFermaAlPrimoPoiAlSecondo()
     {
         // mov ax,1 / inc ax / inc ax / stop
         // breakpoint su istruzione 1 (inc ax, riga 1) e istruzione 2 (inc ax, riga 2)
@@ -94,85 +94,85 @@ public class CpuTests
         cpu.Breakpoints.Add(1); // ip=1 = secondo inc
         cpu.Breakpoints.Add(2); // ip=2 = terzo inc
 
-        Assert.Throws<CpuTrapException>(() => cpu.Run());
+        await Assert.ThrowsAsync<CpuTrapException>(() => cpu.Run());
         Assert.Equal(1, cpu.IP); // fermato PRIMA di eseguire ip=1
         Assert.Equal(1, cpu.AX); // solo mov eseguito
 
-        cpu.StepInto(); // avanza oltre il breakpoint 1
-        Assert.Throws<CpuTrapException>(() => cpu.Run());
+        await cpu.StepInto(); // avanza oltre il breakpoint 1
+        await Assert.ThrowsAsync<CpuTrapException>(() => cpu.Run());
         Assert.Equal(2, cpu.IP); // fermato PRIMA di ip=2
         Assert.Equal(2, cpu.AX); // inc ax del breakpoint 1 eseguito
     }
 
     [Fact]
-    public void Int21h_AX2_ScriveCarattereSuConsole()
+    public async Task Int21h_AX2_ScriveCarattereSuConsole()
     {
         var cpu = BuildCpu(new[] { "mov ax,2", "mov dx,65", "int 21h", "stop" });
         char? scritto = null;
         cpu.ScriviSuConsole += c => scritto = c;
 
-        cpu.StepInto(); // mov ax,2
-        cpu.StepInto(); // mov dx,65
-        cpu.StepInto(); // int 21h
+        await cpu.StepInto(); // mov ax,2
+        await cpu.StepInto(); // mov dx,65
+        await cpu.StepInto(); // int 21h
 
         Assert.Equal('A', scritto);
     }
 
     [Fact]
-    public void Int21h_AX7_LeggeCarattereSenzaEco()
+    public async Task Int21h_AX7_LeggeCarattereSenzaEco()
     {
         var cpu = BuildCpu(new[] { "mov ax,7", "int 21h", "stop" });
         char? eco = null;
         cpu.ScriviSuConsole += c => eco = c;
         cpu.InviaCarattereTastiera(65); // 'A'
 
-        cpu.StepInto(); // mov ax,7
-        cpu.StepInto(); // int 21h
+        await cpu.StepInto(); // mov ax,7
+        await cpu.StepInto(); // int 21h
 
         Assert.Equal(65, cpu.AX);
         Assert.Null(eco); // nessun eco: ScriviSuConsole non deve essere invocato
     }
 
     [Fact]
-    public void Int21h_AX1_LeggeCarattereConEcoAutomatico()
+    public async Task Int21h_AX1_LeggeCarattereConEcoAutomatico()
     {
         var cpu = BuildCpu(new[] { "mov ax,1", "int 21h", "stop" });
         char? eco = null;
         cpu.ScriviSuConsole += c => eco = c;
         cpu.InviaCarattereTastiera(65); // 'A' già in coda prima della lettura
 
-        cpu.StepInto(); // mov ax,1
-        cpu.StepInto(); // int 21h
+        await cpu.StepInto(); // mov ax,1
+        await cpu.StepInto(); // int 21h
 
         Assert.Equal(65, cpu.AX);
         Assert.Equal('A', eco);
     }
 
     [Fact]
-    public void Int21h_AX1_CRTradottoInNewlineSoloNellEco()
+    public async Task Int21h_AX1_CRTradottoInNewlineSoloNellEco()
     {
         var cpu = BuildCpu(new[] { "mov ax,1", "int 21h", "stop" });
         char? eco = null;
         cpu.ScriviSuConsole += c => eco = c;
         cpu.InviaCarattereTastiera(13); // CR
 
-        cpu.StepInto();
-        cpu.StepInto();
+        await cpu.StepInto();
+        await cpu.StepInto();
 
         Assert.Equal(13, cpu.AX); // valore puro in AX, per "cmp ax, 13"
         Assert.Equal('\n', eco); // eco tradotto solo per la visualizzazione
     }
 
     [Fact]
-    public void Int_NumeroNonValido_LanciaCpuException()
+    public async Task Int_NumeroNonValido_LanciaCpuException()
     {
         var cpu = BuildCpu(new[] { "int 99", "stop" }); // 99 decimale != 0x21
-        var ex = Assert.Throws<CpuException>(() => cpu.StepInto());
+        var ex = await Assert.ThrowsAsync<CpuException>(() => cpu.StepInto());
         Assert.Equal(CodiceErrore.InterruptNonValido, ex.err);
     }
 
     [Fact]
-    public void Init_SvuotaBufferTastiera_CarattereVecchioNonRiletto()
+    public async Task Init_SvuotaBufferTastiera_CarattereVecchioNonRiletto()
     {
         Ambiente.Inizializza();
         var compiler = new Compiler();
@@ -190,8 +190,8 @@ public class CpuTests
         cpu.Init(instructions, memDati, initRegs: true, 1000); // nuova Run: deve svuotare il buffer
         cpu.InviaCarattereTastiera(65); // 'A'
 
-        cpu.StepInto(); // mov ax,1
-        cpu.StepInto(); // int 21h
+        await cpu.StepInto(); // mov ax,1
+        await cpu.StepInto(); // int 21h
 
         Assert.Equal(65, cpu.AX); // non 90: il carattere vecchio è stato scartato
     }
@@ -226,7 +226,7 @@ public class CpuTests
     }
 
     [Fact]
-    public void DeterminismoIstanze_DueCpuNonCondivitonoStato()
+    public async Task DeterminismoIstanze_DueCpuNonCondivitonoStato()
     {
         // cpu1: mov ax,10 / stop
         // cpu2: mov ax,99 / stop
@@ -234,9 +234,9 @@ public class CpuTests
         var cpu1 = BuildCpu(new[] { "mov ax,10", "stop" });
         var cpu2 = BuildCpu(new[] { "mov ax,99", "stop" });
 
-        var t1 = Task.Run(() => cpu1.Run());
-        var t2 = Task.Run(() => cpu2.Run());
-        Task.WaitAll(t1, t2);
+        var t1 = cpu1.Run();
+        var t2 = cpu2.Run();
+        await Task.WhenAll(t1, t2);
 
         Assert.Equal(10, cpu1.AX);
         Assert.Equal(99, cpu2.AX);
