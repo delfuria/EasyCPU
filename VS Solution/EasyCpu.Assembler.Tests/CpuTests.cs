@@ -197,6 +197,14 @@ public class CpuTests
     }
 
     [Fact]
+    public void PreparaRiga_PuntoEVirgola_TroncaCommentoComeSlashSlash()
+    {
+        Assert.Equal("mov ax,5" + Parser.FINE, Compiler.PreparaRiga("mov ax,5 ; commento"));
+        Assert.Equal("mov ax,5" + Parser.FINE, Compiler.PreparaRiga("mov ax,5 // commento"));
+        Assert.Equal("", Compiler.PreparaRiga("; riga tutta commento"));
+    }
+
+    [Fact]
     public void LineToInstrMap_RigheNonEseguibiliMappatoA_Meno1()
     {
         // Sorgente con riga vuota, commento e etichetta su riga propria

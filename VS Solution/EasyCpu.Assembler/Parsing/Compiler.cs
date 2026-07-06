@@ -66,6 +66,8 @@ namespace EasyCpu.Assembler.Parsing
                     if (i + 1 < riga.Length && riga[i + 1] == '/')
                         break;
                 }
+                if (!inCostanteChar && riga[i] == ';')
+                    break;
                 if (riga[i] == '\'')
                     inCostanteChar = !inCostanteChar;
                 char c = (inCostanteChar) ? riga[i] : Char.ToLower(riga[i]);

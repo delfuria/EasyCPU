@@ -21,9 +21,12 @@
 
   <RuleSet ignoreCase="true">
 
-    <!-- Commenti: // fino a fine riga -->
+    <!-- Commenti: // oppure ; fino a fine riga -->
     <Span color="Comment" multiline="false">
       <Begin>//</Begin>
+    </Span>
+    <Span color="Comment" multiline="false">
+      <Begin>;</Begin>
     </Span>
 
     <!-- Costanti carattere: 'c' -->
