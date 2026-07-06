@@ -4,8 +4,22 @@
              x:Class="EasyCPU.Views.ConsoleView"
              x:DataType="vm:ConsoleViewModel"
              Focusable="True">
+    <UserControl.Styles>
+        <Style Selector="TextBlock.caret">
+            <Style.Animations>
+                <Animation Duration="0:0:1" IterationCount="INFINITE">
+                    <KeyFrame Cue="0%"><Setter Property="Opacity" Value="1"/></KeyFrame>
+                    <KeyFrame Cue="50%"><Setter Property="Opacity" Value="0"/></KeyFrame>
+                    <KeyFrame Cue="100%"><Setter Property="Opacity" Value="1"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+    </UserControl.Styles>
     <ScrollViewer>
-        <TextBlock x:Name="OutputText" Text="{Binding Output}" FontFamily="Courier New,Monospace"
-                   Margin="4" TextWrapping="Wrap" />
+        <TextBlock x:Name="OutputText" FontFamily="Courier New,Monospace"
+                   Margin="4" TextWrapping="Wrap">
+            <Run Text="{Binding Output}" />
+            <Run Text="{Binding CaretText}" Classes="caret" />
+        </TextBlock>
     </ScrollViewer>
 </UserControl>

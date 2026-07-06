@@ -533,6 +533,13 @@ namespace EasyCpu.Assembler.Processore
         // Evento verso l'host: la CPU lo invoca per ogni carattere da stampare su console.
         public event Action<char> ScriviSuConsole;
 
+        // Evento verso l'host: invocato a ogni "int" valido, per aprire automaticamente il pannello Console.
+        public event Action InterruptRichiesto;
+
+        // Eventi verso l'host: delimitano l'attesa di un tasto (int 21h AX=1), per un cursore lampeggiante.
+        public event Action AttesaTastieraIniziata;
+        public event Action AttesaTastieraTerminata;
+
         // API pubblica chiamata dall'host quando l'utente preme un tasto nel pannello Console.
         public void InviaCarattereTastiera(short carattere) => bufferTastiera.Enqueue(carattere);
 
@@ -542,6 +549,7 @@ namespace EasyCpu.Assembler.Processore
             switch (numero)
             {
                 case 0x21:
+                    InterruptRichiesto?.Invoke();
                     ServizioSistema();
                     break;
                 default:
@@ -574,13 +582,21 @@ namespace EasyCpu.Assembler.Processore
         // Blocca il thread chiamante finché non arriva un carattere o la CPU viene fermata.
         short LeggiCarattereBloccante()
         {
-            short c;
-            while (!bufferTastiera.TryDequeue(out c))
+            AttesaTastieraIniziata?.Invoke();
+            try
             {
-                if (stop) return 0;
-                System.Threading.Thread.Sleep(1);
+                short c;
+                while (!bufferTastiera.TryDequeue(out c))
+                {
+                    if (stop) return 0;
+                    System.Threading.Thread.Sleep(1);
+                }
+                return c;
             }
-            return c;
+            finally
+            {
+                AttesaTastieraTerminata?.Invoke();
+            }
         }
 
         short NuovoIp()

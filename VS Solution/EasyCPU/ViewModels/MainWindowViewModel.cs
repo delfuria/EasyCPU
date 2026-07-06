@@ -111,6 +111,19 @@ public partial class MainViewModel : ObservableObject
                 if (_factory.Console is { } cv) cv.Output += c;
             });
         };
+
+        // Apre e seleziona automaticamente il pannello Console a ogni "int" valido.
+        Cpu.InterruptRichiesto += () => Dispatcher.UIThread.Post(() =>
+        {
+            IsConsoleVisible = true;
+            if (_factory.Console is { } cv) _factory.SetActiveDockable(cv);
+        });
+
+        // Cursore lampeggiante mentre la CPU è bloccata in attesa di un tasto (int 21h AX=1).
+        Cpu.AttesaTastieraIniziata += () =>
+            Dispatcher.UIThread.Post(() => { if (_factory.Console is { } cv) cv.IsInAttesaInput = true; });
+        Cpu.AttesaTastieraTerminata += () =>
+            Dispatcher.UIThread.Post(() => { if (_factory.Console is { } cv) cv.IsInAttesaInput = false; });
     }
 
     // ── Breakpoint helpers ────────────────────────────────────────────────────
@@ -691,6 +704,7 @@ public partial class MainViewModel : ObservableObject
         _pendingFirstStep = true;
         Cpu.Init(instructions, memory, Ambiente.InizializzaRegistri, Ambiente.LoopInfinito);
         SyncBreakpointsToCpu();
+        RefreshDebugViews();
         NotifyCpuStatusChanged();
         return true;
     }

@@ -17,6 +17,7 @@
   <Color name="OpcodeStack" foreground="#4527A0" fontWeight="bold" />  <!-- push pop…        — indaco -->
   <Color name="OpcodeJump"  foreground="#C62828" fontWeight="bold" />  <!-- jmp j* call ret  — rosso -->
   <Color name="OpcodeMisc"  foreground="#546E7A" fontWeight="bold" />  <!-- nop stop         — grigio-blu -->
+  <Color name="OpcodeInterrupt" foreground="#8BC34A" fontWeight="bold" />  <!-- int              — verde chiaro -->
 
   <RuleSet ignoreCase="true">
 
@@ -102,6 +103,11 @@
     <Keywords color="OpcodeMisc">
       <Word>nop</Word>
       <Word>stop</Word>
+    </Keywords>
+
+    <!-- Interrupt -->
+    <Keywords color="OpcodeInterrupt">
+      <Word>int</Word>
     </Keywords>
 
     <!-- Registri -->

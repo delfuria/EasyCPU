@@ -29,8 +29,8 @@ public class CpuTests
     {
         // mov ax,5 / inc ax / stop → dopo 2 StepInto: AX==6
         var cpu = BuildCpu(new[] { "mov ax,5", "inc ax", "stop" });
-        cpu.StepInto();  // esegue mov ax,5
-        cpu.StepInto();  // esegue inc ax
+        cpu.StepInto(); // esegue mov ax,5
+        cpu.StepInto(); // esegue inc ax
         Assert.Equal(6, cpu.AX);
         Assert.False(cpu.stop);
     }
@@ -43,11 +43,11 @@ public class CpuTests
         // inc_ax: inc ax / ret
         var lines = new[]
         {
-            "mov ax,0",       // 0: istruzione 0
-            "call inc_ax",    // 1: istruzione 1
-            "stop",           // 2: istruzione 2
+            "mov ax,0", // 0: istruzione 0
+            "call inc_ax", // 1: istruzione 1
+            "stop", // 2: istruzione 2
             "inc_ax: inc ax", // 3: istruzione 3 (con etichetta)
-            "ret",            // 4: istruzione 4
+            "ret", // 4: istruzione 4
         };
         var cpu = BuildCpu(lines);
         cpu.StepInto(); // esegue mov ax,0  →  ip punta a call
@@ -67,11 +67,11 @@ public class CpuTests
         // Entra nella subroutine con StepInto sulla call, poi StepOut
         var lines = new[]
         {
-            "mov ax,0",       // 0
-            "call inc_ax",    // 1
-            "stop",           // 2
+            "mov ax,0", // 0
+            "call inc_ax", // 1
+            "stop", // 2
             "inc_ax: inc ax", // 3
-            "ret",            // 4
+            "ret", // 4
         };
         var cpu = BuildCpu(lines);
         cpu.StepInto(); // mov ax,0
@@ -144,8 +144,8 @@ public class CpuTests
         cpu.StepInto();
         cpu.StepInto();
 
-        Assert.Equal(13, cpu.AX);   // valore puro in AX, per "cmp ax, 13"
-        Assert.Equal('\n', eco);    // eco tradotto solo per la visualizzazione
+        Assert.Equal(13, cpu.AX); // valore puro in AX, per "cmp ax, 13"
+        Assert.Equal('\n', eco); // eco tradotto solo per la visualizzazione
     }
 
     [Fact]
@@ -187,12 +187,12 @@ public class CpuTests
         // Sorgente con riga vuota, commento e etichetta su riga propria
         var lines = new[]
         {
-            "mov ax,5",           // riga 0 → istruzione 0
-            "",                   // riga 1 → -1 (vuota)
-            "// commento",        // riga 2 → -1 (solo commento)
-            "fine:",              // riga 3 → -1 (solo etichetta)
-            "inc ax",             // riga 4 → istruzione 1
-            "stop",               // riga 5 → istruzione 2
+            "mov ax,5", // riga 0 → istruzione 0
+            "", // riga 1 → -1 (vuota)
+            "// commento", // riga 2 → -1 (solo commento)
+            "fine:", // riga 3 → -1 (solo etichetta)
+            "inc ax", // riga 4 → istruzione 1
+            "stop", // riga 5 → istruzione 2
         };
         Ambiente.Inizializza();
         var compiler = new Compiler();
@@ -202,12 +202,12 @@ public class CpuTests
 
         var map = compiler.LineToInstrMap;
         Assert.NotNull(map);
-        Assert.Equal(0, map[0]);  // mov ax,5
+        Assert.Equal(0, map[0]); // mov ax,5
         Assert.Equal(-1, map[1]); // vuota
         Assert.Equal(-1, map[2]); // commento
         Assert.Equal(-1, map[3]); // solo etichetta
-        Assert.Equal(1, map[4]);  // inc ax
-        Assert.Equal(2, map[5]);  // stop
+        Assert.Equal(1, map[4]); // inc ax
+        Assert.Equal(2, map[5]); // stop
     }
 
     [Fact]

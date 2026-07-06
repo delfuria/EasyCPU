@@ -7,6 +7,11 @@ namespace EasyCPU.ViewModels;
 public partial class ConsoleViewModel : Tool
 {
     [ObservableProperty] private string _output = "";
+    [ObservableProperty] private bool _isInAttesaInput;
+
+    public string CaretText => IsInAttesaInput ? "▌" : "";
+
+    partial void OnIsInAttesaInputChanged(bool value) => OnPropertyChanged(nameof(CaretText));
 
     // Sollevato dalla View quando l'utente preme un tasto col focus sul pannello Console.
     public event Action<char>? CarattereDigitato;
