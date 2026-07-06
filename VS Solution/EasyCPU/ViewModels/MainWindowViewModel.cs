@@ -315,6 +315,16 @@ public partial class MainViewModel : ObservableObject
         AddToRecentFiles(path);
         IsDirty = false;
         StatusMessage = $"Aperto: {Path.GetFileName(path)}";
+
+        // Azzera registri (se da opzione), memoria e stack, e aggiorna subito i pannelli:
+        // il file appena aperto non è ancora stato compilato/eseguito.
+        Cpu.Init(new List<Instruction>(), new int[Ram.MASSIMO_INDIRIZZO + 1].ToList(),
+            Ambiente.InizializzaRegistri, Ambiente.LoopInfinito);
+        _atBreakpoint = false;
+        _pendingFirstStep = true;
+        CurrentSourceLine = -1;
+        RefreshDebugViews();
+        NotifyCpuStatusChanged();
     }
 
     private async void OpenFileFromPath(string path)
