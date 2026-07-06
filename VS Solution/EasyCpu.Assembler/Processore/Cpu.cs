@@ -562,6 +562,8 @@ namespace EasyCpu.Assembler.Processore
         //   AX = 1  -> leggi carattere da tastiera (bloccante) CON ECO automatico su console,
         //              risultato in AX (fedele a DOS int 21h AH=01h, che fa eco automatica)
         //   AX = 2  -> scrivi carattere su console, carattere prelevato da DX
+        //   AX = 7  -> leggi carattere da tastiera (bloccante) SENZA eco, risultato in AX
+        //              (fedele a DOS int 21h AH=07h, "direct console input without echo")
         void ServizioSistema()
         {
             switch (ax)
@@ -575,6 +577,9 @@ namespace EasyCpu.Assembler.Processore
                     break;
                 case 2:
                     ScriviSuConsole?.Invoke((char)dx);
+                    break;
+                case 7:
+                    ax = LeggiCarattereBloccante(); // nessun eco: il carattere non va su console
                     break;
             }
         }

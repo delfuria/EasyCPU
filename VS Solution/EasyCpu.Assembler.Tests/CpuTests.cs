@@ -119,6 +119,21 @@ public class CpuTests
     }
 
     [Fact]
+    public void Int21h_AX7_LeggeCarattereSenzaEco()
+    {
+        var cpu = BuildCpu(new[] { "mov ax,7", "int 21h", "stop" });
+        char? eco = null;
+        cpu.ScriviSuConsole += c => eco = c;
+        cpu.InviaCarattereTastiera(65); // 'A'
+
+        cpu.StepInto(); // mov ax,7
+        cpu.StepInto(); // int 21h
+
+        Assert.Equal(65, cpu.AX);
+        Assert.Null(eco); // nessun eco: ScriviSuConsole non deve essere invocato
+    }
+
+    [Fact]
     public void Int21h_AX1_LeggeCarattereConEcoAutomatico()
     {
         var cpu = BuildCpu(new[] { "mov ax,1", "int 21h", "stop" });
