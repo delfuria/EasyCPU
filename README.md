@@ -89,7 +89,7 @@ Develop practical understanding of:
 
 ## 📖 Assembly Instruction Set
 
-EasyCPU implements 24 core assembly instructions covering arithmetic, logic, memory access, control flow, and I/O operations:
+EasyCPU implements 25 core assembly instructions covering arithmetic, logic, memory access, control flow, and I/O operations:
 
 **Arithmetic:** ADD, SUB, MUL, DIV, INC, DEC, NEG  
 **Logic:** AND, OR, XOR, NOT  
@@ -98,7 +98,10 @@ EasyCPU implements 24 core assembly instructions covering arithmetic, logic, mem
 **Conditional Jumps:** JE, JNE, JL, JLE, JG, JGE, JO, JNO, JS, JNS  
 **Unconditional Control:** JMP, JCXZ  
 **Procedure Calls:** CALL, RET  
+**Interrupts:** INT (DOS-style `int 21h` console services)  
 **Miscellaneous:** NOP
+
+`int 21h` supports three services selected via `AX`: `AX=1` blocking keyboard read with automatic echo, `AX=2` write character (from `DX`) to console, `AX=7` blocking keyboard read without echo. Output and keyboard input are shown/captured in the dedicated **Console** panel.
 
 For complete instruction documentation, register definitions, addressing modes, and flag behavior, see the [**Easy CPU Assembly Reference**](./Docs/Easy%20CPU%20%20Assembly%20Reference.md).
 
@@ -116,6 +119,9 @@ Displays all CPU registers (AX, BX, CX, DX, SI, DI, BP, SP) with values in decim
 
 ### Memory Inspector
 Shows arbitrary memory locations and the stack. Toggle between decimal, hexadecimal, and ASCII formats; view stack in one or two columns.
+
+### Console Panel
+Displays output and captures keyboard input for `int 21h` calls. Auto-activates on `int 21h` and shows a blinking cursor while waiting for a keypress.
 
 ### Execution Controls
 Toolbar buttons and menu commands for:
