@@ -1,6 +1,15 @@
 # Proposte di estensione x86 per EasyCPU
 
-Stato: **fasi 0-4 implementate** (operando strutturato, registri a 8 bit con memoria a parole, errori di divisione, `.DATA` simbolica, `int 21h` con AH, CF e aritmetica senza segno, istruzioni x86 comuni, istruzioni stringa con DF e REP, indirizzamento base + indice); rimandati `jmp`/`call` indiretti e il divieto delle operazioni memoria-memoria (vedi roadmap); il resto è ancora proposta. Il documento parte da un'analisi del codice attuale (`EasyCpu.Assembler`) e propone estensioni in ordine di priorità.
+Stato al 26 settembre 2026: **fasi 0–4 completate**. Restano aperte quattro proposte principali (salti indiretti, divieto delle operazioni memoria-memoria, modalità x86 fedele, persistenza nel browser) e alcuni interventi di manutenzione. Il documento riassume lo stato attuale, le decisioni prese, le differenze che restano rispetto a x86 e l'**ordine consigliato** per le prossime fasi.
+
+Documenti di progetto collegati, nella stessa cartella:
+
+| Documento | Contenuto | Stato |
+|---|---|---|
+| [`SALTI-INDIRETTI.md`](SALTI-INDIRETTI.md) | `jmp`/`call` con registro o memoria, tabelle di salto | progetto |
+| [`MODALITA-X86-FEDELE.md`](MODALITA-X86-FEDELE.md) | fase 5: memoria a byte, `byte ptr`/`word ptr` | progetto |
+| [`PERSISTENZA-BROWSER.md`](PERSISTENZA-BROWSER.md) | opzioni, layout, recenti e breakpoint conservati nel browser | progetto |
+| [`INTERRUPT-CONSOLE.md`](INTERRUPT-CONSOLE.md) | specifica originale di `int 21h` e del pannello Console | implementato (servizi poi estesi in fase 2) |
 
 ---
 
@@ -8,246 +17,178 @@ Stato: **fasi 0-4 implementate** (operando strutturato, registri a 8 bit con mem
 
 ### Architettura
 
-| Aspetto | Stato attuale | Riferimento |
-|---|---|---|
-| Aritmetica | Solo 16 bit con segno (`short`) | `Cpu.cs` |
-| Registri | AX, BX, CX, DX, SI, DI, BP, SP, IP. **Niente registri a 8 bit** | `Enums.cs` `IdOp` |
-| Memoria dati | 256 celle, **ognuna di 16 bit** (indirizzamento a parola, non a byte) | `Ram.cs` |
-| Memoria codice | Vettore separato di `Instruction`: IP è l'indice dell'istruzione, non un indirizzo di byte | `Cpu.cs` `Fetch` |
-| Stack | Celle 240–255 (16 parole), SP parte da 256 | `Ram.cs` |
-| Flag | Solo **ZF, SF, OF**. Mancano CF, PF, AF, DF, IF | `Cpu.cs` |
+| Aspetto | Stato attuale |
+|---|---|
+| Registri | AX, BX, CX, DX (con AH/AL, BH/BL, CH/CL, DH/DL), SI, DI, BP, SP, IP |
+| Aritmetica | 16 e 8 bit; con e senza segno (MUL/DIV senza segno, IMUL/IDIV con segno) |
+| Flag | CF, ZF, SF, DF, OF, nelle posizioni dei bit di x86 (0, 6, 7, 10, 11) |
+| Memoria dati | 256 celle **da 16 bit** (modello «a parole»); un accesso a 8 bit usa il byte basso della cella |
+| Memoria codice | vettore separato di istruzioni: IP è il numero d'ordine dell'istruzione |
+| Stack | celle 240–255 (16 parole), SP parte da 256 |
 
 ### Indirizzamento
 
-- Immediato: decimale, esadecimale con suffisso `h`, carattere `'A'`
-- A registro
-- Diretto: `[10]`, `[0Ah]`
-- Indiretto con un solo registro: `[si]`, `[di]`, `[bx]`, `[bp]`
-- Indiretto con scostamento costante: `[bp+2]`, `[di-1]`
+Immediato (decimale, esadecimale, carattere), a registro, diretto (`[10]`), indiretto (`[si]`), indiretto con scostamento (`[bp+2]`), base + indice (`[bx+si+2]`, solo BX/BP con SI/DI), nomi di variabili e costanti (`conta`, `[vet+si]`, `offset vet`, `[bp+N]`).
 
-Non sono supportati la forma base + indice (`[bx+si]`), le etichette di dati (`[vet]`, `[vet+si]`), i prefissi `byte ptr`/`word ptr` e `offset`.
-
-### Istruzioni (37)
+### Istruzioni (87 nomi, sinonimi compresi, e 5 prefissi)
 
 | Categoria | Istruzioni |
 |---|---|
-| Trasferimento | `mov`, `movs`, `push`, `pop`, `pushf`, `popf` |
-| Aritmetiche | `add`, `sub`, `mul`, `div`, `inc`, `dec`, `neg`, `cmp` |
-| Logiche/shift | `and`, `or`, `xor`, `not`, `shl`, `shr` |
-| Salti | `jmp`, `je`, `jne`, `jg`, `jge`, `jl`, `jle`, `jo`, `jno`, `js`, `jns`, `jcxz` |
-| Procedure | `call`, `ret` |
-| Sistema | `int 21h` (AX=1 legge con eco, AX=2 scrive DX, AX=7 legge senza eco), `nop`, `stop` |
+| Trasferimento | `mov`, `xchg`, `lea` |
+| Stack | `push`, `pop`, `pushf`, `popf` |
+| Aritmetiche | `add`, `adc`, `sub`, `sbb`, `mul`, `imul`, `div`, `idiv`, `inc`, `dec`, `neg`, `cmp`, `cbw`, `cwd` |
+| Logiche | `and`, `or`, `xor`, `not`, `test` |
+| Shift e rotazioni | `shl`, `shr`, `sar`, `rol`, `ror`, `rcl`, `rcr` |
+| Flag | `clc`, `stc`, `cmc`, `cld`, `std` |
+| Salti con segno | `je`/`jz`, `jne`/`jnz`, `jg`/`jnle`, `jge`/`jnl`, `jl`/`jnge`, `jle`/`jng`, `jo`, `jno`, `js`, `jns` |
+| Salti senza segno | `ja`/`jnbe`, `jae`/`jnb`/`jnc`, `jb`/`jnae`/`jc`, `jbe`/`jna` |
+| Cicli | `loop`, `loope`/`loopz`, `loopne`/`loopnz`, `jcxz` |
+| Controllo | `jmp`, `call`, `ret`, `ret n`, `nop`, `stop` |
+| Stringhe | `movs`/`movsb`/`movsw`, `lodsb`/`lodsw`, `stosb`/`stosw`, `cmpsb`/`cmpsw`, `scasb`/`scasw`; prefissi `rep`, `repe`/`repz`, `repne`/`repnz` |
+| Sistema | `int 21h` con AH = 01h, 02h, 07h, 09h, 0Ah, 4Ch |
 
-### Sezione dati (`.DATA`)
+### Sezione dati
 
-La direttiva `.DATA` **esiste già**, ma solo nella forma "indirizzo: valori":
+Stile MASM: `DB`, `DW`, `EQU`, `ORG`, `DUP`, `?`, stringhe tra apici, `offset`; resta valida la forma originale `indirizzo: valori`. Allocazione sequenziale da 0, con errore se i dati invadono lo stack.
 
-```asm
-.DATA
-0: 5
-1: 1, 3, 4, 6, 7
-```
+### IDE
 
-Mancano nomi simbolici, tipi (`DB`/`DW`), stringhe, `DUP` e costanti `EQU`. Nell'IDE codice e dati stanno in due editor separati. Nel file `.as` le due parti sono separate dalla riga `.DATA`.
+Pannello Registri con byte alto/basso e flag C, Z, S, O, D; pannello Memoria con la sezione Simboli; errori di compilazione e di esecuzione nel pannello Errori con la riga responsabile; ripetizioni dei prefissi REP eseguite una per Step.
 
-### Incongruenze con x86 reale emerse dall'analisi
+### Verifica
 
-Non sono proposte nuove, ma conviene saperle perché alcune estensioni ci passano sopra.
-
-1. **`mul` e `div` sono con segno** (`IMul`/`IDiv` in `Cpu.cs`). Su x86 `MUL`/`DIV` sono senza segno, le versioni con segno sono `IMUL`/`IDIV`.
-2. **Divisione per zero non gestita**: `IDiv` lancia una `DivideByZeroException` .NET, non una `CpuException`. Anche il quoziente che non sta in 16 bit (#DE su x86) non viene controllato.
-3. **`movs` non aggiorna SI e DI**. Su x86 li incrementa o decrementa in base a DF.
-4. **Operazioni memoria-memoria accettate** (`mov [1], [2]`): x86 non le permette, `Instruction.VerificaIstruzione` non lo controlla.
-5. **`jmp`/`call` accettano solo etichette**, non registri o memoria (`jmp ax`, `call [bx]`).
-6. **Shift senza CF**: il bit uscito si perde, quindi non si possono fare aritmetica multi-parola o test di bit.
+91 test automatici (`EasyCpu.Assembler.Tests`) e 63 programmi di esempio in `Docs/samples`, suddivisi in 10 cartelle per argomento, ognuno con un commento iniziale che descrive il risultato atteso.
 
 ---
 
-## 2. Proposte
+## 2. Fasi completate
 
-Ogni proposta indica valore didattico (**V**) e sforzo (**S**) su una scala da 1 a 3.
-
-### P1 — Registri a 8 bit (AL, AH, BL, BH, CL, CH, DL, DH) · V3 · S2
-
-È la richiesta più naturale ed è la base di molte altre (servizi `int 21h` basati su AH, `mul`/`div` a 8 bit, stringhe).
-
-**Cosa implementare**
-
-- Nuovi valori in `IdOp` per gli 8 registri. Sono **viste** su AX/BX/CX/DX, non registri separati: `mov ah, 1` modifica i bit 8–15 di AX.
-- `LoadOp`/`StoreOp` sensibili alla dimensione. Serve una "larghezza operando" (8/16) calcolata dal parser per ogni istruzione.
-- **Controllo di coerenza delle dimensioni** a compile time: `mov al, bx` diventa un errore (nuovo `CodiceErrore.DimensioneOperandi`). Le costanti devono stare in -128..255 quando la destinazione è a 8 bit.
-- **Flag calcolati sulla larghezza**: SF = bit 7, OF sull'intervallo -128..127 per le operazioni a 8 bit.
-- `mul r/m8` dà AX = AL × op; `div r/m8` dà AL = quoziente e AH = resto.
-- `push`/`pop` restano solo a 16 bit, come su x86 (`push al` diventa un errore).
-- UI: il pannello Registri mostra AH/AL separati per AX..DX (per esempio `AX = 0141h  [AH=01h AL=41h]`). Aggiornare l'evidenziazione sintattica in `EasyCPU.xshd`.
-
-**Decisione chiave: il modello di memoria.** Oggi ogni cella è di 16 bit. Con operandi a 8 bit diretti alla memoria (`mov al, [10]`) ci sono due strade:
-
-| Opzione | Descrizione | Pro | Contro |
-|---|---|---|---|
-| **A. Memoria a parole (consigliata per iniziare)** | Le celle restano da 16 bit. Un accesso a 8 bit legge o scrive solo il byte basso della cella | Nessun programma esistente si rompe. Documentazione e esempi restano validi | Non è fedele a x86: `[10]` e `[11]` non si sovrappongono |
-| **B. Memoria a byte** | 256 byte, parole little-endian su 2 celle consecutive | Fedele a x86, insegna endianness e allineamento | **Rompe tutti i programmi esistenti** (il vettore scorre con `add si, 2` invece di `inc si`). Stack da 16 byte = 8 parole. Va riscritto il pannello Memoria |
-
-Proposta: implementare P1 con l'opzione A. Valutare B in futuro come **modalità opzionale** ("modalità x86 fedele") nelle Opzioni, magari con memoria più grande (1 KB o 4 KB).
-
-Con l'opzione B diventano necessari `byte ptr`/`word ptr` per risolvere ambiguità come `inc [si]` o `mov [di], 5`.
-
-**File toccati**: `Enums.cs`, `Parser.cs` (`LeggiOperando`), `Instruction.cs` (validazione dimensioni), `Cpu.cs` (`LoadOp`/`StoreOp`/`SetFlags`/`IMul`/`IDiv`/`ServizioSistema`), `Errori.cs`, pannello Registri, `EasyCPU.xshd`, Assembly Reference.
-
----
-
-### P2 — `.DATA` con variabili simboliche · V3 · S2
-
-Oggi il programmatore deve ricordare a mano "il vettore sta all'indirizzo 10". Le variabili nominate sono la differenza più visibile rispetto a un assembler vero (MASM/TASM/emu8086).
-
-**Sintassi proposta** (compatibile MASM):
-
-```asm
-.DATA
-N       EQU 5                   ; costante simbolica, non occupa memoria
-conta   DW  0                   ; una parola
-vet     DW  1, 3, 4, 6, 7
-buffer  DW  10 DUP(0)           ; 10 parole a zero
-msg     DB  'Ciao mondo$'       ; stringa: un carattere per cella
-        ORG 100                 ; sposta il contatore di allocazione
-tabella DW  N DUP(?)
-20: 7, 8, 9                     ; la vecchia sintassi resta valida
-```
-
-**Uso nel codice**:
-
-```asm
-mov cx, N              ; EQU: costante
-mov ax, [conta]        ; indirizzamento diretto simbolico
-mov ax, conta          ; stessa cosa (stile MASM), da valutare
-mov si, offset vet     ; indirizzo della variabile
-mov ax, [vet+2]        ; simbolo + scostamento
-mov ax, [vet+si]       ; simbolo come scostamento di un indiretto
-```
-
-**Cosa implementare**
-
-- **Tabella dei simboli dati** (nome, indirizzo, tipo DB/DW, dimensione), costruita da `CompilaDati` prima di `CompilaCodice` e passata al `Parser`. Oggi `Compiler` compila le due sezioni in modo indipendente.
-- Allocazione sequenziale automatica da 0 (o da `ORG`), con un errore se sconfina nello stack (≥ 240).
-- `EQU` utilizzabile sia in `.DATA` sia nel codice.
-- Stringhe letterali `'...'`: oggi `LeggiCostanteChar` accetta un solo carattere. Con la memoria a parole (P1 opzione A) ogni carattere occupa una cella, per cui `DB` e `DW` differiscono solo nel controllo dell'intervallo dei valori.
-- Nuovi errori: simbolo duplicato, simbolo non definito, dati oltre l'area dello stack.
-- UI: il pannello Memoria può mostrare il nome della variabile accanto all'indirizzo (tooltip o colonna). Il pannello Errori deve già distinguere le righe dati da quelle di codice (`CompilerError.DATI`).
-- Opzionale: direttiva `.CODE` e **editor unico** con entrambe le sezioni, come negli assembler reali. Oggi il file `.as` è già un unico file, solo l'IDE lo divide in due.
-
----
-
-### P3 — Carry flag e aritmetica senza segno · V3 · S2
-
-Senza CF non si possono insegnare confronti senza segno, aritmetica multi-precisione e test di bit.
-
-- Flag **CF** calcolato da `add`/`sub`/`cmp`/`neg`/shift (`mul` lo imposta insieme a OF).
-- Salti senza segno: `ja`, `jae`, `jb`, `jbe`, `jc`, `jnc`.
-- Alias x86 standard: `jz`/`jnz` (= `je`/`jne`), `jnae`, `jnb`, `jng`, `jnl`…
-- `adc`, `sbb`, `clc`, `stc`, `cmc`.
-- **Correzione**: `mul`/`div` diventano senza segno, e si aggiungono `imul`/`idiv` con segno. È un cambiamento incompatibile: i programmi che usano `mul` con numeri negativi cambiano comportamento. In alternativa si lascia `mul` com'è e si aggiunge solo `imul`, documentando la differenza.
-- Pannello flag: aggiungere CF (e PF se si implementa, utile solo per completezza).
-
----
-
-### P4 — Istruzioni x86 comuni mancanti · V2 · S1–2
-
-Sono in ordine di utilità didattica. Quasi tutte sono piccole aggiunte in `SetCode` e in `Execute`.
-
-| Istruzione | Note |
-|---|---|
-| `test` | Come `and` ma senza scrivere il risultato |
-| `loop`, `loope`, `loopne` | Decrementa CX e salta. Idioma classico dei cicli x86 |
-| `xchg` | Scambio tra registri o tra registro e memoria |
-| `lea` | Indirizzo effettivo: `lea si, [bx+2]`, `lea si, vet` (serve P2) |
-| `cbw`, `cwd` | Estensione del segno, indispensabili prima di `idiv` |
-| `sar`, `rol`, `ror`, `rcl`, `rcr` | Shift aritmetico e rotazioni (servono CF da P3) |
-| `ret n` | Ritorno che rimuove n parametri dallo stack, convenzione Pascal/stdcall |
-| `jmp reg`/`call reg` | Salti indiretti, per insegnare tabelle di salto |
-
----
-
-### P5 — Istruzioni stringa e flag DF · V2 · S2
-
-- Correggere `movs` in modo che aggiorni SI e DI.
-- Flag **DF** con `cld`/`std`.
-- `lods`, `stos`, `cmps`, `scas`, e prefissi `rep`, `repe`, `repne`.
-- Si abbinano bene a P2 (stringhe in `.DATA`) e P6 (stampa di stringhe).
-
----
-
-### P6 — Servizi `int 21h` estesi · V2 · S1
-
-Con P1 i servizi si selezionano con **AH**, come in DOS. Oggi si usa AX solo perché AH non esiste (commento in `Cpu.cs`, `ServizioSistema`).
-
-| AH | Servizio |
-|---|---|
-| 01h | Legge un carattere con eco, risultato in AL (esiste già, oggi con AX=1) |
-| 02h | Scrive il carattere in DL (esiste già, oggi con AX=2 e DX) |
-| 07h | Legge un carattere senza eco (esiste già) |
-| **09h** | **Stampa la stringa terminata da `$` all'indirizzo in DX** (serve P2) |
-| **0Ah** | Input di una riga in un buffer (formato DOS: max, letti, caratteri) |
-| **4Ch** | Termina il programma (alternativa x86 a `stop`) |
-
-**Compatibilità**: selezionare il servizio con AH rompe i programmi che fanno `mov ax, 2`, perché AH=0. Due opzioni:
-
-- usare il vecchio comportamento se AH=0 e AL≠0;
-- cambiare in modo netto e aggiornare esempi e documentazione.
-
-Consigliata la prima opzione, che non rompe niente.
-
----
-
-### P7 — Indirizzamento completo · V2 · S2
-
-- Base + indice: `[bx+si]`, `[bx+di]`, `[bp+si]`, `[bp+di]`, con scostamento facoltativo (`[bx+si+2]`). Richiede un'estensione di `IdOp` o, meglio, un operando strutturato (base, indice, scostamento) invece dell'enum piatto.
-- Simbolo come scostamento: `[vet+si]` (con P2).
-- Validazione: vietare memoria-memoria (tranne `movs` e simili) e `mov` verso costante (già presente).
-
-Nota tecnica: l'enum `IdOp` più un `int offset` non basta a rappresentare base+indice+scostamento+dimensione. Conviene introdurre una struct `Operando { Tipo, Base, Indice, Scostamento, Larghezza }` **prima** di implementare P1/P7, per non aggiungere decine di valori all'enum.
-
----
-
-### P8 — Correzioni di robustezza · V1 · S1
-
-- Divisione per zero e quoziente troppo grande: `CpuException` con un messaggio chiaro invece dell'eccezione .NET.
-- Test unitari: oggi esistono 13 test (`CpuTests.cs`), quasi tutti su stepping e `int 21h`. Ogni proposta dovrebbe arrivare con i propri test (flag per ogni istruzione, errori di dimensione, simboli).
-
----
-
-## 3. Roadmap suggerita
-
-| Fase | Contenuto | Motivo |
+| Fase | Contenuto | Decisioni principali |
 |---|---|---|
-| 0 | Refactor dell'operando in struct (nota P7) + test di regressione sugli esempi in `Docs/Subroutines` | Base solida, evita di riscrivere due volte `LoadOp`/`StoreOp` |
-| 1 | **P1** registri a 8 bit (memoria a parole) + **P8** | Richiesta principale, basso rischio |
-| 2 | **P2** `.DATA` simbolica + **P6** `int 21h` con AH e servizio 09h | Insieme permettono il classico "Hello World" x86 |
-| 3 | **P3** CF e aritmetica senza segno + **P4** istruzioni mancanti (escluso `jmp`/`call` indiretti) | Completa il set per esercizi tipici |
-| **da fare** | Divieto delle operazioni memoria-memoria (`mov [1], [2]`, `mov a, b`, `add a, b`), ammesse solo con le istruzioni stringa (P7, incongruenza 4) | Rimandato dalla fase 4 per non rompere i programmi esistenti; oggi EasyCPU le accetta, x86 no |
-| **da fare** | `jmp reg` / `call reg` / `call [bx]` e tabelle di salto (P4); progetto in `SALTI-INDIRETTI.md` | Rimandati dalla fase 3: le etichette del codice non sono ancora utilizzabili come valori (`mov ax, offset etichetta`, `tab DW lab1, lab2`), perché la sezione dati viene compilata prima del codice |
-| 4 | **P5** istruzioni stringa + **P7** base+indice | Avanzato |
-| 5 | Modalità "x86 fedele" con memoria a byte (P1 opzione B); progetto in `MODALITA-X86-FEDELE.md` | Solo se serve davvero, è il cambiamento più invasivo |
+| 0 | Operando strutturato (`Operando` al posto dell'enum `IdOp`) e test di regressione | Nessun cambiamento di comportamento |
+| 1 | Registri a 8 bit; errori di divisione | Memoria a parole (opzione A della P1); errori a runtime mostrati nel pannello Errori |
+| 2 | Sezione dati simbolica; `int 21h` con AH (01h, 02h, 07h, 09h, 0Ah, 4Ch) | Nomi in stile MASM (`conta` = contenuto, `offset conta` = indirizzo); nessuna compatibilità con la vecchia selezione del servizio tramite AX; due editor (Codice e Dati) |
+| 3 | CF e aritmetica senza segno; istruzioni x86 comuni | `mul`/`div` senza segno, nuove `imul`/`idiv`; `shr` logico e nuovo `sar`; bit dei flag come x86; `imul` solo a un operando |
+| 4 | Istruzioni stringa, DF, prefissi REP; indirizzamento base + indice | Forme B/W; una ripetizione per Step; solo le combinazioni x86 (BX/BP + SI/DI) |
 
-Esempio di obiettivo alla fine della fase 2, oggi impossibile:
+Le proposte originali P1–P8 dell'analisi iniziale sono state tutte realizzate, con le eccezioni riportate nella sezione 4 (salti indiretti, divieto memoria-memoria, memoria a byte).
 
-```asm
-.DATA
-msg DB 'Ciao mondo!$'
+---
 
-.CODE
-        mov ah, 09h
-        mov dx, offset msg
-        int 21h
-        mov ah, 4Ch
-        int 21h
+## 3. Differenze che restano rispetto a x86
+
+Sono scelte del modello didattico o limiti noti; ognuna è documentata nel manuale o affrontata da una proposta.
+
+| Differenza | Motivo | Proposta |
+|---|---|---|
+| Memoria a celle da 16 bit: `[10]` e `[11]` non si sovrappongono, un vettore di parole avanza di 1 | Semplicità, compatibilità con i programmi esistenti | C – modalità x86 fedele |
+| Operazioni memoria-memoria accettate (`mov a, b`) | Non rompere i programmi esistenti | B |
+| `jmp`/`call` solo verso un'etichetta | Le etichette non sono ancora usabili come valori | A |
+| Codice in una memoria separata, IP = numero dell'istruzione | Modello Harvard semplificato | nessuna: da spiegare nel manuale |
+| Niente segmenti (CS, DS, SS, ES) | Fuori dagli obiettivi didattici | nessuna |
+| Flag PF, AF, IF assenti (niente `jp`/`jnp`) | Poco utili didatticamente | nessuna, salvo richiesta |
+| `imul` solo nella forma a un operando (8086) | Coerenza con il set 8086 | nessuna, salvo richiesta |
+| Solo `int 21h` | Unico servizio utile per l'I/O | nessuna |
+
+---
+
+## 4. Proposte aperte
+
+Valore didattico (**V**) e sforzo (**S**) su una scala da 1 a 3.
+
+### A — Salti e chiamate indirette · V3 · S2
+
+`jmp ax`, `jmp [tab+bx]`, `call [procedure+si]`, con le etichette usabili come valori (`offset etichetta`, `tab DW caso0, caso1`). Insegna tabelle di salto (`switch`/`case`) e puntatori a funzione.
+
+- L'esecuzione è già quasi pronta (`NuovoIp()` legge qualsiasi operando); il lavoro è nel compilatore: una **pre-scansione** delle etichette prima della sezione dati.
+- Rischio medio: cambia l'ordine di compilazione; lo coprono i 91 test e i 63 esempi.
+- Progetto completo: [`SALTI-INDIRETTI.md`](SALTI-INDIRETTI.md).
+
+### B — Divieto delle operazioni memoria-memoria · V2 · S1
+
+Rendere un errore di compilazione `mov [1], [2]`, `mov a, b`, `add a, b`, come su x86 (restano ammesse le istruzioni stringa). Rimandato dalla fase 4 perché **rompe programmi esistenti**.
+
+- Modifica piccola: un controllo in `Instruction.VerificaIstruzione` (`InMemoria(Op1) && InMemoria(Op2)`, escluse le istruzioni stringa).
+- Nota già presente nell'Assembly Reference («Modelli di indirizzamento»).
+- Proposta: attivarlo solo nella modalità x86 fedele (C), dove i programmi sono comunque nuovi; valutare in seguito se estenderlo alla modalità a parole.
+
+### C — Modalità x86 fedele (fase 5) · V3 · S3
+
+Memoria a byte, parole little-endian, stack a passi di 2, `byte ptr`/`word ptr`, operandi di dimensione ambigua come errore. Modalità **opzionale**, scelta con la direttiva `.MEMORIA BYTE` nella sezione dati: la modalità a parole resta la predefinita.
+
+- È il cambiamento più invasivo: tocca memoria, CPU, parser, compilatore e pannelli.
+- Il progetto prevede prima un refactoring a comportamento invariato, verificato da tutti i test e gli esempi.
+- Progetto completo: [`MODALITA-X86-FEDELE.md`](MODALITA-X86-FEDELE.md).
+
+### D — Persistenza delle impostazioni nel browser · V1 · S2 (utilità alta)
+
+Nella versione Browser opzioni, layout, file recenti e breakpoint si perdono a ogni ricaricamento della pagina. Si propone un archivio chiave-valore con due implementazioni: file sul Desktop (comportamento attuale, invariato) e `localStorage` nel browser.
+
+- Non riguarda il linguaggio, ma l'uso quotidiano della versione Browser (quella pubblicata per gli studenti).
+- Rischio basso: isolato nell'IDE, in `EasyCpu.Backend` e nel progetto Browser.
+- Progetto completo: [`PERSISTENZA-BROWSER.md`](PERSISTENZA-BROWSER.md).
+
+### E — Bozza automatica del programma · V1 · S1 (dopo D)
+
+Salvare periodicamente nel browser il contenuto degli editor, per ritrovarlo dopo un ricaricamento accidentale della pagina. Riusa l'archivio della proposta D (chiave `bozza`). Descritta tra le decisioni aperte di `PERSISTENZA-BROWSER.md`.
+
+### F — Manutenzione e documentazione · S1
+
+Piccoli interventi emersi durante le fasi 0–4:
+
+1. **Manuale `.docx`/`.odt`** (`Docs/Easy CPU  Assembly Reference`): è aggiornata solo la versione Markdown; le altre due vanno riallineate.
+2. **Sezione OR mancante** nell'Assembly Reference (esistono AND, XOR, NOT e TEST).
+3. **Esempio «Struttura di un programma»** nel manuale: usa ancora il vecchio programma SommaDispari, in cui la cella 1 fa sia da indirizzo del vettore sia da suo primo elemento; sostituirlo con la versione corretta di `Docs/samples/07-programmi/programma-somma-dispari.asj`.
+4. **Backspace nel servizio 0Ah**: il pannello Console non invia il tasto Backspace, quindi durante la lettura di una riga non si può correggere; va aggiunto nel pannello Console e gestito nel servizio.
+5. **Nota sul modello di memoria del codice** (IP = numero dell'istruzione) nel manuale, utile soprattutto dopo la proposta A.
+
+---
+
+## 5. Ordine consigliato
+
+### Criteri
+
+- **Beneficio immediato** per chi usa EasyCPU oggi.
+- **Rischio**: non sovrapporre due grandi modifiche allo stesso codice (il compilatore cambia sia in A sia in C).
+- **Dipendenze**: gli esempi di C usano le tabelle di salto di A; E usa l'archivio di D; B si inserisce naturalmente in C.
+- **Stabilità per gli studenti**: raggruppare i cambiamenti che rompono i programmi esistenti, e renderli opzionali quando possibile.
+
+### Sequenza
+
+| Ordine | Proposta | Perché in questa posizione |
+|---|---|---|
+| 1 | **D** – Persistenza nel browser (con **F.2–F.4**) | Beneficio immediato per la versione pubblicata, rischio basso, nessun effetto sui programmi. Le piccole correzioni F.2–F.4 sono indipendenti e si possono unire a questa fase. |
+| 2 | **A** – Salti indiretti | Completa il set di istruzioni 8086 di base in entrambe le modalità. Cambia l'ordine di compilazione: meglio farlo e stabilizzarlo **prima** del grande refactoring della fase 5. |
+| 3 | **C** – Modalità x86 fedele, con **B** attivo solo in questa modalità | La più invasiva, da affrontare con il resto stabile. Il divieto memoria-memoria nasce dentro una modalità nuova e opzionale, senza rompere i programmi esistenti. |
+| 4 | **E** – Bozza automatica | Miglioramento dell'IDE, può anche seguire subito D se la perdita del lavoro si rivela un problema frequente. |
+| 5 | **B** nella modalità a parole (facoltativo) | Solo se si decide di allineare anche la modalità predefinita a x86, accettando di rompere i programmi che copiano memoria su memoria. |
+| 6 | **F.1, F.5** – Manuale `.docx`/`.odt` e nota sul modello | Alla fine, quando il linguaggio è stabile: evita di riallineare i manuali più volte. |
+
+```
+D (+F.2–F.4) ──► A ──► C (+B) ──► F.1, F.5
+   └──► E (in qualsiasi momento dopo D)
+                        B in modalità a parole: facoltativo, dopo C
 ```
 
 ---
 
-## 4. Decisioni aperte
+## 6. Decisioni aperte
 
-1. Modello di memoria: celle da 16 bit (A) o memoria a byte (B)? Oppure A ora e B come modalità opzionale?
-2. `mul`/`div`: correggerli come senza segno (incompatibile) o solo aggiungere `imul`/`idiv`?
-3. `int 21h`: selezione con AH mantenendo la compatibilità con AX, oppure cambio netto?
-4. Editor unico `.DATA` + `.CODE` o restare con due editor separati?
-5. Dimensione della memoria: resta 256 celle o si amplia (utile con stringhe e `DUP`)?
+Raccolte dai documenti di progetto; la scelta consigliata è indicata tra parentesi.
+
+**Persistenza nel browser (D, E)**
+1. File recenti nel browser: conservare il contenuto dei programmi in `localStorage` (consigliata) o nascondere il menu?
+2. Bozza automatica: subito dopo D o più avanti?
+3. Breakpoint identificati dal solo nome del file: accettabile (consigliato) o con una firma del contenuto?
+
+**Salti indiretti (A)**
+4. Etichetta senza `offset` nel codice (`mov bx, caso0`): errore con suggerimento (consigliato) o costante?
+5. `jmp tab` con `tab` variabile DW: salto attraverso la memoria in stile MASM (consigliato) o solo `jmp [tab]`?
+6. Etichette nel pannello Simboli: sempre (consigliato)?
+7. Esempi in `08-salti-cicli` o in una cartella dedicata?
+
+**Modalità x86 fedele (C, B)**
+8. Scelta della modalità: direttiva `.MEMORIA BYTE` (consigliata) o campo nel file `.asj`?
+9. Dimensioni: 1 KB di memoria e 128 byte di stack (consigliate), 256 byte o 4 KB?
+10. Forma `indirizzo: valori` nella memoria a byte: valori come parole (consigliata), come byte o vietata?
+11. Divieto memoria-memoria attivo automaticamente nella modalità fedele (consigliato)?

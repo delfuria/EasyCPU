@@ -1,6 +1,6 @@
 # Fase 5 – Modalità «x86 fedele»: memoria a byte (P1, opzione B)
 
-Stato: **progetto**, niente ancora implementato. È la fase 5 della roadmap di `PROPOSTE-X86.md`: la più invasiva, da affrontare solo dopo le altre. Il documento descrive il modello, le scelte, l'impatto sul codice e le operazioni da eseguire.
+Stato: **progetto**, niente ancora implementato. È la proposta C (fase 5) di `PROPOSTE-X86.md`: la più invasiva, da affrontare solo dopo le altre. Il documento descrive il modello, le scelte, l'impatto sul codice e le operazioni da eseguire.
 
 ---
 

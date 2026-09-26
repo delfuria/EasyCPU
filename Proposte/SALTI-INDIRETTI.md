@@ -1,6 +1,6 @@
 # Salti e chiamate indirette (jmp/call con registro o memoria)
 
-Stato: **progetto**, niente ancora implementato. È la voce «da fare» di `PROPOSTE-X86.md` (P4), rimandata dalla fase 3. Il documento descrive cosa introdurre, perché oggi non è possibile e le operazioni da eseguire.
+Stato: **progetto**, niente ancora implementato. È la proposta A di `PROPOSTE-X86.md` (P4 dell'analisi iniziale), rimandata dalla fase 3. Il documento descrive cosa introdurre, perché oggi non è possibile e le operazioni da eseguire.
 
 ---
 
@@ -207,7 +207,7 @@ Ogni passo lascia il progetto compilabile e i test verdi.
 
 8. **Documentazione**
    - Assembly Reference: sezioni JMP e CALL con la forma indiretta, «La sezione dati» (etichette come valori), nota sul modello (IP = numero dell'istruzione).
-   - `PROPOSTE-X86.md`: rimozione della voce «da fare» e aggiornamento dello stato; README.
+   - `PROPOSTE-X86.md`: proposta A segnata come completata e aggiornamento dello stato; README.
 
 ---
 
