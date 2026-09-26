@@ -47,6 +47,8 @@ namespace EasyCpu.Assembler.Parsing
     {
         public TipoOperando Tipo;
         public Registro Base;       // Registro: il registro; Indiretto: il registro base
+        public bool HaIndice;       // Indiretto: true se è presente anche un registro indice ([bx+si])
+        public Registro Indice;     // Indiretto: SI o DI sommato a BX o BP
         public int Scostamento;     // Costante: valore; Memoria: indirizzo; Indiretto: scostamento; Etichetta: indice istruzione
         public int Dimensione;      // Memoria/Indiretto: 8 o 16 se l'accesso usa una variabile DB/DW, altrimenti 0
 

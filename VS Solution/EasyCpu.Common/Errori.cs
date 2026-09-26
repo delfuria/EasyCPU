@@ -37,6 +37,8 @@ namespace EasyCpu.Common
 		NomeSimboloNonValido,
 		DatiInAreaStack,
 		ServizioNonValido,
+		CombinazioneRegistriNonValida,
+		PrefissoNonValido,
 
 	}
 
@@ -77,6 +79,8 @@ namespace EasyCpu.Common
 				case CodiceErrore.NomeSimboloNonValido: return "Nome non valido: non può essere un registro, un'istruzione o una parola riservata";
 				case CodiceErrore.DatiInAreaStack: return "I dati superano l'area riservata allo stack (indirizzi 240..255)";
 				case CodiceErrore.ServizioNonValido: return "Servizio int 21h non valido (valore di AH)";
+				case CodiceErrore.CombinazioneRegistriNonValida: return "Combinazione di registri non valida: si può sommare BX o BP con SI o DI";
+				case CodiceErrore.PrefissoNonValido: return "Prefisso non valido: REP si usa con le istruzioni stringa, REPE e REPNE con CMPS e SCAS";
 					//case CodiceErrore.: return "";
 					//case CodiceErrore.: return "";
 			}

@@ -2,29 +2,28 @@
   "version": 1,
   "code": [
     "// ======================================================================",
-    "// Trasferimento memoria-memoria con MOVS",
+    "// Riempimento con REP STOSW",
     "//",
     "// Cosa illustra:",
-    "//   MOVS (come MOVSW) copia la cella puntata da SI nella cella puntata da DI",
-    "//   e poi fa avanzare SI e DI di una cella (DF = 0).",
+    "//   REP STOSW scrive AX in CX celle consecutive a partire da DI.",
     "//",
     "// Utilizzo:",
     "//   Aprire il file e premere Avvia; in alternativa eseguire con Step Into",
     "//   un'istruzione alla volta, osservando i pannelli Registri e Memoria.",
     "//",
     "// Risultato atteso:",
-    "//   Memoria[2] = 77",
-    "//   AX = 77",
-    "//   SI = 2, DI = 3",
+    "//   tab = 7 in tutte le 8 celle (indirizzi 0..7)",
+    "//   DI = 8, CX = 0",
     "// ======================================================================",
     "",
-    "        mov si, 1           // sorgente",
-    "        mov di, 2           // destinazione",
-    "        movs                // memoria[2] = memoria[1], poi SI = 2, DI = 3",
-    "        mov ax, [2]",
+    "        cld",
+    "        mov ax, 7",
+    "        mov di, offset tab",
+    "        mov cx, 8",
+    "        rep stosw",
     "        stop"
   ],
   "data": [
-    "1: 77"
+    "tab     DW 8 DUP(?)"
   ]
 }

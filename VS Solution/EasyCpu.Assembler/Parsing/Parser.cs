@@ -87,7 +87,24 @@ namespace EasyCpu.Assembler.Parsing
 			new OpCode("loopz", 1, TipoOp.Codice),
 			new OpCode("loopne", 1, TipoOp.Codice),
 			new OpCode("loopnz", 1, TipoOp.Codice),
+			// fase 4: istruzioni stringa e flag di direzione
+			new OpCode("movsb", 0),
+			new OpCode("movsw", 0),
+			new OpCode("lodsb", 0),
+			new OpCode("lodsw", 0),
+			new OpCode("stosb", 0),
+			new OpCode("stosw", 0),
+			new OpCode("cmpsb", 0),
+			new OpCode("cmpsw", 0),
+			new OpCode("scasb", 0),
+			new OpCode("scasw", 0),
+			new OpCode("cld", 0),
+			new OpCode("std", 0),
 		};
+
+		static readonly HashSet<string> Prefissi = ["rep", "repe", "repz", "repne", "repnz"];
+		static readonly HashSet<string> IstruzioniStringa =
+			["movs", "movsb", "movsw", "lodsb", "lodsw", "stosb", "stosw", "cmpsb", "cmpsw", "scasb", "scasw"];
 
 		static readonly Dictionary<string, Registro> Registri =
 			Enum.GetValues<Registro>().ToDictionary(r => r.ToString());
@@ -360,6 +377,8 @@ namespace EasyCpu.Assembler.Parsing
 			public int Valore;
 			public bool HaRegistro;
 			public Registro Registro;
+			public bool HaIndice;       // secondo registro: [bx+si], [bp+di], ...
+			public Registro Indice;
 			public Simbolo Variabile;   // prima variabile DB/DW usata senza offset
 		}
 
@@ -396,11 +415,23 @@ namespace EasyCpu.Assembler.Parsing
 					throw new CodiceException(CodiceErrore.Sintassi);
 				if (reg is not (Registro.si or Registro.di or Registro.bx or Registro.bp))
 					throw new CodiceException(CodiceErrore.AttesoRegistroIndiretto);
-				if (espr.HaRegistro || s < 0)
+				if (s < 0 || espr.HaIndice)
 					throw new CodiceException(CodiceErrore.Sintassi);
 				EstraiToken();
-				espr.HaRegistro = true;
-				espr.Registro = reg;
+				if (!espr.HaRegistro)
+				{
+					espr.HaRegistro = true;
+					espr.Registro = reg;
+					return;
+				}
+				// base + indice, come su x86: BX o BP con SI o DI, in qualsiasi ordine
+				bool primoBase = espr.Registro is Registro.bx or Registro.bp;
+				bool secondoBase = reg is Registro.bx or Registro.bp;
+				if (primoBase == secondoBase)
+					throw new CodiceException(CodiceErrore.CombinazioneRegistriNonValida);
+				espr.HaIndice = true;
+				espr.Indice = primoBase ? reg : espr.Registro;
+				espr.Registro = primoBase ? espr.Registro : reg;
 				return;
 			}
 			if (token == "offset")
@@ -448,7 +479,11 @@ namespace EasyCpu.Assembler.Parsing
 		{
 			Operando op;
 			if (espr.HaRegistro)
+			{
 				op = Operando.DiIndiretto(espr.Registro, espr.Valore);
+				op.HaIndice = espr.HaIndice;
+				op.Indice = espr.Indice;
+			}
 			else
 			{
 				if (!IndirizzoOk(espr.Valore))
@@ -672,10 +707,25 @@ namespace EasyCpu.Assembler.Parsing
 				if (token == null)      // c'è solo l'etichetta
 					return null;
 			}
+			string prefisso = null;
+			if (token != null && Prefissi.Contains(token))     // rep movsb, repne scasb, ...
+			{
+				prefisso = token;
+				token = EstraiToken();
+				bool confronto = token is "cmpsb" or "cmpsw" or "scasb" or "scasw";
+				if (token == null || !IstruzioniStringa.Contains(token) || (prefisso != "rep" && !confronto))
+					throw new CodiceException(CodiceErrore.PrefissoNonValido);
+			}
 			if (token == null || CercaOpCode(token, out numOp, out tipo) == -1)
 				throw new CodiceException(CodiceErrore.AttesoCodiceIstruzione);
 
 			string code = token;
+			if (prefisso != null)
+			{
+				if (TestToken() != null)
+					throw new CodiceException(CodiceErrore.NumeroOperandi);
+				return new Instruction(code) { Prefisso = prefisso };
+			}
 			switch (numOp)
 			{
 				case 0:

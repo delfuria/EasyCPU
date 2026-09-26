@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Confronto di stringhe con REPE CMPSB",
+    "//",
+    "// Cosa illustra:",
+    "//   CMPSB confronta il carattere in [SI] con quello in [DI]; REPE lo ripete",
+    "//   finché sono uguali e CX non è zero. Alla fine ZF = 1 se le stringhe",
+    "//   sono uguali.",
+    "//",
+    "// Utilizzo:",
+    "//   Premere Avvia; provare a rendere uguali le due stringhe.",
+    "//",
+    "// Risultato atteso:",
+    "//   La console mostra: diverse",
+    "//   CX = 1 (confronto fermato al terzo carattere)",
+    "// ======================================================================",
+    "",
+    "        cld",
+    "        mov si, offset a",
+    "        mov di, offset b",
+    "        mov cx, 4",
+    "        repe cmpsb",
+    "        jne diff",
+    "        mov dx, offset uguali",
+    "        jmp stampa",
+    "diff:   mov dx, offset diverse",
+    "stampa: mov ah, 9",
+    "        int 21h",
+    "        mov ah, 4Ch",
+    "        int 21h"
+  ],
+  "data": [
+    "a       DB 'ciao'",
+    "b       DB 'cibo'",
+    "uguali  DB 'uguali$'",
+    "diverse DB 'diverse$'"
+  ]
+}

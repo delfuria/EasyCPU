@@ -28,6 +28,7 @@ namespace EasyCpu.Assembler.Processore
         const short CF = 1 << 0;
         const short ZF = 1 << 6;
         const short SF = 1 << 7;
+        const short DF = 1 << 10;
         const short OF = 1 << 11;
 
         const short TUTTI = (ZF | SF | OF);
@@ -78,6 +79,10 @@ namespace EasyCpu.Assembler.Processore
         public bool FlagZero => TestFlag(ZF);
         public bool FlagOverflow => TestFlag(OF);
         public bool FlagCarry => TestFlag(CF);
+        public bool FlagDirezione => TestFlag(DF);
+
+        // true mentre un'istruzione con prefisso REP deve ancora ripetersi: IP resta fermo su di essa
+        bool ripetizioneInCorso;
 
         public async Task Run(int IP)
         {
@@ -98,7 +103,7 @@ namespace EasyCpu.Assembler.Processore
             {
                 while (!stop)
                 {
-                    if (Breakpoints.Contains(ip))
+                    if (!ripetizioneInCorso && Breakpoints.Contains(ip))
                         throw new CpuTrapException();
 
                     Fetch();
@@ -152,7 +157,7 @@ namespace EasyCpu.Assembler.Processore
             int numIstruzioni = 0;
             while (!stop && sp < limite)
             {
-                if (Breakpoints.Contains(ip))
+                if (!ripetizioneInCorso && Breakpoints.Contains(ip))
                     throw new CpuTrapException();
 
                 Fetch();
@@ -214,6 +219,7 @@ namespace EasyCpu.Assembler.Processore
         {
             stop = false;
             ultimoCR = false;
+            ripetizioneInCorso = false;
             bufferTastiera.Clear();
             memoria.Imposta(memoriaDati);
             Code = codice;
@@ -239,6 +245,14 @@ namespace EasyCpu.Assembler.Processore
 
         async Task Execute()
         {
+            string prefisso = curIstruzione.Prefisso;
+            if (prefisso != null && cx == 0)    // REP con CX = 0: l'istruzione non viene eseguita
+            {
+                ripetizioneInCorso = false;
+                ip++;
+                return;
+            }
+
             switch (curIstruzione.Code)
             {
                 case "shl": Shl(); break;
@@ -255,7 +269,13 @@ namespace EasyCpu.Assembler.Processore
                 case "not": Not(); break;
                 case "neg": Neg(); break;
                 case "mov": Mov(); break;
-                case "movs": Movs(); break;
+                case "movs": case "movsb": case "movsw": Movs(); break;
+                case "lodsb": case "lodsw": Lods(); break;
+                case "stosb": case "stosw": Stos(); break;
+                case "cmpsb": case "cmpsw": Cmps(); break;
+                case "scasb": case "scasw": Scas(); break;
+                case "cld": SetFlag(DF, false); break;
+                case "std": SetFlag(DF, true); break;
                 case "xchg": Xchg(); break;
                 case "lea": Lea(); break;
                 case "nop": Nop(); break;
@@ -303,6 +323,18 @@ namespace EasyCpu.Assembler.Processore
                 case "stop": Stop(); break;
                 case "int": await Int(); break;
             }
+
+            if (prefisso != null)
+            {
+                // una ripetizione per esecuzione: finché deve continuare, IP resta sull'istruzione
+                cx--;
+                bool confronto = curIstruzione.Code.StartsWith("cmps") || curIstruzione.Code.StartsWith("scas");
+                bool continua = cx != 0 && (!confronto ||
+                    (prefisso is "repne" or "repnz" ? !TestFlag(ZF) : TestFlag(ZF)));
+                ripetizioneInCorso = continua;
+                if (continua)
+                    return;
+            }
             ip++;
         }
 
@@ -345,9 +377,42 @@ namespace EasyCpu.Assembler.Processore
             StoreOp(LoadOp(2), 1);
         }
 
+        // Istruzioni stringa: SI e DI avanzano di una cella (DF = 0) o arretrano (DF = 1).
+        // Le forme ...b usano il byte basso delle celle e AL, le forme ...w la cella intera e AX.
+        short Passo => (short)(TestFlag(DF) ? -1 : 1);
+
         void Movs()
         {
-            memoria[di] = memoria[si];
+            ScriviMemoria(di, Adatta(memoria[si]));
+            si += Passo;
+            di += Passo;
+        }
+
+        void Lods()
+        {
+            ax = Larghezza == 8 ? ConBasso(ax, memoria[si]) : memoria[si];
+            si += Passo;
+        }
+
+        void Stos()
+        {
+            ScriviMemoria(di, ax);
+            di += Passo;
+        }
+
+        // CMPS: confronta [SI] con [DI] come CMP [SI], [DI]
+        void Cmps()
+        {
+            ImpostaFlagDifferenza(Adatta(memoria[si]), Adatta(memoria[di]), 0);
+            si += Passo;
+            di += Passo;
+        }
+
+        // SCAS: confronta AL/AX con [DI] come CMP AL, [DI]
+        void Scas()
+        {
+            ImpostaFlagDifferenza(Adatta(ax), Adatta(memoria[di]), 0);
+            di += Passo;
         }
 
         void Xchg()
@@ -361,11 +426,7 @@ namespace EasyCpu.Assembler.Processore
         // LEA: carica nel registro l'indirizzo dell'operando in memoria, non il suo contenuto
         void Lea()
         {
-            Operando op = curIstruzione.Op2;
-            int indirizzo = op.Tipo == TipoOperando.Indiretto
-                ? LeggiRegistro(op.Base) + op.Scostamento
-                : op.Scostamento;
-            StoreOp(indirizzo, 1);
+            StoreOp(IndirizzoEffettivo(curIstruzione.Op2), 1);
         }
 
         // valore senza segno sulla dimensione dell'istruzione (0..255 oppure 0..65535)
@@ -385,12 +446,17 @@ namespace EasyCpu.Assembler.Processore
         // SUB/SBB/CMP: CF = prestito (primo operando minore del secondo, senza segno)
         void Differenza(int prestito, bool memorizza)
         {
-            int a = LoadOp(1), b = LoadOp(2);
-            int ris = a - b - prestito;
+            int ris = ImpostaFlagDifferenza(LoadOp(1), LoadOp(2), prestito);
             if (memorizza)
                 StoreOp(ris, 1);
+        }
+
+        int ImpostaFlagDifferenza(int a, int b, int prestito)
+        {
+            int ris = a - b - prestito;
             SetFlags(ris);
             SetFlag(CF, SenzaSegno(a) < SenzaSegno(b) + prestito);
+            return ris;
         }
 
         int Carry => TestFlag(CF) ? 1 : 0;
@@ -895,7 +961,7 @@ namespace EasyCpu.Assembler.Processore
             switch (op.Tipo)
             {
                 case TipoOperando.Registro: return LeggiRegistro(op.Base);
-                case TipoOperando.Indiretto: return Adatta(memoria[LeggiRegistro(op.Base) + op.Scostamento]);
+                case TipoOperando.Indiretto: return Adatta(memoria[IndirizzoEffettivo(op)]);
                 case TipoOperando.Costante: return Adatta(op.Scostamento);
                 case TipoOperando.Memoria: return Adatta(memoria[op.Scostamento]);
                 case TipoOperando.Etichetta: return (short)op.Scostamento;
@@ -908,9 +974,17 @@ namespace EasyCpu.Assembler.Processore
             switch (op.Tipo)
             {
                 case TipoOperando.Registro: ScriviRegistro(op.Base, valore); break;
-                case TipoOperando.Indiretto: ScriviMemoria(LeggiRegistro(op.Base) + op.Scostamento, valore); break;
+                case TipoOperando.Indiretto: ScriviMemoria(IndirizzoEffettivo(op), valore); break;
                 case TipoOperando.Memoria: ScriviMemoria(op.Scostamento, valore); break;
             }
+        }
+
+        // [base + indice + scostamento] oppure [indirizzo]
+        int IndirizzoEffettivo(Operando op)
+        {
+            if (op.Tipo != TipoOperando.Indiretto)
+                return op.Scostamento;
+            return LeggiRegistro(op.Base) + (op.HaIndice ? LeggiRegistro(op.Indice) : 0) + op.Scostamento;
         }
 
         // Memoria a celle da 16 bit: un accesso a 8 bit scrive solo il byte basso della cella

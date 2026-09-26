@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Elaborazione di una stringa con LODSB e STOSB",
+    "//",
+    "// Cosa illustra:",
+    "//   LODSB legge in AL il carattere puntato da SI, STOSB scrive AL nella cella",
+    "//   puntata da DI: insieme scorrono una stringa trasformandola. Qui le",
+    "//   minuscole diventano maiuscole e il risultato è stampato con int 21h.",
+    "//",
+    "// Utilizzo:",
+    "//   Premere Avvia e osservare il pannello Console.",
+    "//",
+    "// Risultato atteso:",
+    "//   La console mostra: CIAO MONDO!",
+    "// ======================================================================",
+    "",
+    "        cld",
+    "        mov si, offset msg",
+    "        mov di, si          // riscrive la stringa sul posto",
+    "ciclo:  lodsb               // AL = carattere, SI avanza",
+    "        cmp al, '$'",
+    "        je stampa",
+    "        cmp al, 'a'",
+    "        jb scrivi           // non è una minuscola",
+    "        cmp al, 'z'",
+    "        ja scrivi",
+    "        sub al, 32",
+    "scrivi: stosb               // carattere in [DI], DI avanza",
+    "        jmp ciclo",
+    "stampa: mov ah, 9",
+    "        mov dx, offset msg",
+    "        int 21h",
+    "        mov ah, 4Ch",
+    "        int 21h"
+  ],
+  "data": [
+    "msg     DB 'ciao mondo!$'"
+  ]
+}

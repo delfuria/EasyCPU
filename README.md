@@ -93,12 +93,13 @@ Develop practical understanding of:
 
 ## 📖 Assembly Instruction Set
 
-EasyCPU implements an 8086-style instruction set (16-bit and 8-bit registers, CF/ZF/SF/OF flags with x86 bit layout):
+EasyCPU implements an 8086-style instruction set (16-bit and 8-bit registers, CF/ZF/SF/OF/DF flags with x86 bit layout, base+index addressing such as `[bx+si+2]`):
 
 **Arithmetic:** ADD, ADC, SUB, SBB, MUL, IMUL, DIV, IDIV, INC, DEC, NEG, CBW, CWD  
 **Logic:** AND, OR, XOR, NOT, TEST  
 **Shift/Rotate:** SHL, SHR, SAR, ROL, ROR, RCL, RCR  
-**Data Transfer:** MOV, MOVS, XCHG, LEA  
+**Data Transfer:** MOV, XCHG, LEA  
+**String:** MOVSB/MOVSW (MOVS), LODSB/LODSW, STOSB/STOSW, CMPSB/CMPSW, SCASB/SCASW with REP, REPE/REPZ, REPNE/REPNZ prefixes  
 **Comparison:** CMP  
 **Conditional Jumps (signed):** JE/JZ, JNE/JNZ, JL, JLE, JG, JGE, JO, JNO, JS, JNS (plus x86 synonyms JNGE, JNG, JNLE, JNL)  
 **Conditional Jumps (unsigned):** JA, JAE, JB, JBE, JC, JNC (plus synonyms JNBE, JNB, JNAE, JNA)  
@@ -106,7 +107,7 @@ EasyCPU implements an 8086-style instruction set (16-bit and 8-bit registers, CF
 **Unconditional Control:** JMP  
 **Procedure Calls:** CALL, RET, RET n  
 **Stack:** PUSH, POP, PUSHF, POPF  
-**Flags:** CLC, STC, CMC  
+**Flags:** CLC, STC, CMC, CLD, STD  
 **Interrupts:** INT (DOS-style `int 21h` console services)  
 **Miscellaneous:** NOP, STOP
 

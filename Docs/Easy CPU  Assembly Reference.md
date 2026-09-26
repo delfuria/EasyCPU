@@ -150,7 +150,7 @@ Il pannello Registri mostra, accanto ad AX, BX, CX e DX, il valore dei rispettiv
 
 ### Modelli di indirizzamento
 
-EasyCPU supporta 5 modelli di indirizzamento: immediato, a registro, diretto, indiretto a registro, indiretto a registro con scostamento.
+EasyCPU supporta 6 modelli di indirizzamento: immediato, a registro, diretto, indiretto a registro, indiretto a registro con scostamento, indiretto con base e indice.
 
 Indirizzamento immediato
 
@@ -165,6 +165,8 @@ mov ax, 'A' // memorizza 65 nel registro AX
 i valori 1, 0Ah, ’A’ rappresentano delle costanti espresse in forma decimale, esadecimale e carattere. La forma esadecimale richiede come suffisso la lettera “h”; il primo carattere dev’essere una cifra. Un valore espresso in formato decimale può variare da –32768 a +32767, mentre un valore espresso in formato esadecimale non può essere preceduto dal segno meno e può variare da 0 a FFFF (che equivale a 65535). Una costante in formato carattere è rappresentata mediante un solo carattere delimitato da apici singoli, ed equivale al corrispondente valore ASCII.
 
 Nel caso in cui un’istruzione richieda due operandi, soltanto il secondo può essere un valore immediato.
+
+Nota: diversamente dai microprocessori X86, EasyCPU accetta istruzioni con entrambi gli operandi in memoria, come mov [1], [2] o add a, b. Su un processore X86 sono errori: un dato va prima copiato in un registro, oppure si usano le istruzioni stringa (MOVSB, MOVSW). Il divieto potrà essere introdotto in una versione successiva.
 
 Indirizzamento a registro
 
@@ -218,6 +220,18 @@ mov **[di-02h]**, ax // memorizza AX nella cella di memoria che si trova
 
 La costante può essere espressa in forma decimale, esadecimale o carattere.
 
+Indirizzamento indiretto con base e indice
+
+L’indirizzo è la somma di un registro base (BX o BP), di un registro indice (SI o DI) e, facoltativamente, di uno scostamento costante. Come nei microprocessori X86 sono ammesse solo queste combinazioni; l’ordine dei termini è libero. Si usa ad esempio per le matrici: la base indica l’inizio della riga, l’indice la colonna.
+
+mov ax, **[bx+si]** // cella di indirizzo BX + SI
+
+mov **[bp+di+2]**, ax // cella di indirizzo BP + DI + 2
+
+mov dx, **[mat+bx+si]** // con il nome di una variabile come scostamento
+
+Combinazioni come [si+di] o [bx+bp] producono l’errore «Combinazione di registri non valida»; un registro non può essere sottratto.
+
 ### Gestione dello stack
 
 In EasyCPU lo stack viene gestito in modo analogo a quanto avviene nei microprocessori della serie X86, ma in forma semplificata. La parte di memoria riservata allo stack inizia a un indirizzo di base immutabile, che è 240; essa occupa esattamente 16 byte.
@@ -253,9 +267,12 @@ I flag sono memorizzati nei bit di un registro a 16 bit, nelle stesse posizioni 
 | CF | 0 | 0001h |
 | ZF | 6 | 0040h |
 | SF | 7 | 0080h |
+| DF | 10 | 0400h |
 | OF | 11 | 0800h |
 
-Il pannello Registri mostra i quattro flag come C, Z, S, O.
+Il flag di direzione DF non dipende dai risultati delle operazioni: si imposta con STD e si azzera con CLD, e stabilisce se le istruzioni stringa fanno avanzare (DF = 0) o arretrare (DF = 1) i registri SI e DI.
+
+Il pannello Registri mostra i flag come C, Z, S, O, D.
 
 ## Set di istruzioni
 
@@ -433,6 +450,27 @@ CLC imposta a 0 il flag CF.
 Esempi:
 
 clc
+### CLD – Azzeramento del flag di direzione
+
+Sintassi:
+
+**CLD**
+
+Operazione svolta:
+
+**DF = 0**
+
+Flag definiti:
+
+**DF**
+
+Descrizione:
+
+CLD azzera il flag DF: le istruzioni stringa faranno avanzare SI e DI.
+
+Esempi:
+
+cld
 ### CMC – Inversione del carry
 
 Sintassi:
@@ -478,6 +516,41 @@ cmp ax, bx // confronta ax con bx
 
 je salto // salta se ax è uguale a bx (e dunque il flag zero è 1)
 
+### CMPSB, CMPSW – Confronto di elementi di due sequenze
+
+Sintassi:
+
+**CMPSB**
+
+**CMPSW**
+
+Operazione svolta:
+
+**[SI] - [DI], senza memorizzare il risultato**
+
+**SI = SI ± 1, DI = DI ± 1**
+
+Flag definiti:
+
+**SF, ZF, OF, CF**
+
+Descrizione:
+
+CMPSB e CMPSW confrontano l’elemento puntato da SI con quello puntato da DI come farebbe CMP, poi aggiornano SI e DI. Con REPE confrontano due sequenze finché gli elementi sono uguali.
+
+SI e DI avanzano di una cella se DF = 0 (dopo CLD) o arretrano di una cella se DF = 1 (dopo STD). Poiché le celle di memoria sono di 16 bit, il passo è sempre di una cella: la forma con suffisso B usa il byte basso delle celle e il registro AL, la forma con suffisso W la cella intera e il registro AX. Con il prefisso REP l’istruzione viene ripetuta (vedi «REP, REPE, REPNE»).
+
+Esempi:
+
+mov si, offset a
+
+mov di, offset b
+
+mov cx, 4
+
+repe cmpsb // si ferma al primo carattere diverso
+
+jne diverse
 ### CWD – Estensione del segno da parola a doppia parola
 
 Sintassi:
@@ -1175,6 +1248,35 @@ Esempi:
 lea si, vet // SI = indirizzo di vet
 
 lea di, [si+3] // DI = SI + 3
+### LODSB, LODSW – Lettura di un elemento di una sequenza
+
+Sintassi:
+
+**LODSB**
+
+**LODSW**
+
+Operazione svolta:
+
+**AL (o AX) = [SI]**
+
+**SI = SI ± 1**
+
+Flag definiti:
+
+**Nessuno**
+
+Descrizione:
+
+LODSB copia in AL il byte basso della cella puntata da SI, LODSW copia in AX la cella intera; poi aggiornano SI. Insieme a STOSB e STOSW servono a scorrere una sequenza elaborandone gli elementi.
+
+SI e DI avanzano di una cella se DF = 0 (dopo CLD) o arretrano di una cella se DF = 1 (dopo STD). Poiché le celle di memoria sono di 16 bit, il passo è sempre di una cella: la forma con suffisso B usa il byte basso delle celle e il registro AL, la forma con suffisso W la cella intera e il registro AX. Con il prefisso REP l’istruzione viene ripetuta (vedi «REP, REPE, REPNE»).
+
+Esempi:
+
+mov si, offset msg
+
+lodsb // AL = primo carattere di msg, SI avanza
 ### LOOP, LOOPE, LOOPNE – Cicli con contatore
 
 Sintassi:
@@ -1242,15 +1344,21 @@ mov ax, bx // copia in ax il contenuto di bx
 
 mov [10], 2 // copia nella locazione 10 il valore 2
 
-### MOVS – Trasferimento di una sequenza
+### MOVS, MOVSB, MOVSW – Copia di un elemento di una sequenza
 
 Sintassi:
+
+**MOVSB**
+
+**MOVSW**
 
 **MOVS**
 
 Operazione svolta:
 
-**MEMORIA[DI] = MEMORIA[SI]**
+**[DI] = [SI]**
+
+**SI = SI ± 1, DI = DI ± 1**
 
 Flag definiti:
 
@@ -1258,15 +1366,21 @@ Flag definiti:
 
 Descrizione:
 
-MOVS copia il contenuto della locazione di memoria puntata da SI nella locazione di memoria puntata da DI.
+MOVSB e MOVSW copiano l’elemento puntato da SI nella cella puntata da DI, poi aggiornano SI e DI. MOVS equivale a MOVSW. È l’unica istruzione che copia direttamente da memoria a memoria; con REP copia un intero vettore.
+
+SI e DI avanzano di una cella se DF = 0 (dopo CLD) o arretrano di una cella se DF = 1 (dopo STD). Poiché le celle di memoria sono di 16 bit, il passo è sempre di una cella: la forma con suffisso B usa il byte basso delle celle e il registro AL, la forma con suffisso W la cella intera e il registro AX. Con il prefisso REP l’istruzione viene ripetuta (vedi «REP, REPE, REPNE»).
 
 Esempi:
 
-mov di, 0 // imposta a 0 di
+mov si, 10
 
-mov si, 10 // imposta a 10 si
+mov di, 0
 
-movs // equivale a: memoria[0] = memoria[10]
+movsw // equivale a: memoria[0] = memoria[10]; SI = 11, DI = 1
+
+mov cx, 5
+
+rep movsw // copia 5 celle
 
 ### MUL – Moltiplicazione senza segno
 
@@ -1503,6 +1617,45 @@ mov al, 80h
 rcl al, 1 // AL = 00h, CF = 1
 
 rcl al, 1 // AL = 01h, CF = 0
+### REP, REPE, REPNE – Prefissi di ripetizione
+
+Sintassi:
+
+**REP *istruzione stringa***
+
+**REPE *CMPSB, CMPSW, SCASB, SCASW***
+
+**REPNE *CMPSB, CMPSW, SCASB, SCASW***
+
+Operazione svolta:
+
+**se CX == 0 l’istruzione non viene eseguita**
+
+**altrimenti: esegue l’istruzione, CX = CX - 1**
+
+**e la ripete finché CX != 0 (REPE: e ZF == 1; REPNE: e ZF == 0)**
+
+Flag definiti:
+
+**quelli dell’istruzione ripetuta**
+
+Descrizione:
+
+Un prefisso si scrive sulla stessa riga dell’istruzione stringa e la fa ripetere al massimo CX volte. REP si usa con tutte le istruzioni stringa; con CMPS e SCAS equivale a REPE. REPE (sinonimo REPZ) continua finché il confronto dà «uguale», REPNE (sinonimo REPNZ) finché dà «diverso». Alla fine CX contiene il numero di ripetizioni non eseguite.
+
+Durante l’esecuzione passo passo, ogni Step esegue una sola ripetizione e IP resta sulla riga del prefisso finché la ripetizione non termina: si possono così osservare SI, DI e CX cambiare. Un breakpoint sulla riga ferma l’esecuzione soltanto all’arrivo, non a ogni ripetizione.
+
+Usare REPE o REPNE con istruzioni diverse da CMPS e SCAS, o REP con un’istruzione non stringa, produce l’errore «Prefisso non valido».
+
+Esempi:
+
+mov cx, 10
+
+rep stosw // scrive AX in 10 celle
+
+mov cx, 100
+
+repne scasb // cerca AL nella stringa puntata da DI
 ### RET – Ritorno da una procedura
 
 Sintassi:
@@ -1593,6 +1746,39 @@ Esempi:
 mov ax, -8
 
 sar ax, 1 // AX = -4 (con SHR: 32764)
+### SCASB, SCASW – Ricerca in una sequenza
+
+Sintassi:
+
+**SCASB**
+
+**SCASW**
+
+Operazione svolta:
+
+**AL (o AX) - [DI], senza memorizzare il risultato**
+
+**DI = DI ± 1**
+
+Flag definiti:
+
+**SF, ZF, OF, CF**
+
+Descrizione:
+
+SCASB e SCASW confrontano AL (o AX) con l’elemento puntato da DI come farebbe CMP, poi aggiornano DI. Con REPNE cercano un valore in una sequenza: alla fine ZF vale 1 se il valore è stato trovato e DI punta all’elemento successivo.
+
+SI e DI avanzano di una cella se DF = 0 (dopo CLD) o arretrano di una cella se DF = 1 (dopo STD). Poiché le celle di memoria sono di 16 bit, il passo è sempre di una cella: la forma con suffisso B usa il byte basso delle celle e il registro AL, la forma con suffisso W la cella intera e il registro AX. Con il prefisso REP l’istruzione viene ripetuta (vedi «REP, REPE, REPNE»).
+
+Esempi:
+
+mov di, offset msg
+
+mov al, '$'
+
+mov cx, 100
+
+repne scasb // cerca il carattere $
 ### SBB – Sottrazione con prestito
 
 Sintassi:
@@ -1697,6 +1883,27 @@ STC imposta a 1 il flag CF.
 Esempi:
 
 stc
+### STD – Impostazione del flag di direzione
+
+Sintassi:
+
+**STD**
+
+Operazione svolta:
+
+**DF = 1**
+
+Flag definiti:
+
+**DF**
+
+Descrizione:
+
+STD imposta a 1 il flag DF: le istruzioni stringa faranno arretrare SI e DI. Serve ad esempio per copiare un vettore su una zona sovrapposta partendo dal fondo.
+
+Esempi:
+
+std
 ### STOP – Arresta la CPU
 
 Sintassi:
@@ -1715,6 +1922,39 @@ Descrizione:
 
 STOP determina l’immediato arresto dell’esecuzione del programma.
 
+### STOSB, STOSW – Scrittura di un elemento di una sequenza
+
+Sintassi:
+
+**STOSB**
+
+**STOSW**
+
+Operazione svolta:
+
+**[DI] = AL (o AX)**
+
+**DI = DI ± 1**
+
+Flag definiti:
+
+**Nessuno**
+
+Descrizione:
+
+STOSB scrive AL nel byte basso della cella puntata da DI, STOSW scrive AX nella cella intera; poi aggiornano DI. Con REP riempiono una zona di memoria con lo stesso valore.
+
+SI e DI avanzano di una cella se DF = 0 (dopo CLD) o arretrano di una cella se DF = 1 (dopo STD). Poiché le celle di memoria sono di 16 bit, il passo è sempre di una cella: la forma con suffisso B usa il byte basso delle celle e il registro AL, la forma con suffisso W la cella intera e il registro AX. Con il prefisso REP l’istruzione viene ripetuta (vedi «REP, REPE, REPNE»).
+
+Esempi:
+
+mov ax, 0
+
+mov di, offset tab
+
+mov cx, 8
+
+rep stosw // azzera 8 celle
 ### SUB – Sottrazione
 
 Sintassi:

@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Errori di compilazione: base + indice e prefissi REP",
+    "//",
+    "// Cosa illustra:",
+    "//   Ogni riga contiene un errore voluto: il programma NON compila.",
+    "//",
+    "// Utilizzo:",
+    "//   Premere Compila e osservare il pannello Errori.",
+    "//",
+    "// Risultato atteso:",
+    "//   5 errori di tipo Codice: 2 sulla combinazione di registri, 1 sintattico,",
+    "//   2 sul prefisso non valido",
+    "// ======================================================================",
+    "",
+    "        mov ax, [si+di]     // SI e DI non si possono sommare",
+    "        mov ax, [bx+bp]     // BX e BP non si possono sommare",
+    "        mov ax, [bx-si]     // un registro non si può sottrarre",
+    "        rep mov ax, bx      // REP vuole un'istruzione stringa",
+    "        repe movsb          // REPE e REPNE solo con CMPS e SCAS"
+  ],
+  "data": []
+}

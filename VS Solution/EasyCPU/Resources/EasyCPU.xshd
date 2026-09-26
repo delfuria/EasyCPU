@@ -60,6 +60,21 @@
       <Word>movs</Word>
       <Word>xchg</Word>
       <Word>lea</Word>
+      <Word>movsb</Word>
+      <Word>movsw</Word>
+      <Word>lodsb</Word>
+      <Word>lodsw</Word>
+      <Word>stosb</Word>
+      <Word>stosw</Word>
+      <Word>cmpsb</Word>
+      <Word>cmpsw</Word>
+      <Word>scasb</Word>
+      <Word>scasw</Word>
+      <Word>rep</Word>
+      <Word>repe</Word>
+      <Word>repz</Word>
+      <Word>repne</Word>
+      <Word>repnz</Word>
     </Keywords>
 
     <!-- Aritmetica -->
@@ -101,6 +116,8 @@
       <Word>clc</Word>
       <Word>stc</Word>
       <Word>cmc</Word>
+      <Word>cld</Word>
+      <Word>std</Word>
     </Keywords>
 
     <!-- Stack -->

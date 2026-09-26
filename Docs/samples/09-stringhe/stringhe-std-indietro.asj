@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Copia all'indietro con STD",
+    "//",
+    "// Cosa illustra:",
+    "//   Per spostare gli elementi di un vettore di una posizione verso destra",
+    "//   bisogna copiare partendo dal fondo, altrimenti ogni elemento",
+    "//   sovrascrive il successivo prima di essere copiato: con STD (DF = 1)",
+    "//   SI e DI arretrano a ogni ripetizione.",
+    "//",
+    "// Utilizzo:",
+    "//   Eseguire con Step Into osservando la memoria; provare con CLD e",
+    "//   SI = 0, DI = 1 per vedere l'errore della copia in avanti.",
+    "//",
+    "// Risultato atteso:",
+    "//   vet = 9, 1, 2, 3, 4, 5 (inserito 9 in testa)",
+    "// ======================================================================",
+    "",
+    "        std                 // direzione: indirizzi decrescenti",
+    "        mov si, offset vet + 4   // ultimo elemento",
+    "        mov di, offset vet + 5   // cella libera in fondo",
+    "        mov cx, 5",
+    "        rep movsw",
+    "        cld",
+    "        mov vet, 9          // nuovo primo elemento",
+    "        stop"
+  ],
+  "data": [
+    "vet     DW 1, 2, 3, 4, 5, 0"
+  ]
+}

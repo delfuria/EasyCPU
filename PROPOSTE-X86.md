@@ -1,6 +1,6 @@
 # Proposte di estensione x86 per EasyCPU
 
-Stato: **fasi 0, 1, 2 e 3 implementate** (operando strutturato, registri a 8 bit con memoria a parole, errori di divisione, `.DATA` simbolica, `int 21h` con AH, CF e aritmetica senza segno, istruzioni x86 comuni); `jmp`/`call` indiretti rimandati (vedi roadmap); il resto è ancora proposta. Il documento parte da un'analisi del codice attuale (`EasyCpu.Assembler`) e propone estensioni in ordine di priorità.
+Stato: **fasi 0-4 implementate** (operando strutturato, registri a 8 bit con memoria a parole, errori di divisione, `.DATA` simbolica, `int 21h` con AH, CF e aritmetica senza segno, istruzioni x86 comuni, istruzioni stringa con DF e REP, indirizzamento base + indice); rimandati `jmp`/`call` indiretti e il divieto delle operazioni memoria-memoria (vedi roadmap); il resto è ancora proposta. Il documento parte da un'analisi del codice attuale (`EasyCpu.Assembler`) e propone estensioni in ordine di priorità.
 
 ---
 
@@ -223,6 +223,7 @@ Nota tecnica: l'enum `IdOp` più un `int offset` non basta a rappresentare base+
 | 1 | **P1** registri a 8 bit (memoria a parole) + **P8** | Richiesta principale, basso rischio |
 | 2 | **P2** `.DATA` simbolica + **P6** `int 21h` con AH e servizio 09h | Insieme permettono il classico "Hello World" x86 |
 | 3 | **P3** CF e aritmetica senza segno + **P4** istruzioni mancanti (escluso `jmp`/`call` indiretti) | Completa il set per esercizi tipici |
+| **da fare** | Divieto delle operazioni memoria-memoria (`mov [1], [2]`, `mov a, b`, `add a, b`), ammesse solo con le istruzioni stringa (P7, incongruenza 4) | Rimandato dalla fase 4 per non rompere i programmi esistenti; oggi EasyCPU le accetta, x86 no |
 | **da fare** | `jmp reg` / `call reg` / `call [bx]` e tabelle di salto (P4) | Rimandati dalla fase 3: le etichette del codice non sono ancora utilizzabili come valori (`mov ax, offset etichetta`, `tab DW lab1, lab2`), perché la sezione dati viene compilata prima del codice |
 | 4 | **P5** istruzioni stringa + **P7** base+indice | Avanzato |
 | 5 | Modalità "x86 fedele" con memoria a byte (P1 opzione B) | Solo se serve davvero, è il cambiamento più invasivo |

@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Indirizzamento base + indice: una matrice",
+    "//",
+    "// Cosa illustra:",
+    "//   Una matrice 3 x 3 memorizzata per righe. L'elemento (riga, colonna) si",
+    "//   trova all'indirizzo mat + riga * COLONNE + colonna: BX contiene lo",
+    "//   scostamento della riga, SI la colonna, e [mat+bx+si] somma tutto.",
+    "//   Le combinazioni ammesse sono BX o BP con SI o DI.",
+    "//",
+    "// Utilizzo:",
+    "//   Eseguire con Step Into; cambiare RIGA e COLONNA nella sezione dati.",
+    "//",
+    "// Risultato atteso:",
+    "//   RIGA = 1, COLONNA = 2: DX = 6",
+    "// ======================================================================",
+    "",
+    "        mov ax, RIGA",
+    "        mov bl, COLONNE",
+    "        mul bl              // AX = RIGA * COLONNE",
+    "        mov bx, ax          // scostamento della riga",
+    "        mov si, COLONNA",
+    "        mov dx, [mat+bx+si] // elemento (RIGA, COLONNA)",
+    "        stop"
+  ],
+  "data": [
+    "COLONNE EQU 3",
+    "RIGA    EQU 1",
+    "COLONNA EQU 2",
+    "mat     DW 1, 2, 3",
+    "        DW 4, 5, 6",
+    "        DW 7, 8, 9"
+  ]
+}

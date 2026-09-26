@@ -15,6 +15,7 @@ namespace EasyCpu.Assembler.Parsing
         public Operando Op2;
         public int Larghezza;   // dimensione dell'operazione: 8 o 16 bit
         public string Etichetta;
+        public string Prefisso;     // rep, repe/repz, repne/repnz; null se assente
         public int indRiga;     // riga sorgente 0-based; per gestione errori compilazione
         public Instruction(string code, Operando op1, Operando op2)
         {
@@ -53,7 +54,8 @@ namespace EasyCpu.Assembler.Parsing
                 case TipoOperando.Memoria: return "[" + op.Scostamento.ToString() + "]";
                 case TipoOperando.Etichetta: return op.Scostamento.ToString();
                 case TipoOperando.Registro: return op.Base.ToString();
-                case TipoOperando.Indiretto: return string.Format(formatoIndiretto, op.Base, OffsetToString(op.Scostamento));
+                case TipoOperando.Indiretto: return string.Format(formatoIndiretto,
+                    op.HaIndice ? op.Base + "+" + op.Indice : op.Base.ToString(), OffsetToString(op.Scostamento));
 
                 default: return "";
             }
@@ -104,6 +106,8 @@ namespace EasyCpu.Assembler.Parsing
             if (larg1 != 0 && larg2 != 0 && larg1 != larg2)
                 throw new CodiceException(CodiceErrore.DimensioneOperandi);
             Larghezza = larg1 != 0 ? larg1 : (larg2 != 0 ? larg2 : 16);
+            if (Code is "movsb" or "lodsb" or "stosb" or "cmpsb" or "scasb")
+                Larghezza = 8;
 
             if (Larghezza == 8)
             {

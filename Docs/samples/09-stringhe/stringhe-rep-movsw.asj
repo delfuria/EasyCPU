@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Copia di un vettore con REP MOVSW",
+    "//",
+    "// Cosa illustra:",
+    "//   REP ripete l'istruzione stringa CX volte. MOVSW copia [SI] in [DI];",
+    "//   con DF = 0 (CLD) SI e DI avanzano di una cella a ogni ripetizione.",
+    "//",
+    "// Utilizzo:",
+    "//   Eseguire con Step Into: ogni passo esegue una ripetizione e IP resta",
+    "//   sulla riga del REP finché CX non arriva a 0. Osservare SI, DI e CX.",
+    "//",
+    "// Risultato atteso:",
+    "//   dst = 1, 2, 3, 4, 5 (indirizzi 5..9)",
+    "//   SI = 5, DI = 10, CX = 0",
+    "// ======================================================================",
+    "",
+    "        cld                 // direzione: indirizzi crescenti",
+    "        mov si, offset src",
+    "        mov di, offset dst",
+    "        mov cx, N",
+    "        rep movsw",
+    "        stop"
+  ],
+  "data": [
+    "N       EQU 5",
+    "src     DW 1, 2, 3, 4, 5",
+    "dst     DW N DUP(0)"
+  ]
+}
