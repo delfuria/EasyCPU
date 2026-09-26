@@ -50,6 +50,9 @@ namespace EasyCpu.Assembler.Parsing
 			new OpCode("shr", 2),
 		};
 
+		static readonly Dictionary<string, Registro> Registri =
+			Enum.GetValues<Registro>().ToDictionary(r => r.ToString());
+
 		public const char FINE = '\0';
 		string _riga;
 		int _indcar;
@@ -293,27 +296,27 @@ namespace EasyCpu.Assembler.Parsing
 			return -1;
 		}
 
-		void LeggiOperandoIndiretto(out IdOp op, out int offset)
+		Operando LeggiOperandoIndiretto()
 		{
-			offset = 0;
+			Registro reg;
 			string token = TestToken();
 			switch (token)
 			{
-				case "si": op = IdOp._si; break;
-				case "di": op = IdOp._di; break;
-				case "bx": op = IdOp._bx; break;
-				case "bp": op = IdOp._bp; break;
+				case "si": reg = Registro.si; break;
+				case "di": reg = Registro.di; break;
+				case "bx": reg = Registro.bx; break;
+				case "bp": reg = Registro.bp; break;
 				default:
-					offset = LeggiValore();
-					op = IdOp.Memoria;
-					if (!IntervalloOk(op, offset))
+					int indirizzo = LeggiValore();
+					if (!IndirizzoOk(indirizzo))
 						throw new CodiceException(CodiceErrore.IntervalloIndirizzoDati);
 					token = EstraiToken();
 					if (token != "]")
 						throw new CodiceException(CodiceErrore.AttesaQuadraChiusura);
-					return;
+					return Operando.DiMemoria(indirizzo);
 			}
 			EstraiToken();      // scarta registro precedentemente testato
+			int offset = 0;
 			token = EstraiToken();
 			switch (token)
 			{
@@ -328,44 +331,28 @@ namespace EasyCpu.Assembler.Parsing
 				case "]": break;
 				default: throw new CodiceException(CodiceErrore.Sintassi);
 			}
+			return Operando.DiIndiretto(reg, offset);
 		}
 
-		static bool IntervalloOk(IdOp op, int offset)
+		static bool IndirizzoOk(int indirizzo)
 		{
-			return !(op == IdOp.Memoria && (offset < 0 || offset > Ram.MASSIMO_INDIRIZZO));
+			return !(indirizzo < 0 || indirizzo > Ram.MASSIMO_INDIRIZZO);
 		}
 
-		void LeggiOperando(out IdOp op, out int offset)
+		Operando LeggiOperando()
 		{
-			offset = 0;
-			op = IdOp.Null;
 			string token = TestToken();
 			if (token == "[")
 			{
 				EstraiToken();      // scarta parentesi quadra
-				LeggiOperandoIndiretto(out op, out offset);
-				return;
+				return LeggiOperandoIndiretto();
 			}
-			else
-				switch (token)
-				{
-					case "ax": op = IdOp.ax; break;
-					case "bx": op = IdOp.bx; break;
-					case "cx": op = IdOp.cx; break;
-					case "dx": op = IdOp.dx; break;
-					case "si": op = IdOp.si; break;
-					case "di": op = IdOp.di; break;
-					case "bp": op = IdOp.bp; break;
-					case "sp": op = IdOp.sp; break;
-					case "'": goto default;     // costante carattere
-					default:
-						op = IdOp.Costante;
-						offset = LeggiValore();
-						if (!IntervalloOk(op, offset))
-							throw new CodiceException(CodiceErrore.IntervalloIndirizzoDati);
-						return;
-				}
-			EstraiToken();  // scarta registro
+			if (token != null && Registri.TryGetValue(token, out Registro reg))
+			{
+				EstraiToken();  // scarta registro
+				return Operando.DiRegistro(reg);
+			}
+			return Operando.DiCostante(LeggiValore());
 		}
 
 		public List<int> CompilaDati(string s, int indice, out int indirizzo)
@@ -388,8 +375,7 @@ namespace EasyCpu.Assembler.Parsing
 			etichetta = null;
 			int numOp = -1;
 			TipoOp tipo;
-			int offset1, offset2;
-			IdOp op1, op2;
+			Operando op1, op2;
 			_indcar = 0;
 			_riga = s;
 			string token = LeggiIdentificatore();
@@ -421,18 +407,18 @@ namespace EasyCpu.Assembler.Parsing
 						return new Instruction(code, salto);
 					}
 					else
-						LeggiOperando(out op1, out offset1);
+						op1 = LeggiOperando();
 					if (TestToken() != null)
 						throw new CodiceException(CodiceErrore.NumeroOperandi);
-					return new Instruction(code, op1, offset1);
+					return new Instruction(code, op1);
 
 				case 2:
-					LeggiOperando(out op1, out offset1);
+					op1 = LeggiOperando();
 					bool siVirgola = LeggiSimbolo(",");
-					LeggiOperando(out op2, out offset2);
+					op2 = LeggiOperando();
 					if (TestToken() != null)
 						throw new CodiceException(CodiceErrore.NumeroOperandi);
-					return new Instruction(code, op1, op2, offset1, offset2);
+					return new Instruction(code, op1, op2);
 			}
 			throw new Exception("l'istruzione non è stata creata");
 		}

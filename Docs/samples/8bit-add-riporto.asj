@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Somma a 8 bit con riporto",
+    "//",
+    "// Cosa illustra:",
+    "//   Il riporto oltre il bit 7 si perde: AH non viene modificato.",
+    "//   -1 + 1 = 0 non è un overflow con segno.",
+    "//",
+    "// Utilizzo:",
+    "//   Aprire il file e premere Avvia; in alternativa eseguire con Step Into",
+    "//   un'istruzione alla volta, osservando i pannelli Registri e Memoria.",
+    "//",
+    "// Risultato atteso:",
+    "//   AX = 0700h (AH = 7, AL = 0)",
+    "//   ZF = 1, OF = 0",
+    "// ======================================================================",
+    "",
+    "        mov ax, 07FFh       // AH = 07h, AL = FFh",
+    "        add al, 1           // AL = 00h, AH resta 07h",
+    "        stop"
+  ],
+  "data": []
+}

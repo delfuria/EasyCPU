@@ -71,6 +71,8 @@ namespace EasyCpu.Assembler.Processore
         public short DI => di;
         public short BP => bp;
 
+        public short LeggiMemoria(int indirizzo) => memoria[indirizzo];
+
         public bool FlagSegno => TestFlag(SF);
         public bool FlagZero => TestFlag(ZF);
         public bool FlagOverflow => TestFlag(OF);
@@ -135,6 +137,11 @@ namespace EasyCpu.Assembler.Processore
             }
             if (ip == Code.Count)
                 Stop();
+            else if (IPOverRun)
+            {
+                Stop();
+                throw new CpuException(CodiceErrore.IPNonValido);
+            }
         }
 
         // Esegue finché sp < limite, controllando breakpoint e loop infinito
@@ -344,6 +351,13 @@ namespace EasyCpu.Assembler.Processore
 
         void IMul()
         {
+            if (Larghezza == 8)
+            {
+                int prodotto = Basso(ax) * LoadOp(1);  // AX = AL * op
+                ax = (short)prodotto;
+                SetFlags(OF + ZF, prodotto);
+                return;
+            }
             int tmp = ax * LoadOp(1);
             ax = (short)tmp;
             dx = (short)(tmp >> 16);
@@ -352,9 +366,24 @@ namespace EasyCpu.Assembler.Processore
 
         void IDiv()
         {
-            int dividendo = ax + (dx << 16);
-            dx = (short)(dividendo % LoadOp(1));
-            ax = (short)(dividendo / LoadOp(1));
+            int divisore = LoadOp(1);
+            if (divisore == 0)
+                throw new CpuException(CodiceErrore.DivisionePerZero);
+
+            if (Larghezza == 8)
+            {
+                int quoziente = ax / divisore;          // AL = AX / op, AH = AX % op
+                if (quoziente < sbyte.MinValue || quoziente > sbyte.MaxValue)
+                    throw new CpuException(CodiceErrore.QuozienteFuoriIntervallo);
+                ax = ConAlto(ConBasso(ax, (short)quoziente), (short)(ax % divisore));
+                return;
+            }
+            long dividendo = ax + ((long)dx << 16);
+            long quoziente16 = dividendo / divisore;
+            if (quoziente16 < short.MinValue || quoziente16 > short.MaxValue)
+                throw new CpuException(CodiceErrore.QuozienteFuoriIntervallo);
+            dx = (short)(dividendo % divisore);
+            ax = (short)quoziente16;
         }
 
         void Inc()
@@ -620,72 +649,122 @@ namespace EasyCpu.Assembler.Processore
         short LoadOp(int numOp)
         {
             if (numOp == 1)
-                return LoadOp(curIstruzione.Op1, curIstruzione.Offset1);
+                return LoadOp(curIstruzione.Op1);
             else
-                return LoadOp(curIstruzione.Op2, curIstruzione.Offset2);
+                return LoadOp(curIstruzione.Op2);
         }
 
         void StoreOp(int valore, int numOp)
         {
             if (numOp == 1)
-                StoreOp((short)valore, curIstruzione.Op1, curIstruzione.Offset1);
+                StoreOp((short)valore, curIstruzione.Op1);
             else
-                StoreOp((short)valore, curIstruzione.Op2, curIstruzione.Offset2);
+                StoreOp((short)valore, curIstruzione.Op2);
         }
 
-        short LoadOp(IdOp op, int offset)
+        // dimensione dell'istruzione corrente (8 o 16 bit)
+        int Larghezza => curIstruzione.Larghezza;
+
+        // Riporta un valore alla dimensione dell'istruzione, con estensione del segno
+        short Adatta(int valore) => Larghezza == 8 ? (sbyte)valore : (short)valore;
+
+        short LoadOp(Operando op)
         {
-            switch (op)
+            switch (op.Tipo)
             {
-                case IdOp.ax: return ax;
-                case IdOp.bx: return bx;
-                case IdOp.cx: return cx;
-                case IdOp.dx: return dx;
-                case IdOp.si: return si;
-                case IdOp.di: return di;
-                case IdOp.bp: return bp;
-                case IdOp.sp: return sp;
-                case IdOp._si: return memoria[si + offset];
-                case IdOp._di: return memoria[di + offset];
-                case IdOp._bx: return memoria[bx + offset];
-                case IdOp._bp: return memoria[bp + offset];
-                case IdOp.Costante: return (short)offset;
-                case IdOp.Memoria: return memoria[offset];
-                case IdOp.Etichetta: return (short)offset;
+                case TipoOperando.Registro: return LeggiRegistro(op.Base);
+                case TipoOperando.Indiretto: return Adatta(memoria[LeggiRegistro(op.Base) + op.Scostamento]);
+                case TipoOperando.Costante: return Adatta(op.Scostamento);
+                case TipoOperando.Memoria: return Adatta(memoria[op.Scostamento]);
+                case TipoOperando.Etichetta: return (short)op.Scostamento;
             }
             return -1;
         }
 
-        void StoreOp(short valore, IdOp op, int offset)
+        void StoreOp(short valore, Operando op)
         {
-            switch (op)
+            switch (op.Tipo)
             {
-                case IdOp.ax: ax = valore; break;
-                case IdOp.bx: bx = valore; break;
-                case IdOp.cx: cx = valore; break;
-                case IdOp.dx: dx = valore; break;
-                case IdOp.si: si = valore; break;
-                case IdOp.di: di = valore; break;
-                case IdOp.bp: bp = valore; break;
-                case IdOp.sp: sp = valore; break;
-                case IdOp._si: memoria[si + offset] = valore; break;
-                case IdOp._di: memoria[di + offset] = valore; break;
-                case IdOp._bx: memoria[bx + offset] = valore; break;
-                case IdOp._bp: memoria[bp + offset] = valore; break;
-                case IdOp.Memoria: memoria[offset] = valore; break;
+                case TipoOperando.Registro: ScriviRegistro(op.Base, valore); break;
+                case TipoOperando.Indiretto: ScriviMemoria(LeggiRegistro(op.Base) + op.Scostamento, valore); break;
+                case TipoOperando.Memoria: ScriviMemoria(op.Scostamento, valore); break;
             }
         }
 
+        // Memoria a celle da 16 bit: un accesso a 8 bit scrive solo il byte basso della cella
+        void ScriviMemoria(int indirizzo, short valore)
+        {
+            memoria[indirizzo] = Larghezza == 8 ? ConBasso(memoria[indirizzo], valore) : valore;
+        }
+
+        // byte basso/alto di una parola, con estensione del segno
+        static short Basso(short parola) => (sbyte)parola;
+        static short Alto(short parola) => (sbyte)(parola >> 8);
+
+        // parola con il byte basso/alto sostituito da quello di valore
+        static short ConBasso(short parola, short valore) => (short)((parola & 0xFF00) | (valore & 0xFF));
+        static short ConAlto(short parola, short valore) => (short)((parola & 0x00FF) | ((valore & 0xFF) << 8));
+
+        short LeggiRegistro(Registro reg)
+        {
+            switch (reg)
+            {
+                case Registro.ax: return ax;
+                case Registro.bx: return bx;
+                case Registro.cx: return cx;
+                case Registro.dx: return dx;
+                case Registro.si: return si;
+                case Registro.di: return di;
+                case Registro.bp: return bp;
+                case Registro.sp: return sp;
+                case Registro.al: return Basso(ax);
+                case Registro.ah: return Alto(ax);
+                case Registro.bl: return Basso(bx);
+                case Registro.bh: return Alto(bx);
+                case Registro.cl: return Basso(cx);
+                case Registro.ch: return Alto(cx);
+                case Registro.dl: return Basso(dx);
+                case Registro.dh: return Alto(dx);
+            }
+            return -1;
+        }
+
+        void ScriviRegistro(Registro reg, short valore)
+        {
+            switch (reg)
+            {
+                case Registro.ax: ax = valore; break;
+                case Registro.bx: bx = valore; break;
+                case Registro.cx: cx = valore; break;
+                case Registro.dx: dx = valore; break;
+                case Registro.si: si = valore; break;
+                case Registro.di: di = valore; break;
+                case Registro.bp: bp = valore; break;
+                case Registro.sp: sp = valore; break;
+                case Registro.al: ax = ConBasso(ax, valore); break;
+                case Registro.ah: ax = ConAlto(ax, valore); break;
+                case Registro.bl: bx = ConBasso(bx, valore); break;
+                case Registro.bh: bx = ConAlto(bx, valore); break;
+                case Registro.cl: cx = ConBasso(cx, valore); break;
+                case Registro.ch: cx = ConAlto(cx, valore); break;
+                case Registro.dl: dx = ConBasso(dx, valore); break;
+                case Registro.dh: dx = ConAlto(dx, valore); break;
+            }
+        }
+
+        // flag calcolati sulla dimensione dell'istruzione: a 8 bit SF è il bit 7 e OF indica l'uscita da -128..127
         void SetFlags(short mask, int ris)
         {
+            short troncato = Adatta(ris);
+
             if ((ZF & mask) != 0)
-                flags = (short)(((short)ris == 0) ? flags | ZF : flags & ~ZF);
+                flags = (short)((troncato == 0) ? flags | ZF : flags & ~ZF);
 
             if ((SF & mask) != 0)
-                flags = (short)(((short)ris < 0) ? flags | SF : flags & ~SF);
+                flags = (short)((troncato < 0) ? flags | SF : flags & ~SF);
 
             if ((OF & mask) != 0)
-                flags = (short)((ris > short.MaxValue || ris < short.MinValue) ? flags | OF : flags & ~OF);
+                flags = (short)((ris != troncato) ? flags | OF : flags & ~OF);
         }
 
         void SetFlags(int ris)
@@ -757,16 +836,24 @@ namespace EasyCpu.Assembler.Processore
             string formatoReg = " = {0" + Ambiente.FR + "} ";
             string[] reg = new string[9];
 
-            reg[0] = string.Format("AX" + formatoReg, ax);
-            reg[1] = string.Format("BX" + formatoReg, bx);
-            reg[2] = string.Format("CX" + formatoReg, cx);
-            reg[3] = string.Format("DX" + formatoReg, dx);
+            reg[0] = string.Format("AX" + formatoReg, ax) + DumpByte("AH", "AL", ax);
+            reg[1] = string.Format("BX" + formatoReg, bx) + DumpByte("BH", "BL", bx);
+            reg[2] = string.Format("CX" + formatoReg, cx) + DumpByte("CH", "CL", cx);
+            reg[3] = string.Format("DX" + formatoReg, dx) + DumpByte("DH", "DL", dx);
             reg[4] = string.Format("SI" + formatoReg, si);
             reg[5] = string.Format("DI" + formatoReg, di);
             reg[6] = string.Format("BP" + formatoReg, bp);
             reg[7] = string.Format("SP" + formatoReg, sp);
             reg[8] = string.Format("IP" + formatoReg, ip);
             return reg;
+        }
+
+        // "[AH=01 AL=41]": byte alto e basso di un registro a 16 bit
+        static string DumpByte(string nomeAlto, string nomeBasso, short parola)
+        {
+            string formato = (Ambiente.FormatoDati == FormatoValore.Hex) ? "{0:X2}" : "{0,4:0}";
+            string Byte(short b) => (Ambiente.FormatoDati == FormatoValore.Hex) ? string.Format(formato, (byte)b) : string.Format(formato, b);
+            return string.Format("[{0}={1} {2}={3}]", nomeAlto, Byte(Alto(parola)), nomeBasso, Byte(Basso(parola)));
         }
 
         static string IntToChar(int x)

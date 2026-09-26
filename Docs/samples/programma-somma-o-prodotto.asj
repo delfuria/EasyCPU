@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Somma o prodotto in base al segno",
+    "//",
+    "// Cosa illustra:",
+    "//   Data una sequenza di tre numeri: se il primo è minore di zero calcola",
+    "//   il prodotto degli altri due, altrimenti la loro somma.",
+    "//   Il risultato viene memorizzato all'indirizzo 15.",
+    "//   (riscrittura di Docs/Subroutines/SommaOProdotto.as; corretto il salto,",
+    "//   che nell'originale calcolava la somma per un primo numero negativo)",
+    "//",
+    "// Utilizzo:",
+    "//   Aprire il file e premere Avvia; in alternativa eseguire con Step Into",
+    "//   un'istruzione alla volta, osservando i pannelli Registri e Memoria.",
+    "//   Provare a cambiare il primo dato (-1) in un valore positivo.",
+    "//",
+    "// Risultato atteso:",
+    "//   Con i dati -1, 2, 3: AX = 6, memoria[15] = 6 (prodotto)",
+    "//   Con un primo dato >= 0: memoria[15] = 5 (somma)",
+    "// ======================================================================",
+    "",
+    "        mov ax, [11]",
+    "        cmp [10], 0",
+    "        jl prodotto         // primo numero negativo: prodotto",
+    "        add ax, [12]        // altrimenti: somma",
+    "        jmp risultato",
+    "prodotto:",
+    "        mul [12]",
+    "risultato:",
+    "        mov [15], ax",
+    "        stop"
+  ],
+  "data": [
+    "10: -1, 2, 3"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Moltiplicazione a 8 bit",
+    "//",
+    "// Cosa illustra:",
+    "//   MUL con operando a 8 bit: AX = AL * sorgente (con segno).",
+    "//   OF = 1 se il prodotto non sta in AL.",
+    "//",
+    "// Utilizzo:",
+    "//   Eseguire con Step Into: osservare AX e il flag O dopo ogni MUL.",
+    "//",
+    "// Risultato atteso:",
+    "//   Primo MUL: 16 * 20 = 320 (CX), OF = 1",
+    "//   Secondo MUL: -3 * 20 = -60 (AX), OF = 0",
+    "// ======================================================================",
+    "",
+    "        mov ax, 7F10h       // AL = 16, AH viene sovrascritto da MUL",
+    "        mov bx, 0",
+    "        mov bl, 20",
+    "        mul bl              // AX = 16 * 20 = 320",
+    "        mov cx, ax",
+    "        mov al, -3",
+    "        mul bl              // AX = -3 * 20 = -60",
+    "        stop"
+  ],
+  "data": []
+}

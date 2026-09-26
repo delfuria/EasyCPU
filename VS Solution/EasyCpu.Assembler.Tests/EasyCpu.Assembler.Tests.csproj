@@ -21,6 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\EasyCpu.Assembler\EasyCpu.Assembler.csproj" />
     <ProjectReference Include="..\EasyCpu.Common\EasyCpu.Common.csproj" />
+    <ProjectReference Include="..\EasyCpu.Backend\EasyCpu.Backend.csproj" />
   </ItemGroup>
 
 </Project>

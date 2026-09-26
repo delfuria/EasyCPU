@@ -11,32 +11,28 @@ namespace EasyCpu.Assembler.Parsing
     public class Instruction
     {
         public string Code;
-        public IdOp Op1;
-        public IdOp Op2;
-        public int Offset1;
-        public int Offset2;
+        public Operando Op1;
+        public Operando Op2;
+        public int Larghezza;   // dimensione dell'operazione: 8 o 16 bit
         public string Etichetta;
         public int indRiga;     // riga sorgente 0-based; per gestione errori compilazione
-        public Instruction(string code, IdOp op1, IdOp op2, int offset1, int offset2)
+        public Instruction(string code, Operando op1, Operando op2)
         {
             this.Code = code;
             this.Op1 = op1;
             this.Op2 = op2;
-            this.Offset1 = offset1;
-            this.Offset2 = offset2;
             this.Etichetta = null;
             VerificaIstruzione();
         }
 
-        public Instruction(string code, string etichetta) : this(code, IdOp.Null, IdOp.Null, 0, 0)
+        public Instruction(string code, string etichetta) : this(code, Operando.Nessuno, Operando.Nessuno)
         {
             this.Etichetta = etichetta;
-            this.Op1 = IdOp.Etichetta;
+            this.Op1.Tipo = TipoOperando.Etichetta;
         }
 
-        public Instruction(string code) : this(code, IdOp.Null, IdOp.Null, 0, 0) { }
-        public Instruction(string code, IdOp op, int offset) : this(code, op, IdOp.Null, offset, 0) { }
-        public Instruction(string code, IdOp op1, IdOp op2) : this(code, op1, op2, 0, 0) { }
+        public Instruction(string code) : this(code, Operando.Nessuno, Operando.Nessuno) { }
+        public Instruction(string code, Operando op) : this(code, op, Operando.Nessuno) { }
 
         string OffsetToString(int offset)
         {
@@ -47,28 +43,17 @@ namespace EasyCpu.Assembler.Parsing
             return "";
         }
 
-        string OpToString(IdOp op, int offset)
+        string OpToString(Operando op)
         {
             const string formatoIndiretto = "[{0}{1}]";
-            string strOff = OffsetToString(offset);
 
-            switch (op)
+            switch (op.Tipo)
             {
-                case IdOp.Costante: return OffsetToString(offset);
-                case IdOp.Memoria: return "[" + offset.ToString() + "]";
-                case IdOp.Etichetta: return offset.ToString();
-                case IdOp.ax: return "ax";
-                case IdOp.bx: return "bx";
-                case IdOp.cx: return "cx";
-                case IdOp.dx: return "dx";
-                case IdOp.si: return "si";
-                case IdOp.di: return "di";
-                case IdOp.bp: return "bp";
-                case IdOp.sp: return "sp";
-                case IdOp._si: return string.Format(formatoIndiretto, "si", strOff);
-                case IdOp._di: return string.Format(formatoIndiretto, "di", strOff);
-                case IdOp._bp: return string.Format(formatoIndiretto, "bp", strOff);
-                case IdOp._bx: return string.Format(formatoIndiretto, "bx", strOff);
+                case TipoOperando.Costante: return OffsetToString(op.Scostamento);
+                case TipoOperando.Memoria: return "[" + op.Scostamento.ToString() + "]";
+                case TipoOperando.Etichetta: return op.Scostamento.ToString();
+                case TipoOperando.Registro: return op.Base.ToString();
+                case TipoOperando.Indiretto: return string.Format(formatoIndiretto, op.Base, OffsetToString(op.Scostamento));
 
                 default: return "";
             }
@@ -77,8 +62,8 @@ namespace EasyCpu.Assembler.Parsing
 
         public override string ToString()
         {
-            string strOp1 = OpToString(Op1, Offset1);
-            string strOp2 = OpToString(Op2, Offset2);
+            string strOp1 = OpToString(Op1);
+            string strOp2 = OpToString(Op2);
             string virgola = "";
             if (strOp2 != "")
                 virgola = ",";
@@ -87,13 +72,29 @@ namespace EasyCpu.Assembler.Parsing
 
         void VerificaIstruzione()
         {
-            if (Op1 == IdOp.Costante && Op2 != IdOp.Null)   // destinazione costante
+            if (Op1.Tipo == TipoOperando.Costante && Op2.Tipo != TipoOperando.Nessuno)   // destinazione costante
                 throw new CodiceException(CodiceErrore.DestinazioneCostante);
 
             if ("not neg inc dec pop".IndexOf(Code) != -1)  // destinazione costante
             {
-                if (Op1 == IdOp.Costante)
+                if (Op1.Tipo == TipoOperando.Costante)
                     throw new CodiceException(CodiceErrore.DestinazioneCostante);
+            }
+
+            // dimensione: la determinano i registri; nelle shift il secondo operando è il conteggio
+            bool shift = Code == "shl" || Code == "shr";
+            int larg1 = Op1.Larghezza;
+            int larg2 = shift ? 0 : Op2.Larghezza;
+            if (larg1 != 0 && larg2 != 0 && larg1 != larg2)
+                throw new CodiceException(CodiceErrore.DimensioneOperandi);
+            Larghezza = larg1 != 0 ? larg1 : (larg2 != 0 ? larg2 : 16);
+
+            if (Larghezza == 8)
+            {
+                if (Code == "push" || Code == "pop")
+                    throw new CodiceException(CodiceErrore.DimensioneOperandi);
+                if (!shift && Op2.Tipo == TipoOperando.Costante && (Op2.Scostamento < sbyte.MinValue || Op2.Scostamento > byte.MaxValue))
+                    throw new CodiceException(CodiceErrore.CostanteFuoriIntervallo);
             }
         }
     }

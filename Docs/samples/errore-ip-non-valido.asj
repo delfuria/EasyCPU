@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Errore di esecuzione: IP non valido",
+    "//",
+    "// Cosa illustra:",
+    "//   RET preleva dallo stack l'indirizzo di ritorno: se non è l'indirizzo",
+    "//   di un'istruzione, IP non punta più al programma.",
+    "//",
+    "// Utilizzo:",
+    "//   Premere Avvia (o Step Into due volte): il pannello Errori mostra",
+    "//   l'errore di tipo Esecuzione, senza riga perché IP è fuori dal programma.",
+    "//",
+    "// Risultato atteso:",
+    "//   Errore 'Registro IP non indirizza un'istruzione'",
+    "// ======================================================================",
+    "",
+    "        push 100            // non è un indirizzo di ritorno valido",
+    "        ret                 // IP = 101"
+  ],
+  "data": []
+}

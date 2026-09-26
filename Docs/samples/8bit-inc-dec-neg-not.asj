@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// INC, DEC, NEG, NOT a 8 bit",
+    "//",
+    "// Cosa illustra:",
+    "//   Istruzioni a un operando applicate a registri a 8 bit.",
+    "//",
+    "// Utilizzo:",
+    "//   Eseguire con Step Into con il formato Hex.",
+    "//",
+    "// Risultato atteso:",
+    "//   AX = 0080h, BX = 01FFh, CX = 00FBh, DX = FF00h",
+    "// ======================================================================",
+    "",
+    "        mov ax, 0",
+    "        mov al, 7Fh",
+    "        inc al              // 80h: overflow (127 + 1)",
+    "        mov bx, 0100h",
+    "        dec bl              // BL = FFh, BH resta 01h",
+    "        mov cx, 0",
+    "        mov cl, 5",
+    "        neg cl              // CL = FBh (-5)",
+    "        mov dx, 0",
+    "        not dh              // DH = FFh",
+    "        stop"
+  ],
+  "data": []
+}

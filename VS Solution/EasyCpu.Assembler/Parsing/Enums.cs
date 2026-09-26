@@ -12,16 +12,22 @@ namespace EasyCpu.Assembler.Parsing
         Codice
     }
 
-    public enum IdOp
+    public enum TipoOperando
+    {
+        Nessuno,
+        Registro,
+        Costante,
+        Memoria,        // indirizzamento diretto: [10]
+        Indiretto,      // indirizzamento tramite registro: [si], [bp+2]
+        Etichetta
+    }
+
+    public enum Registro
     {
         ax, bx, cx, dx,
         si, di,
         bp, sp,
-        ip,     // non utilizzato nel parsing degli operandi
-        Null,
-        Costante,
-        Memoria,
-        Etichetta,
-        _si, _di, _bp, _bx
+        // registri a 8 bit: viste sui byte basso/alto di AX..DX
+        al, ah, bl, bh, cl, ch, dl, dh
     }
 }

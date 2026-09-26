@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Stack: PUSH, POP, PUSHF, POPF",
+    "//",
+    "// Cosa illustra:",
+    "//   Salvataggio e ripristino dei flag e di un valore tramite lo stack.",
+    "//",
+    "// Utilizzo:",
+    "//   Eseguire con Step Into e osservare i pannelli Stack e Registri:",
+    "//   SP scende a ogni PUSH e risale a ogni POP.",
+    "//",
+    "// Risultato atteso:",
+    "//   ZF = 1 (ripristinato da POPF)",
+    "//   CX = 42",
+    "//   SP = 256 (stack vuoto)",
+    "// ======================================================================",
+    "",
+    "        mov ax, 0",
+    "        cmp ax, 0           // ZF = 1",
+    "        pushf               // salva i flag",
+    "        mov bx, 1",
+    "        cmp bx, 0           // ZF = 0",
+    "        popf                // ripristina i flag: ZF torna a 1",
+    "        push 42",
+    "        pop cx",
+    "        stop"
+  ],
+  "data": []
+}

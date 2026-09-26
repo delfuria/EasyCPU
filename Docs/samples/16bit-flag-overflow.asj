@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Flag di overflow a 16 bit",
+    "//",
+    "// Cosa illustra:",
+    "//   ADD che supera il massimo valore con segno (32767) imposta OF e SF.",
+    "//",
+    "// Utilizzo:",
+    "//   Aprire il file e premere Avvia; in alternativa eseguire con Step Into",
+    "//   un'istruzione alla volta, osservando i pannelli Registri e Memoria.",
+    "//",
+    "// Risultato atteso:",
+    "//   AX = -32768",
+    "//   OF = 1, SF = 1, ZF = 0",
+    "// ======================================================================",
+    "",
+    "        mov ax, 32767       // massimo valore a 16 bit con segno",
+    "        add ax, 1           // il risultato non sta in 16 bit: overflow",
+    "        stop"
+  ],
+  "data": []
+}

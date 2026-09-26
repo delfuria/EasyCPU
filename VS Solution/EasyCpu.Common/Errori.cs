@@ -29,6 +29,9 @@ namespace EasyCpu.Common
 		ViolazioneMemoria,
 		IPNonValido,
 		InterruptNonValido,
+		DimensioneOperandi,
+		DivisionePerZero,
+		QuozienteFuoriIntervallo,
 
 	}
 
@@ -61,6 +64,9 @@ namespace EasyCpu.Common
 				case CodiceErrore.ViolazioneMemoria: return "Violazione dei limiti della memoria";
 				case CodiceErrore.IPNonValido: return "Registro IP non indirizza un'istruzione";
 				case CodiceErrore.InterruptNonValido: return "Numero di interrupt non valido";
+				case CodiceErrore.DimensioneOperandi: return "Dimensione degli operandi non valida o non coerente (8/16 bit)";
+				case CodiceErrore.DivisionePerZero: return "Divisione per zero";
+				case CodiceErrore.QuozienteFuoriIntervallo: return "Il quoziente della divisione non sta nel registro destinazione";
 					//case CodiceErrore.: return "";
 					//case CodiceErrore.: return "";
 			}

@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Ciclo infinito",
+    "//",
+    "// Cosa illustra:",
+    "//   Un errore tipico: CX viene reimpostato a 0 a ogni iterazione, quindi",
+    "//   la condizione di uscita non si verifica mai.",
+    "//   (riscrittura di Docs/Subroutines/loopinfinito.as)",
+    "//",
+    "// Utilizzo:",
+    "//   Premere Avvia: dopo il numero massimo di istruzioni impostato nelle",
+    "//   Opzioni, EasyCPU chiede se continuare, sospendere o fermare.",
+    "//   Correzione: spostare 'mov cx, 0' prima dell'etichetta ciclo.",
+    "//",
+    "// Risultato atteso:",
+    "//   Richiesta di sospensione per ciclo infinito",
+    "// ======================================================================",
+    "",
+    "ciclo:  mov cx, 0           // errore: va messa prima del ciclo",
+    "        inc cx",
+    "        cmp cx, 5",
+    "        jne ciclo",
+    "        stop"
+  ],
+  "data": []
+}

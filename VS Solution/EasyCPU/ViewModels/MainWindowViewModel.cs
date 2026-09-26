@@ -753,7 +753,7 @@ public partial class MainViewModel : ObservableObject
         {
             _atBreakpoint = false;
             try { await Cpu.StepInto(); }
-            catch (CpuException) { UpdateCurrentSourceLine(); RefreshDebugViews(); return; }
+            catch (CpuException e) { ShowRuntimeError(e); return; }
             if (Cpu.stop)
             {
                 UpdateCurrentSourceLine();
@@ -788,7 +788,7 @@ public partial class MainViewModel : ObservableObject
                 Cpu.Stop();
                 break;
             }
-            catch (CpuException) { break; }
+            catch (CpuException e) { ShowRuntimeError(e); return; }
         }
 
         UpdateCurrentSourceLine();
@@ -811,7 +811,7 @@ public partial class MainViewModel : ObservableObject
         {
             _atBreakpoint = false;
             try { await Cpu.StepInto(); }
-            catch (CpuException) { UpdateCurrentSourceLine(); RefreshDebugViews(); return; }
+            catch (CpuException e) { ShowRuntimeError(e); return; }
             if (Cpu.stop)
             {
                 UpdateCurrentSourceLine();
@@ -852,7 +852,13 @@ public partial class MainViewModel : ObservableObject
                 Cpu.Stop();
                 break;
             }
-            catch (CpuException) { break; }
+            catch (CpuException e)
+            {
+                if (tempBreakpoint)
+                    Cpu.Breakpoints.Remove(instrIdx);
+                ShowRuntimeError(e);
+                return;
+            }
         }
 
         if (tempBreakpoint)
@@ -901,7 +907,7 @@ public partial class MainViewModel : ObservableObject
             await Cpu.StepInto();
         }
         catch (CpuTrapException) { _atBreakpoint = true; }
-        catch (CpuException) { }
+        catch (CpuException e) { ShowRuntimeError(e); return; }
         UpdateCurrentSourceLine();
         RefreshDebugViews();
         StatusMessage = CurrentSourceLine > 0 ? $"Riga {CurrentSourceLine}" : "Esecuzione terminata";
@@ -917,7 +923,7 @@ public partial class MainViewModel : ObservableObject
             await Cpu.StepOver();
         }
         catch (CpuTrapException) { _atBreakpoint = true; }
-        catch (CpuException) { }
+        catch (CpuException e) { ShowRuntimeError(e); return; }
         UpdateCurrentSourceLine();
         RefreshDebugViews();
         StatusMessage = CurrentSourceLine > 0 ? $"Riga {CurrentSourceLine}" : "Esecuzione terminata";
@@ -933,10 +939,32 @@ public partial class MainViewModel : ObservableObject
             await Cpu.StepOut();
         }
         catch (CpuTrapException) { _atBreakpoint = true; }
-        catch (CpuException) { }
+        catch (CpuException e) { ShowRuntimeError(e); return; }
         UpdateCurrentSourceLine();
         RefreshDebugViews();
         StatusMessage = CurrentSourceLine > 0 ? $"Riga {CurrentSourceLine}" : "Esecuzione terminata";
+    }
+
+    // Mostra nel pannello Errori l'errore rilevato dalla CPU, sulla riga dell'istruzione che l'ha causato
+    private void ShowRuntimeError(CpuException e)
+    {
+        int ip = Cpu.IP;
+        var map = Compiler.InstrToLineMap;
+        int riga = (map != null && ip >= 0 && ip < map.Count) ? map[ip] : -1;
+        var err = new CompilerError(Errori.Msg(e.err), riga, 0, CompilerError.ESECUZIONE);
+
+        if (_factory.Errors is { } ev)
+        {
+            ev.Errors.Clear();
+            ev.Errors.Add(new CompilerErrorAdapter(err));
+            IsErrorsVisible = true;
+            _factory.SetActiveDockable(ev);
+        }
+        UpdateCurrentSourceLine();
+        RefreshDebugViews();
+        StatusMessage = riga >= 0
+            ? $"Errore di esecuzione alla riga {riga + 1}: {err.Msg}"
+            : $"Errore di esecuzione: {err.Msg}";
     }
 
     [RelayCommand(CanExecute = nameof(CanRunCode))]
@@ -1067,8 +1095,9 @@ public partial class MainViewModel : ObservableObject
 
     public void NavigateToError(CompilerError err)
     {
+        if (err.Riga < 0) return;
         int lineNumber = err.Riga + 1;
-        if (err.Tipo == CompilerError.CODICE)
+        if (err.Tipo != CompilerError.DATI)     // errori di codice e di esecuzione
         {
             if (_factory.CodeEditor is not { } editor) return;
             _factory.SetActiveDockable(editor);

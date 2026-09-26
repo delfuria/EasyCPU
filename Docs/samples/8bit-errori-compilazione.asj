@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Errori di compilazione (8 bit)",
+    "//",
+    "// Cosa illustra:",
+    "//   Ogni riga contiene un errore voluto: il programma NON compila.",
+    "//",
+    "// Utilizzo:",
+    "//   Premere Compila e osservare il pannello Errori.",
+    "//",
+    "// Risultato atteso:",
+    "//   6 errori di tipo Codice:",
+    "//   - 4 'Dimensione degli operandi non valida o non coerente (8/16 bit)'",
+    "//   - 2 'Valore fuori dall'intervallo consentito'",
+    "// ======================================================================",
+    "",
+    "        mov al, bx          // registri di dimensione diversa",
+    "        add si, cl          // registri di dimensione diversa",
+    "        push al             // PUSH opera solo a 16 bit",
+    "        pop ah              // POP opera solo a 16 bit",
+    "        mov al, 256         // costante a 8 bit oltre 255",
+    "        mov al, -129        // costante a 8 bit sotto -128"
+  ],
+  "data": []
+}

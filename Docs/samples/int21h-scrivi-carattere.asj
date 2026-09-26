@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// int 21h: scrittura di un carattere",
+    "//",
+    "// Cosa illustra:",
+    "//   Servizio AX = 2: scrive su console il carattere contenuto in DX.",
+    "//",
+    "// Utilizzo:",
+    "//   Premere Avvia: il pannello Console si apre e mostra il testo.",
+    "//",
+    "// Risultato atteso:",
+    "//   La console mostra: Ciao",
+    "// ======================================================================",
+    "",
+    "        mov ax, 2           // servizio: scrivi carattere",
+    "        mov dx, 'C'",
+    "        int 21h",
+    "        mov dx, 'i'",
+    "        int 21h",
+    "        mov dx, 'a'",
+    "        int 21h",
+    "        mov dx, 'o'",
+    "        int 21h",
+    "        stop"
+  ],
+  "data": []
+}

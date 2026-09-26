@@ -10,6 +10,7 @@ namespace EasyCpu.Assembler.Parsing
     {
         public const int CODICE = 0;
         public const int DATI = 1;
+        public const int ESECUZIONE = 2;   // errore rilevato dalla CPU durante l'esecuzione
         public string Msg;
         public int Riga = -1;
         public int Colonna = 0;
@@ -35,6 +36,8 @@ namespace EasyCpu.Assembler.Parsing
             string tipostr;
             if (Tipo == CODICE)
                 tipostr = "C";
+            else if (Tipo == ESECUZIONE)
+                tipostr = "E";
             else
                 tipostr = "D";
 

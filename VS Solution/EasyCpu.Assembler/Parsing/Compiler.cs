@@ -123,8 +123,8 @@ namespace EasyCpu.Assembler.Parsing
             {
                 Instruction istr = istruzioni[indRiga];
                 if (istr.Etichetta == null) continue;
-                istr.Offset1 = CercaEtichetta(istr.Etichetta);
-                if (istr.Offset1 == -1)
+                istr.Op1.Scostamento = CercaEtichetta(istr.Etichetta);
+                if (istr.Op1.Scostamento == -1)
                 {
                     if (errori == null)
                         errori = new List<CompilerError>();

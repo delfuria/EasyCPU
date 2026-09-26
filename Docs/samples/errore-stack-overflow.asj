@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Errore di esecuzione: stack overflow",
+    "//",
+    "// Cosa illustra:",
+    "//   Lo stack ha 16 celle (240..255): una PUSH in un ciclo senza POP lo riempie.",
+    "//",
+    "// Utilizzo:",
+    "//   Premere Avvia: l'esecuzione si interrompe e il pannello Errori mostra",
+    "//   un errore di tipo Esecuzione con la riga dell'istruzione responsabile.",
+    "//",
+    "// Risultato atteso:",
+    "//   Errore 'Stack overflow' sull'istruzione PUSH dopo 16 iterazioni",
+    "// ======================================================================",
+    "",
+    "ciclo:  push ax             // ogni PUSH consuma una cella dello stack",
+    "        jmp ciclo"
+  ],
+  "data": []
+}

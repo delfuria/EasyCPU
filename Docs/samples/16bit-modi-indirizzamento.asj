@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Modi di indirizzamento",
+    "//",
+    "// Cosa illustra:",
+    "//   Immediato (decimale, esadecimale, carattere), a registro, diretto,",
+    "//   indiretto con SI, DI, BX, BP e indiretto con scostamento.",
+    "//",
+    "// Utilizzo:",
+    "//   Aprire il file e premere Avvia; in alternativa eseguire con Step Into",
+    "//   un'istruzione alla volta, osservando i pannelli Registri e Memoria.",
+    "//",
+    "// Risultato atteso:",
+    "//   AX = 1275 (100+200+200+300+400+10+65)",
+    "//   Memoria[15] = 1275",
+    "// ======================================================================",
+    "",
+    "        mov si, 10",
+    "        mov di, 11",
+    "        mov bx, 12",
+    "        mov bp, 10",
+    "        mov ax, [si]        // indiretto: memoria[10] = 100",
+    "        add ax, [di]        // indiretto: memoria[11] = 200",
+    "        add ax, [bx-1]      // indiretto con scostamento: memoria[11] = 200",
+    "        add ax, [bp+2]      // indiretto con scostamento: memoria[12] = 300",
+    "        add ax, [13]        // diretto: memoria[13] = 400",
+    "        add ax, 0Ah         // immediato esadecimale: 10",
+    "        add ax, 'A'         // immediato carattere: 65",
+    "        mov [si+5], ax      // scrive il risultato in memoria[15]",
+    "        stop"
+  ],
+  "data": [
+    "10: 100, 200, 300, 400"
+  ]
+}

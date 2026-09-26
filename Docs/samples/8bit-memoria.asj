@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Accessi a 8 bit alla memoria",
+    "//",
+    "// Cosa illustra:",
+    "//   Le celle di memoria sono di 16 bit: un accesso a 8 bit legge o scrive",
+    "//   solo il byte basso della cella, il byte alto non cambia.",
+    "//",
+    "// Utilizzo:",
+    "//   Eseguire con Step Into e osservare le celle 10, 11, 12 nel pannello",
+    "//   Memoria (formato Hex).",
+    "//",
+    "// Risultato atteso:",
+    "//   Memoria[10] = 125Ah, Memoria[11] = 005Ah, BX = FF00h",
+    "// ======================================================================",
+    "",
+    "        mov si, 10",
+    "        mov al, 'Z'         // 5Ah",
+    "        mov [si], al        // memoria[10]: 1234h -> 125Ah",
+    "        mov [11], al        // memoria[11]: 0000h -> 005Ah",
+    "        mov bh, [12]        // legge il byte basso di memoria[12] (FFh)",
+    "        stop"
+  ],
+  "data": [
+    "10: 1234h, 0, -1"
+  ]
+}

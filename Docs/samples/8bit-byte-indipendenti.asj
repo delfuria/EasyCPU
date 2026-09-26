@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Scrittura di un byte senza toccare l'altro",
+    "//",
+    "// Cosa illustra:",
+    "//   Scrivere BL, CH, DH, DL modifica solo quel byte del registro a 16 bit.",
+    "//",
+    "// Utilizzo:",
+    "//   Eseguire con Step Into; impostare il formato Hex per leggere meglio i byte.",
+    "//",
+    "// Risultato atteso:",
+    "//   BX = 12FFh, CX = 0034h, DX = 4141h",
+    "// ======================================================================",
+    "",
+    "        mov bx, 1234h",
+    "        mov bl, 0FFh        // BX = 12FFh: BH non cambia",
+    "        mov cx, 1234h",
+    "        mov ch, 0           // CX = 0034h: CL non cambia",
+    "        mov dx, 0",
+    "        mov dh, 'A'         // DX = 4100h",
+    "        mov dl, dh          // DX = 4141h",
+    "        stop"
+  ],
+  "data": []
+}

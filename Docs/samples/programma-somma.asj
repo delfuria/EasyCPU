@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Somma di due registri",
+    "//",
+    "// Cosa illustra:",
+    "//   Il programma minimo: MOV e ADD tra registri.",
+    "//   (riscrittura di Docs/Subroutines/somma.as)",
+    "//",
+    "// Utilizzo:",
+    "//   Aprire il file e premere Avvia; in alternativa eseguire con Step Into",
+    "//   un'istruzione alla volta, osservando i pannelli Registri e Memoria.",
+    "//",
+    "// Risultato atteso:",
+    "//   AX = 3, BX = 2",
+    "// ======================================================================",
+    "",
+    "        mov ax, 1",
+    "        mov bx, 2",
+    "        add ax, bx          // AX = AX + BX",
+    "        stop"
+  ],
+  "data": []
+}

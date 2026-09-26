@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Errore di esecuzione: quoziente troppo grande",
+    "//",
+    "// Cosa illustra:",
+    "//   Il quoziente di DIV deve stare nel registro destinazione:",
+    "//   AL (-128..127) a 8 bit, AX (-32768..32767) a 16 bit.",
+    "//",
+    "// Utilizzo:",
+    "//   Premere Avvia: l'esecuzione si interrompe e il pannello Errori mostra",
+    "//   un errore di tipo Esecuzione con la riga dell'istruzione responsabile.",
+    "//",
+    "// Risultato atteso:",
+    "//   Errore 'Il quoziente della divisione non sta nel registro destinazione'",
+    "//   sulla prima DIV (1000 / 2 = 500 non sta in AL)",
+    "// ======================================================================",
+    "",
+    "        mov ax, 1000",
+    "        mov bx, 2",
+    "        div bl              // 500 non sta in AL",
+    "        stop"
+  ],
+  "data": []
+}

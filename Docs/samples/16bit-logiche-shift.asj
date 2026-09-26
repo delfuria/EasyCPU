@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Istruzioni logiche e shift a 16 bit",
+    "//",
+    "// Cosa illustra:",
+    "//   AND, OR, XOR, SHL, SHR, NOT (complemento a 1) e NEG (complemento a 2).",
+    "//",
+    "// Utilizzo:",
+    "//   Aprire il file e premere Avvia; in alternativa eseguire con Step Into",
+    "//   un'istruzione alla volta, osservando i pannelli Registri e Memoria.",
+    "//",
+    "// Risultato atteso:",
+    "//   AX = 200 (C8h), BX = 25 (19h), CX = -6, DX = -7",
+    "// ======================================================================",
+    "",
+    "        mov ax, 0F0h",
+    "        and ax, 3Ch         // F0h AND 3Ch = 30h",
+    "        or ax, 1            // 31h",
+    "        xor ax, 3           // 32h",
+    "        shl ax, 2           // C8h",
+    "        mov bx, ax",
+    "        shr bx, 3           // 19h",
+    "        mov cx, 5",
+    "        not cx              // complemento a 1: -6",
+    "        mov dx, 7",
+    "        neg dx              // complemento a 2: -7",
+    "        stop"
+  ],
+  "data": []
+}

@@ -110,7 +110,9 @@ EasyCPU simula l’architettura dei microprocessori X86 di INTEL, anche se imple
 
 ### Artimetica
 
-EasyCPU supporta la sola aritmetica a 16 bit. Ogni valore, sia esso immediato (costante) che memorizzato in un registro o in memoria, è rappresentato mediante il tipo intero a 16 bit, con un intervallo di variazione da –32768 e + 32767.
+EasyCPU supporta l’aritmetica a 16 bit e a 8 bit. Ogni valore, sia esso immediato (costante) che memorizzato in un registro o in memoria, è rappresentato mediante il tipo intero a 16 bit, con un intervallo di variazione da –32768 e + 32767.
+
+Le istruzioni che usano un registro a 8 bit (vedi «Registri») operano a 8 bit, con un intervallo di variazione da –128 a +127.
 
 ### Memoria dati
 
@@ -122,9 +124,27 @@ Diversamente da quanto accade in un sistema reale, nella memoria vengono memoriz
 
 ### Registri
 
-EasyCPU supporta un set di registri analogo a quello delle microprocessori X86. Diversamente da questi, i registri adottano unicamente l’aritmetica a 16 bit:
+EasyCPU supporta un set di registri analogo a quello delle microprocessori X86:
 
 ![](data:image/x-emf;base64...)
+
+Registri a 8 bit
+
+Come nei microprocessori X86, i registri AX, BX, CX e DX sono divisi in due metà da 8 bit, utilizzabili come registri autonomi: AH e AL (byte alto e byte basso di AX), BH e BL, CH e CL, DH e DL. Non sono registri separati: modificare AL o AH modifica anche AX, e viceversa.
+
+mov ax, 0 // AX = 0000h
+
+mov ah, 1 // AX = 0100h
+
+mov al, 'A' // AX = 0141h
+
+In un’istruzione con due operandi, i registri devono avere la stessa dimensione: mov al, bx produce l’errore «Dimensione degli operandi non valida o non coerente». Una costante usata con un registro a 8 bit deve essere compresa tra –128 e 255 (da 0 a FFh in esadecimale).
+
+Quando un registro a 8 bit viene usato con un operando in memoria (mov al, [10], mov [si], dl), l’istruzione legge o scrive soltanto il byte basso della cella: il byte alto della cella non viene modificato. Le celle di memoria restano infatti di 16 bit, e due celle consecutive non si sovrappongono come accade nei microprocessori X86.
+
+Le istruzioni PUSH e POP operano soltanto a 16 bit: push al produce un errore.
+
+Il pannello Registri mostra, accanto ad AX, BX, CX e DX, il valore dei rispettivi byte alto e basso (ad esempio AX = 0141 [AH=01 AL=41]).
 
 ### Modelli di indirizzamento
 
@@ -217,6 +237,8 @@ Il flag SF è settato se il risultato di un’operazione aritmetico-logica produ
 Il flag ZF è settato se il risultato di un’operazione aritmetico-logica è zero.
 
 Il flag OF è settato se il risultato di un’operazione aritmetico-logica eccede la capacità di memorizzazione dell’operando e dunque l’intervallo di memorizzazione da –3276 a 32768.
+
+Nelle operazioni a 8 bit i flag si riferiscono al byte: SF riflette il bit 7 del risultato e OF indica un risultato fuori dall’intervallo da –128 a +127.
 
 Un test classico sui flag prevede un confronto tra due operandi tramite l’istruzione CMP, la quale sottrae il secondo operando dal primo senza però memorizzare il risultato, ma influenzando egualmente lo stato dei flag.
 
@@ -391,6 +413,12 @@ Operazione svolta:
 
 **DX = DX:AX % sorgente**
 
+Se sorgente è un registro a 8 bit:
+
+**AL = AX / sorgente**
+
+**AH = AX % sorgente**
+
 Flag definiti:
 
 **Nessuno**
@@ -399,6 +427,10 @@ Descrizione:
 
 DIV divide il valore memorizzato nella coppia di registri DX:AX per l’operando, memorizzando in AX il quoziente intero della divisione e in DX il resto intero.
 
+Se l’operando è un registro a 8 bit, DIV divide AX per l’operando, memorizzando in AL il quoziente e in AH il resto.
+
+Se l’operando vale zero, l’esecuzione si interrompe con l’errore «Divisione per zero». Se il quoziente non sta nel registro destinazione (AX, oppure AL per la divisione a 8 bit), l’esecuzione si interrompe con l’errore «Il quoziente della divisione non sta nel registro destinazione».
+
 Esempi:
 
 div 2 // divide dx:ax per 2
@@ -406,6 +438,8 @@ div 2 // divide dx:ax per 2
 div [20] // divide dx:ax per il contenuto della locazione [20]
 
 div [si] // divide dx:ax per il contenuto della locazione puntata da si
+
+div bl // divide ax per bl: quoziente in al, resto in ah
 
 ### INC – Incremento
 
@@ -805,6 +839,10 @@ Operazione svolta:
 
 **DX:AX = AX \* sorgente**
 
+Se sorgente è un registro a 8 bit:
+
+**AX = AL \* sorgente**
+
 Flag definiti:
 
 **OF**
@@ -813,6 +851,8 @@ Descrizione:
 
 MUL moltiplica il registro AX per l’operando, memorizzando nella coppia di registri DX:AX il risultato della moltiplicazione. Se il flag OF viene settato significa che DX contiene delle cifre significative.
 
+Se l’operando è un registro a 8 bit, MUL moltiplica AL per l’operando e memorizza il risultato in AX; il flag OF viene settato se il risultato non sta in AL.
+
 Esempi:
 
 mul 2 // moltiplica ax per 2
@@ -820,6 +860,8 @@ mul 2 // moltiplica ax per 2
 mul [20] // moltiplica ax per il contenuto della locazione [20]
 
 mul [si] // moltiplica ax per il contenuto della locazione puntata da si
+
+mul bl // moltiplica al per bl, risultato in ax
 
 ### NEG – Negazione (formazione del complemento a 2)
 

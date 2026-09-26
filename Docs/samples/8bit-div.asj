@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Divisione a 8 bit",
+    "//",
+    "// Cosa illustra:",
+    "//   DIV con operando a 8 bit: AL = AX / sorgente, AH = AX % sorgente.",
+    "//",
+    "// Utilizzo:",
+    "//   Eseguire con Step Into e osservare AH e AL.",
+    "//",
+    "// Risultato atteso:",
+    "//   300 / 7: BX = 062Ah (AH = resto 6, AL = quoziente 42)",
+    "//   -7 / 7: AX = 00FFh (AH = resto 0, AL = quoziente -1)",
+    "// ======================================================================",
+    "",
+    "        mov ax, 300",
+    "        mov cx, 7",
+    "        div cl              // AL = 42, AH = 6",
+    "        mov bx, ax",
+    "        mov ax, -7",
+    "        div cl              // AL = -1, AH = 0",
+    "        stop"
+  ],
+  "data": []
+}

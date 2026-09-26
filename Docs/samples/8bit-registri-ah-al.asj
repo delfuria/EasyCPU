@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Registri a 8 bit: AH e AL",
+    "//",
+    "// Cosa illustra:",
+    "//   AH e AL sono il byte alto e il byte basso di AX: scriverli modifica AX.",
+    "//",
+    "// Utilizzo:",
+    "//   Eseguire con Step Into e osservare nel pannello Registri la riga",
+    "//   AX = ... [AH=.. AL=..].",
+    "//",
+    "// Risultato atteso:",
+    "//   AX = 0141h (321), AH = 1, AL = 41h ('A')",
+    "// ======================================================================",
+    "",
+    "        mov ax, 0",
+    "        mov ah, 1           // AX = 0100h",
+    "        mov al, 'A'         // AX = 0141h",
+    "        stop"
+  ],
+  "data": []
+}

@@ -172,6 +172,16 @@ public class CpuTests
     }
 
     [Fact]
+    public async Task StepInto_RetVersoIpNonValido_LanciaCpuException()
+    {
+        var cpu = BuildCpu(new[] { "push 100", "ret" });
+        await cpu.StepInto(); // push 100
+        var ex = await Assert.ThrowsAsync<CpuException>(() => cpu.StepInto()); // ret -> IP = 101
+        Assert.Equal(CodiceErrore.IPNonValido, ex.err);
+        Assert.True(cpu.stop);
+    }
+
+    [Fact]
     public async Task Init_SvuotaBufferTastiera_CarattereVecchioNonRiletto()
     {
         Ambiente.Inizializza();

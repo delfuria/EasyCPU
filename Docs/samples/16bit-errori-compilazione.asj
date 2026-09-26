@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Errori di compilazione (16 bit)",
+    "//",
+    "// Cosa illustra:",
+    "//   Ogni riga contiene un errore voluto: il programma NON compila.",
+    "//",
+    "// Utilizzo:",
+    "//   Premere Compila e osservare il pannello Errori: ogni riga del",
+    "//   programma produce il messaggio indicato nel commento.",
+    "//",
+    "// Risultato atteso:",
+    "//   5 errori di tipo Codice, uno per riga di istruzione",
+    "// ======================================================================",
+    "",
+    "        mov 5, ax           // la destinazione non può essere una costante",
+    "        inc 5               // la destinazione non può essere una costante",
+    "        mov ax, [256]       // indirizzo dati fuori dall'intervallo 0..255",
+    "        mov ax, 40000       // costante fuori da -32768..32767",
+    "        jmp inesistente     // etichetta sconosciuta"
+  ],
+  "data": []
+}

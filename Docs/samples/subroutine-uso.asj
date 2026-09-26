@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Uso di una subroutine",
+    "//",
+    "// Cosa illustra:",
+    "//   CALL/RET e passaggio di un parametro tramite lo stack.",
+    "//   (riscrittura di Docs/Subroutines/Uso Subroutine .as)",
+    "//",
+    "// Utilizzo:",
+    "//   Eseguire con Step Into per entrare nella subroutine, oppure con",
+    "//   Step Over per eseguirla in un solo passo; osservare il pannello Stack.",
+    "//",
+    "// Risultato atteso:",
+    "//   BX = 10 (parametro letto dallo stack)",
+    "//   SP = 256",
+    "// ======================================================================",
+    "",
+    "        mov ax, 10",
+    "        push ax             // parametro",
+    "        call proc",
+    "        add sp, 1           // rimuove il parametro dallo stack",
+    "        stop",
+    "",
+    "proc:   mov bp, sp",
+    "        mov bx, [bp+1]      // [bp] = indirizzo di ritorno, [bp+1] = parametro",
+    "        ret"
+  ],
+  "data": []
+}

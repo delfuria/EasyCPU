@@ -124,6 +124,14 @@
       <Word>bp</Word>
       <Word>sp</Word>
       <Word>ip</Word>
+      <Word>al</Word>
+      <Word>ah</Word>
+      <Word>bl</Word>
+      <Word>bh</Word>
+      <Word>cl</Word>
+      <Word>ch</Word>
+      <Word>dl</Word>
+      <Word>dh</Word>
     </Keywords>
 
     <!-- Numeri esadecimali con suffisso h: es. 1Ah, 0FFh -->

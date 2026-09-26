@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Moltiplicazione e divisione a 16 bit",
+    "//",
+    "// Cosa illustra:",
+    "//   MUL: DX:AX = AX * sorgente.",
+    "//   DIV: AX = DX:AX / sorgente, DX = DX:AX % sorgente.",
+    "//",
+    "// Utilizzo:",
+    "//   Aprire il file e premere Avvia; in alternativa eseguire con Step Into",
+    "//   un'istruzione alla volta, osservando i pannelli Registri e Memoria.",
+    "//",
+    "// Risultato atteso:",
+    "//   300 * 300 = 90000: CX = 24464 (parte bassa), SI = 1 (parte alta)",
+    "//   47 / 5: AX = 9 (quoziente), DX = 2 (resto)",
+    "// ======================================================================",
+    "",
+    "        mov ax, 300",
+    "        mov bx, 300",
+    "        mul bx              // DX:AX = 90000 = 0001:5F90h",
+    "        mov cx, ax          // parte bassa del prodotto",
+    "        mov si, dx          // parte alta del prodotto",
+    "        mov ax, 47",
+    "        mov dx, 0           // il dividendo è DX:AX",
+    "        div 5",
+    "        stop"
+  ],
+  "data": []
+}

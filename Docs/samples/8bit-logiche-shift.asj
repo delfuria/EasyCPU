@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Istruzioni logiche e shift a 8 bit",
+    "//",
+    "// Cosa illustra:",
+    "//   AND/OR su AL e AH, SHL su BL, e SHL AX con il conteggio in CL.",
+    "//",
+    "// Utilizzo:",
+    "//   Eseguire con Step Into con il formato Hex.",
+    "//",
+    "// Risultato atteso:",
+    "//   AX = F606h, BX = 00C0h",
+    "// ======================================================================",
+    "",
+    "        mov ax, 0AB0Fh",
+    "        and al, 3           // AL = 03h",
+    "        or ah, 0F0h         // AH = FBh",
+    "        mov bx, 0",
+    "        mov bl, 3",
+    "        shl bl, 6           // BL = C0h",
+    "        mov cx, 1",
+    "        shl ax, cl          // il conteggio può essere un registro a 8 bit",
+    "        stop"
+  ],
+  "data": []
+}

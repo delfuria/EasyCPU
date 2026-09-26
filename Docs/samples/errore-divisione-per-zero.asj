@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Errore di esecuzione: divisione per zero",
+    "//",
+    "// Cosa illustra:",
+    "//   DIV con divisore zero interrompe l'esecuzione.",
+    "//",
+    "// Utilizzo:",
+    "//   Premere Avvia: l'esecuzione si interrompe e il pannello Errori mostra",
+    "//   un errore di tipo Esecuzione con la riga dell'istruzione responsabile.",
+    "//",
+    "// Risultato atteso:",
+    "//   Errore 'Divisione per zero' sull'istruzione DIV",
+    "// ======================================================================",
+    "",
+    "        mov ax, 5",
+    "        mov bx, 0",
+    "        div bl              // divisore zero",
+    "        stop"
+  ],
+  "data": []
+}

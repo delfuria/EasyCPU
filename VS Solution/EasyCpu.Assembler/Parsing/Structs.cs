@@ -43,4 +43,20 @@ namespace EasyCpu.Assembler.Parsing
         }
     }
 
+    public struct Operando
+    {
+        public TipoOperando Tipo;
+        public Registro Base;       // Registro: il registro; Indiretto: il registro base
+        public int Scostamento;     // Costante: valore; Memoria: indirizzo; Indiretto: scostamento; Etichetta: indice istruzione
+
+        // 8 o 16 per i registri; 0 se la dimensione non è determinata dall'operando (costanti, memoria)
+        public int Larghezza => Tipo == TipoOperando.Registro ? (Base >= Registro.al ? 8 : 16) : 0;
+
+        public static readonly Operando Nessuno = new Operando { Tipo = TipoOperando.Nessuno };
+
+        public static Operando DiRegistro(Registro reg) => new Operando { Tipo = TipoOperando.Registro, Base = reg };
+        public static Operando DiIndiretto(Registro reg, int scostamento) => new Operando { Tipo = TipoOperando.Indiretto, Base = reg, Scostamento = scostamento };
+        public static Operando DiCostante(int valore) => new Operando { Tipo = TipoOperando.Costante, Scostamento = valore };
+        public static Operando DiMemoria(int indirizzo) => new Operando { Tipo = TipoOperando.Memoria, Scostamento = indirizzo };
+    }
 }

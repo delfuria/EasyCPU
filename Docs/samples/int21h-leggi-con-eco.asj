@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// int 21h: lettura di un carattere con eco",
+    "//",
+    "// Cosa illustra:",
+    "//   Servizio AX = 1: attende un tasto, lo mette in AX e lo mostra su console.",
+    "//   Il ciclo termina quando si preme Invio (codice 13).",
+    "//",
+    "// Utilizzo:",
+    "//   Premere Avvia, poi cliccare nel pannello Console e digitare del testo;",
+    "//   premere Invio per terminare.",
+    "//",
+    "// Risultato atteso:",
+    "//   La console mostra i caratteri digitati; BX = numero di caratteri letti",
+    "// ======================================================================",
+    "",
+    "        mov bx, 0           // contatore dei caratteri",
+    "leggi:  mov ax, 1           // servizio: leggi carattere con eco",
+    "        int 21h             // AX = carattere letto",
+    "        cmp ax, 13          // Invio?",
+    "        je fine",
+    "        inc bx",
+    "        jmp leggi",
+    "fine:   stop"
+  ],
+  "data": []
+}
