@@ -17,6 +17,11 @@
     </ItemGroup>
 
     <ItemGroup>
+        <!-- ViewLocator resolves views via reflection: keep the app assembly untrimmed -->
+        <TrimmerRootAssembly Include="EasyCPU" />
+    </ItemGroup>
+
+    <ItemGroup>
         <_ContentIncludedByDefault Remove="obj\project.packagespec.json" />
     </ItemGroup>
 </Project>
