@@ -229,6 +229,22 @@
                     <icons:ThemedIcon Source="/images/toolbar/save.png"        Width="20" Height="20"/>
                 </Button>
                 <Separator Width="1" Height="20" Margin="4,0"/>
+                <Button Command="{Binding UndoCommand}"          Width="40" Height="40" Padding="8" ToolTip.Tip="Annulla (Ctrl+Z)">
+                    <icons:ThemedIcon Source="/images/toolbar/undo.png"        Width="20" Height="20"/>
+                </Button>
+                <Button Command="{Binding RedoCommand}"          Width="40" Height="40" Padding="8" ToolTip.Tip="Ripristina (Ctrl+Y)">
+                    <icons:ThemedIcon Source="/images/toolbar/redo.png"        Width="20" Height="20"/>
+                </Button>
+                <Button Command="{Binding CutCommand}"           Width="40" Height="40" Padding="8" ToolTip.Tip="Taglia (Ctrl+X)">
+                    <icons:ThemedIcon Source="/images/toolbar/cut.png"         Width="20" Height="20"/>
+                </Button>
+                <Button Command="{Binding CopyCommand}"          Width="40" Height="40" Padding="8" ToolTip.Tip="Copia (Ctrl+C)">
+                    <icons:ThemedIcon Source="/images/toolbar/copy.png"        Width="20" Height="20"/>
+                </Button>
+                <Button Command="{Binding PasteCommand}"         Width="40" Height="40" Padding="8" ToolTip.Tip="Incolla (Ctrl+V)">
+                    <icons:ThemedIcon Source="/images/toolbar/paste.png"       Width="20" Height="20"/>
+                </Button>
+                <Separator Width="1" Height="20" Margin="4,0"/>
                 <Button Command="{Binding CompileCommand}"       Width="40" Height="40" Padding="8" ToolTip.Tip="Compila (Ctrl+B)">
                     <icons:ThemedIcon Source="/images/toolbar/compile.png"     Width="20" Height="20"/>
                 </Button>
