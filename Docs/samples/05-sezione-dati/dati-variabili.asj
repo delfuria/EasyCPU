@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Variabili DW e DB",
+    "//",
+    "// Cosa illustra:",
+    "//   Variabili con nome nella sezione dati, collocate in memoria una dopo",
+    "//   l'altra dall'indirizzo 0. Nel codice, stile MASM: il nome (con o senza",
+    "//   parentesi quadre) indica il contenuto, offset nome l'indirizzo.",
+    "//   Una variabile DB si usa a 8 bit, una DW a 16 bit.",
+    "//",
+    "// Utilizzo:",
+    "//   Eseguire con Step Into; nel pannello Memoria la sezione Simboli mostra",
+    "//   nome, indirizzo, tipo e valore di ogni variabile.",
+    "//",
+    "// Risultato atteso:",
+    "//   AX = 13, BL = 61h ('a'), SI = 3, CX = 13",
+    "//   Memoria: lettera (indirizzo 2) = 62h ('b'), risultato (indirizzo 3) = 13",
+    "// ======================================================================",
+    "",
+    "        mov ax, conta       // contenuto di conta: 10",
+    "        add ax, [passo]     // stessa cosa con le parentesi: + 3",
+    "        mov risultato, ax",
+    "        mov bl, lettera     // variabile DB: registro a 8 bit",
+    "        inc lettera         // incrementa il byte in memoria",
+    "        mov si, offset risultato  // indirizzo della variabile: 3",
+    "        mov cx, [si]",
+    "        stop"
+  ],
+  "data": [
+    "conta     DW 10         // indirizzo 0",
+    "passo     DW 3          // indirizzo 1",
+    "lettera   DB 'a'        // indirizzo 2",
+    "risultato DW ?          // indirizzo 3, non inizializzata"
+  ]
+}

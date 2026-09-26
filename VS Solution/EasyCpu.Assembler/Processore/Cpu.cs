@@ -211,6 +211,7 @@ namespace EasyCpu.Assembler.Processore
         public void Init(List<Instruction> codice, List<int> memoriaDati, bool initRegs, int AloopInfinito)
         {
             stop = false;
+            ultimoCR = false;
             bufferTastiera.Clear();
             memoria.Imposta(memoriaDati);
             Code = codice;
@@ -557,7 +558,7 @@ namespace EasyCpu.Assembler.Processore
         #region interrupt / IO
 
         // Buffer tastiera thread-safe: riempito dall'host (UI) via InviaCarattereTastiera,
-        // consumato dalla CPU durante l'esecuzione di "int" con AX=1.
+        // consumato dalla CPU durante l'esecuzione di "int 21h" con i servizi di lettura.
         readonly System.Collections.Concurrent.ConcurrentQueue<short> bufferTastiera = new();
 
         // Evento verso l'host: la CPU lo invoca per ogni carattere da stampare su console.
@@ -566,7 +567,7 @@ namespace EasyCpu.Assembler.Processore
         // Evento verso l'host: invocato a ogni "int" valido, per aprire automaticamente il pannello Console.
         public event Action InterruptRichiesto;
 
-        // Eventi verso l'host: delimitano l'attesa di un tasto (int 21h AX=1), per un cursore lampeggiante.
+        // Eventi verso l'host: delimitano l'attesa di un tasto (int 21h, servizi di lettura), per un cursore lampeggiante.
         public event Action AttesaTastieraIniziata;
         public event Action AttesaTastieraTerminata;
 
@@ -587,31 +588,81 @@ namespace EasyCpu.Assembler.Processore
             }
         }
 
-        // Convenzione stile DOS int 21h: funzione selezionata da AX
-        // (qui AX intero, non AH, perché i registri non sono divisi in byte alto/basso).
-        //   AX = 1  -> leggi carattere da tastiera (bloccante) CON ECO automatico su console,
-        //              risultato in AX (fedele a DOS int 21h AH=01h, che fa eco automatica)
-        //   AX = 2  -> scrivi carattere su console, carattere prelevato da DX
-        //   AX = 7  -> leggi carattere da tastiera (bloccante) SENZA eco, risultato in AX
-        //              (fedele a DOS int 21h AH=07h, "direct console input without echo")
+        // Servizi DOS int 21h, selezionati da AH:
+        //   01h -> legge un carattere da tastiera (bloccante) con eco su console, risultato in AL
+        //   02h -> scrive su console il carattere in DL
+        //   07h -> legge un carattere da tastiera (bloccante) senza eco, risultato in AL
+        //   09h -> scrive su console la stringa terminata da '$' che inizia all'indirizzo in DX
+        //   0Ah -> legge una riga nel buffer all'indirizzo DX: [DX] = caratteri massimi (Invio compreso),
+        //          [DX+1] = caratteri letti (Invio escluso), da [DX+2] i caratteri seguiti da 13
+        //   4Ch -> termina il programma
+        // Memoria a celle da 16 bit: ogni carattere occupa il byte basso di una cella.
         async Task ServizioSistema()
         {
-            switch (ax)
+            switch ((ax >> 8) & 0xFF)
             {
-                case 1:
-                    ax = await LeggiCarattereBloccante();
-                    // Eco automatico: il carattere letto va anche in output, non solo in AX.
-                    // CR (13) viene tradotto in '\n' SOLO ai fini della visualizzazione
-                    // (il valore in AX resta 13 puro, per non rompere "cmp ax, 13" nei programmi asm).
-                    ScriviSuConsole?.Invoke(ax == 13 ? '\n' : (char)ax);
+                case 0x01:
+                    short letto = await LeggiCarattereBloccante();
+                    ax = ConBasso(ax, letto);
+                    ScriviCarattere(letto);
                     break;
-                case 2:
-                    ScriviSuConsole?.Invoke((char)dx);
+                case 0x02:
+                    ScriviCarattere(dx & 0xFF);
                     break;
-                case 7:
-                    ax = await LeggiCarattereBloccante(); // nessun eco: il carattere non va su console
+                case 0x07:
+                    ax = ConBasso(ax, await LeggiCarattereBloccante());
                     break;
+                case 0x09:
+                    for (int i = dx; (memoria[i] & 0xFF) != '$'; i++)
+                        ScriviCarattere(memoria[i] & 0xFF);
+                    break;
+                case 0x0A:
+                    await LeggiRiga(dx);
+                    break;
+                case 0x4C:
+                    Stop();
+                    break;
+                default:
+                    throw new CpuException(CodiceErrore.ServizioNonValido);
             }
+        }
+
+        async Task LeggiRiga(int buffer)
+        {
+            int massimo = memoria[buffer] & 0xFF;
+            if (massimo == 0)
+                return;
+            int letti = 0;
+            while (true)
+            {
+                short c = await LeggiCarattereBloccante();
+                if (stop)
+                    return;
+                if (c == 13)
+                    break;
+                if (letti < massimo - 1)    // a buffer pieno i caratteri vengono ignorati fino all'Invio
+                {
+                    memoria[buffer + 2 + letti] = (short)(c & 0xFF);
+                    letti++;
+                    ScriviCarattere(c);
+                }
+            }
+            memoria[buffer + 2 + letti] = 13;
+            memoria[buffer + 1] = (short)letti;
+            ScriviCarattere(13);
+        }
+
+        // Invia un carattere alla console. CR (13) va a capo; LF (10) va a capo solo se non
+        // segue un CR, così la coppia 13, 10 dei programmi DOS produce un solo ritorno a capo.
+        bool ultimoCR;
+        void ScriviCarattere(int c)
+        {
+            bool dopoCR = ultimoCR;
+            ultimoCR = c == 13;
+            if (c == 13 || (c == 10 && !dopoCR))
+                ScriviSuConsole?.Invoke('\n');
+            else if (c != 10)
+                ScriviSuConsole?.Invoke((char)c);
         }
 
         // Attende in modo cooperativo (senza bloccare il thread) finché non arriva un carattere
@@ -863,6 +914,34 @@ namespace EasyCpu.Assembler.Processore
             if (x < 0)
                 x = 128;
             return Convert.ToChar(x).ToString();
+        }
+
+        // Una riga per nome della sezione dati: "vet  [000A] DW x5 = 1", "N  EQU 5".
+        // Per le variabili mostra il valore corrente della prima cella (byte basso per DB).
+        public List<string> DumpSimboli(IEnumerable<Simbolo> simboli)
+        {
+            string formatoIndirizzo = "{0" + Ambiente.FI + "}";
+            string formatoDato = "{0" + Ambiente.FD + "}";
+            var dump = new List<string>();
+            foreach (var sim in simboli)
+            {
+                if (sim.Tipo == TipoSimbolo.Equ)
+                {
+                    dump.Add(string.Format("{0,-10} EQU {1}", sim.Grafia ?? sim.Nome, sim.Valore));
+                    continue;
+                }
+                short valore = memoria[sim.Valore];
+                if (sim.Tipo == TipoSimbolo.Db)
+                    valore = (short)(valore & 0xFF);
+                string testo = Ambiente.FormatoDati == FormatoValore.Car
+                    ? IntToChar(valore)
+                    : string.Format(formatoDato, valore).Trim();
+                string celle = sim.Celle > 1 ? " x" + sim.Celle : "";
+                dump.Add(string.Format("{0,-10} [{1}] {2}{3} = {4}", sim.Grafia ?? sim.Nome,
+                    string.Format(formatoIndirizzo, sim.Valore).Trim(),
+                    sim.Tipo == TipoSimbolo.Db ? "DB" : "DW", celle, testo));
+            }
+            return dump;
         }
 
         public List<string> DumpMemoria(int da, int a, int colonne)

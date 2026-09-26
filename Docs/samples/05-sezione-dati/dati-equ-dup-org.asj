@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Costanti EQU, DUP, ORG e forma originale",
+    "//",
+    "// Cosa illustra:",
+    "//   EQU definisce una costante che non occupa memoria; n DUP(x) ripete x",
+    "//   n volte; ? indica una cella non inizializzata; ORG sposta l'allocazione;",
+    "//   la forma 'indirizzo: valori' resta valida; offset in una DW memorizza",
+    "//   l'indirizzo di un'altra variabile.",
+    "//",
+    "// Utilizzo:",
+    "//   Eseguire con Step Into e confrontare il pannello Memoria (sezione Simboli)",
+    "//   con le dichiarazioni.",
+    "//",
+    "// Risultato atteso:",
+    "//   AX = 7, BX = 20, CX = 1, DX = 99",
+    "// ======================================================================",
+    "",
+    "        mov ax, [tab+DIM-1] // ultimo elemento di tab",
+    "        mov bx, ptr         // ptr contiene l'indirizzo di dopo: 20",
+    "        mov cx, [bx]",
+    "        mov dx, [10]",
+    "        stop"
+  ],
+  "data": [
+    "DIM     EQU 4",
+    "VALORE  EQU 7",
+    "tab     DW DIM DUP(VALORE)   // indirizzi 0..3, tutti 7",
+    "vuoto   DB 3 DUP(?)          // indirizzi 4..6",
+    "        ORG 20",
+    "dopo    DW 1, 2              // indirizzi 20..21",
+    "ptr     DW offset dopo       // indirizzo 22, contiene 20",
+    "10: 99                       // forma originale"
+  ]
+}

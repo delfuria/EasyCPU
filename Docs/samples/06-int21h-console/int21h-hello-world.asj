@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// int 21h: Hello world",
+    "//",
+    "// Cosa illustra:",
+    "//   Servizio AH = 09h: scrive la stringa terminata da '$' il cui indirizzo",
+    "//   è in DX (ottenuto con offset). La coppia 13, 10 va a capo.",
+    "//   Servizio AH = 4Ch: termina il programma.",
+    "//",
+    "// Utilizzo:",
+    "//   Premere Avvia e osservare il pannello Console.",
+    "//",
+    "// Risultato atteso:",
+    "//   La console mostra: Ciao mondo! e va a capo",
+    "// ======================================================================",
+    "",
+    "        mov ah, 9           // servizio: scrivi stringa",
+    "        mov dx, offset msg  // indirizzo della stringa",
+    "        int 21h",
+    "        mov ah, 4Ch         // servizio: termina il programma",
+    "        int 21h"
+  ],
+  "data": [
+    "msg     DB 'Ciao mondo!', 13, 10, '$'"
+  ]
+}

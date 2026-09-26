@@ -677,11 +677,12 @@ public partial class MainViewModel : ObservableObject
             .Split('\n')
             .ToList();
 
-        List<CompilerError> codeErrors = null!;
-        var instructions = Compiler.CompilaCodice(codeLines, ref codeErrors);
-
+        // i dati prima del codice: il codice usa i nomi definiti nella sezione dati
         List<CompilerError> dataErrors = null!;
         var memory = Compiler.CompilaDati(dataLines, ref dataErrors);
+
+        List<CompilerError> codeErrors = null!;
+        var instructions = Compiler.CompilaCodice(codeLines, ref codeErrors);
 
         var ev = _factory.Errors;
         if (ev != null)
@@ -1085,6 +1086,8 @@ public partial class MainViewModel : ObservableObject
                       $"\nZ={(Cpu.FlagZero ? 1 : 0)}  S={(Cpu.FlagSegno ? 1 : 0)}  O={(Cpu.FlagOverflow ? 1 : 0)}";
 
         var mem = Cpu.DumpMemoria(0, Ram.INDIRIZZO_STACK, 8);
+        if (mem is not null && Compiler.Simboli.Count > 0)
+            mem.AddRange(["", "Simboli:", .. Cpu.DumpSimboli(Compiler.Simboli)]);
         if (_factory.Memory is { } mv)
             mv.Dump = mem is null ? "" : string.Join("\n", mem);
 

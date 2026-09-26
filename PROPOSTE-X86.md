@@ -1,6 +1,6 @@
 # Proposte di estensione x86 per EasyCPU
 
-Stato: **fasi 0 e 1 implementate** (operando strutturato, registri a 8 bit con memoria a parole, errori di divisione); il resto è ancora proposta. Il documento parte da un'analisi del codice attuale (`EasyCpu.Assembler`) e propone estensioni in ordine di priorità.
+Stato: **fasi 0, 1 e 2 implementate** (operando strutturato, registri a 8 bit con memoria a parole, errori di divisione, `.DATA` simbolica, `int 21h` con AH); il resto è ancora proposta. Il documento parte da un'analisi del codice attuale (`EasyCpu.Assembler`) e propone estensioni in ordine di priorità.
 
 ---
 

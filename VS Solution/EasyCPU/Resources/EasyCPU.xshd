@@ -44,6 +44,16 @@
     <!-- Marcatore sezione dati -->
     <Rule color="Directive">\.DATA\b</Rule>
 
+    <!-- Direttive della sezione dati e operatore offset -->
+    <Keywords color="Directive">
+      <Word>db</Word>
+      <Word>dw</Word>
+      <Word>equ</Word>
+      <Word>dup</Word>
+      <Word>org</Word>
+      <Word>offset</Word>
+    </Keywords>
+
     <!-- Movimento dati -->
     <Keywords color="OpcodeMove">
       <Word>mov</Word>

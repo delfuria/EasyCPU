@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Stringa DB convertita in maiuscolo",
+    "//",
+    "// Cosa illustra:",
+    "//   Una stringa DB occupa una cella per carattere. Il programma la scorre",
+    "//   a 8 bit fino al '$', converte le minuscole e la stampa con int 21h 09h.",
+    "//",
+    "// Utilizzo:",
+    "//   Premere Avvia e osservare il pannello Console; con Step Into si vede",
+    "//   la memoria cambiare carattere per carattere (formato Car).",
+    "//",
+    "// Risultato atteso:",
+    "//   La console mostra: CIAO MONDO!",
+    "// ======================================================================",
+    "",
+    "        mov si, offset msg",
+    "ciclo:  mov al, [si]",
+    "        cmp al, '$'",
+    "        je stampa",
+    "        cmp al, 'a'",
+    "        jl avanti           // non è una minuscola",
+    "        cmp al, 'z'",
+    "        jg avanti",
+    "        sub al, 32          // minuscola -> maiuscola",
+    "        mov [si], al",
+    "avanti: inc si",
+    "        jmp ciclo",
+    "stampa: mov ah, 9",
+    "        mov dx, offset msg",
+    "        int 21h",
+    "        mov ah, 4Ch",
+    "        int 21h"
+  ],
+  "data": [
+    "msg     DB 'ciao mondo!$'"
+  ]
+}

@@ -53,9 +53,24 @@ namespace EasyCpu.Assembler.Parsing
 		static readonly Dictionary<string, Registro> Registri =
 			Enum.GetValues<Registro>().ToDictionary(r => r.ToString());
 
+		// parole riservate della sezione dati, non utilizzabili come nomi
+		static readonly HashSet<string> Riservate = ["db", "dw", "equ", "org", "dup", "offset"];
+
 		public const char FINE = '\0';
 		string _riga;
 		int _indcar;
+
+		// nomi definiti nella sezione dati, in ordine di definizione
+		readonly Dictionary<string, Simbolo> _simboli = new();
+		public List<Simbolo> ElencoSimboli { get; } = new();
+
+		public void AzzeraSimboli()
+		{
+			_simboli.Clear();
+			ElencoSimboli.Clear();
+		}
+
+		public bool SeSimbolo(string nome) => _simboli.ContainsKey(nome);
 
 		public int IndCar => _indcar;
 
@@ -84,6 +99,9 @@ namespace EasyCpu.Assembler.Parsing
 				case ':': _indcar++; return ":";
 				case '[': _indcar++; return "[";
 				case ']': _indcar++; return "]";
+				case '(': _indcar++; return "(";
+				case ')': _indcar++; return ")";
+				case '?': _indcar++; return "?";
 				case '+':
 				case '-': return _riga[_indcar++].ToString();
 
@@ -296,47 +314,121 @@ namespace EasyCpu.Assembler.Parsing
 			return -1;
 		}
 
+		// Espressione: somma di termini (costanti, nomi EQU, variabili, offset di variabili
+		// e, fra parentesi quadre, un registro tra SI, DI, BX, BP)
+		struct Espressione
+		{
+			public int Valore;
+			public bool HaRegistro;
+			public Registro Registro;
+			public Simbolo Variabile;   // prima variabile DB/DW usata senza offset
+		}
+
+		Espressione LeggiEspressione(bool inParentesi)
+		{
+			var espr = new Espressione();
+			string segno = "+";
+			if (TestToken() is "+" or "-")
+				segno = EstraiToken();
+			while (true)
+			{
+				LeggiTermine(segno, inParentesi, ref espr);
+				if (TestToken() is not ("+" or "-"))
+					return espr;
+				segno = EstraiToken();
+			}
+		}
+
+		void LeggiTermine(string segno, bool inParentesi, ref Espressione espr)
+		{
+			int s = segno == "-" ? -1 : 1;
+			if (TestChar() == '\'')
+			{
+				espr.Valore += s * LeggiCostanteChar();
+				return;
+			}
+			string token = TestToken();
+			if (token == null)
+				throw new CodiceException(CodiceErrore.AttesaCostante);
+
+			if (Registri.TryGetValue(token, out Registro reg))
+			{
+				if (!inParentesi)
+					throw new CodiceException(CodiceErrore.Sintassi);
+				if (reg is not (Registro.si or Registro.di or Registro.bx or Registro.bp))
+					throw new CodiceException(CodiceErrore.AttesoRegistroIndiretto);
+				if (espr.HaRegistro || s < 0)
+					throw new CodiceException(CodiceErrore.Sintassi);
+				EstraiToken();
+				espr.HaRegistro = true;
+				espr.Registro = reg;
+				return;
+			}
+			if (token == "offset")
+			{
+				EstraiToken();
+				Simbolo var = CercaSimbolo(EstraiToken());
+				if (var.Tipo == TipoSimbolo.Equ)
+					throw new CodiceException(CodiceErrore.Sintassi);
+				espr.Valore += s * var.Valore;
+				return;
+			}
+			if (Char.IsLetter(token[0]) || token[0] == '_')
+			{
+				EstraiToken();
+				Simbolo sim = CercaSimbolo(token);
+				if (sim.Tipo != TipoSimbolo.Equ)
+				{
+					if (s < 0)
+						throw new CodiceException(CodiceErrore.Sintassi);
+					espr.Variabile ??= sim;
+				}
+				espr.Valore += s * sim.Valore;
+				return;
+			}
+			EstraiToken();
+			espr.Valore += StringToInt((s < 0 ? "-" : "") + token);
+		}
+
+		Simbolo CercaSimbolo(string nome)
+		{
+			if (nome == null || !_simboli.TryGetValue(nome, out Simbolo sim))
+				throw new CodiceException(CodiceErrore.SimboloNonDefinito);
+			return sim;
+		}
+
 		Operando LeggiOperandoIndiretto()
 		{
-			Registro reg;
-			string token = TestToken();
-			switch (token)
+			Espressione espr = LeggiEspressione(inParentesi: true);
+			if (EstraiToken() != "]")
+				throw new CodiceException(CodiceErrore.AttesaQuadraChiusura);
+			return OperandoMemoria(espr);
+		}
+
+		static Operando OperandoMemoria(Espressione espr)
+		{
+			Operando op;
+			if (espr.HaRegistro)
+				op = Operando.DiIndiretto(espr.Registro, espr.Valore);
+			else
 			{
-				case "si": reg = Registro.si; break;
-				case "di": reg = Registro.di; break;
-				case "bx": reg = Registro.bx; break;
-				case "bp": reg = Registro.bp; break;
-				default:
-					int indirizzo = LeggiValore();
-					if (!IndirizzoOk(indirizzo))
-						throw new CodiceException(CodiceErrore.IntervalloIndirizzoDati);
-					token = EstraiToken();
-					if (token != "]")
-						throw new CodiceException(CodiceErrore.AttesaQuadraChiusura);
-					return Operando.DiMemoria(indirizzo);
+				if (!IndirizzoOk(espr.Valore))
+					throw new CodiceException(CodiceErrore.IntervalloIndirizzoDati);
+				op = Operando.DiMemoria(espr.Valore);
 			}
-			EstraiToken();      // scarta registro precedentemente testato
-			int offset = 0;
-			token = EstraiToken();
-			switch (token)
-			{
-				case "+":
-				case "-":
-					offset = LeggiValore();
-					if (token == "-")
-						offset *= -1;
-					if (EstraiToken() != "]")
-						throw new CodiceException(CodiceErrore.AttesaQuadraChiusura);
-					break;
-				case "]": break;
-				default: throw new CodiceException(CodiceErrore.Sintassi);
-			}
-			return Operando.DiIndiretto(reg, offset);
+			op.Dimensione = espr.Variabile?.Larghezza ?? 0;
+			return op;
 		}
 
 		static bool IndirizzoOk(int indirizzo)
 		{
 			return !(indirizzo < 0 || indirizzo > Ram.MASSIMO_INDIRIZZO);
+		}
+
+		static void VerificaIntervalloCostante(int valore)
+		{
+			if (valore < short.MinValue || valore > ushort.MaxValue)
+				throw new CodiceException(CodiceErrore.CostanteFuoriIntervallo);
 		}
 
 		Operando LeggiOperando()
@@ -352,14 +444,78 @@ namespace EasyCpu.Assembler.Parsing
 				EstraiToken();  // scarta registro
 				return Operando.DiRegistro(reg);
 			}
-			return Operando.DiCostante(LeggiValore());
+			Espressione espr = LeggiEspressione(inParentesi: false);
+			if (espr.Variabile != null)     // stile MASM: il nome di una variabile indica il suo contenuto
+				return OperandoMemoria(espr);
+			VerificaIntervalloCostante(espr.Valore);
+			return Operando.DiCostante(espr.Valore);
 		}
 
-		public List<int> CompilaDati(string s, int indice, out int indirizzo)
+		// Compila una riga della sezione dati. Forme ammesse:
+		//   indirizzo: valore, valore, ...     (sintassi originale, indirizzo esplicito)
+		//   [nome] DB|DW elemento, ...          (allocazione dal contatore)
+		//   nome EQU valore
+		//   ORG indirizzo
+		// Restituisce i valori da scrivere a partire da indirizzo (lista vuota per EQU e ORG).
+		public List<int> CompilaDati(string s, string originale, ref int contatore, out int indirizzo)
 		{
 			indirizzo = 0;
 			_riga = s;
 			_indcar = 0;
+			string primo = TestToken();
+			if (primo != null && Char.IsDigit(primo[0]))
+				return CompilaDatiIndirizzo(out indirizzo);
+
+			string nome = null;
+			string grafia = null;
+			string direttiva = LeggiIdentificatore();
+			if (direttiva != null && !Riservate.Contains(direttiva))
+			{
+				nome = direttiva;
+				grafia = originale.Substring(_indcar - nome.Length, nome.Length);
+				direttiva = LeggiIdentificatore();
+			}
+
+			switch (direttiva)
+			{
+				case "org":
+					if (nome != null)
+						throw new CodiceException(CodiceErrore.Sintassi);
+					int nuovo = LeggiEspressione(inParentesi: false).Valore;
+					VerificaFineRiga();
+					if (nuovo < 0 || nuovo >= Ram.INDIRIZZO_STACK)
+						throw new CodiceException(CodiceErrore.DatiInAreaStack);
+					contatore = nuovo;
+					return new List<int>();
+
+				case "equ":
+					if (nome == null)
+						throw new CodiceException(CodiceErrore.Sintassi);
+					int valore = LeggiEspressione(inParentesi: false).Valore;
+					VerificaFineRiga();
+					VerificaIntervalloCostante(valore);
+					DefinisciSimbolo(new Simbolo(nome, TipoSimbolo.Equ, valore, 0) { Grafia = grafia });
+					return new List<int>();
+
+				case "db":
+				case "dw":
+					TipoSimbolo tipo = direttiva == "db" ? TipoSimbolo.Db : TipoSimbolo.Dw;
+					List<int> valori = LeggiElementiDati(tipo);
+					if (contatore + valori.Count > Ram.INDIRIZZO_STACK)
+						throw new CodiceException(CodiceErrore.DatiInAreaStack);
+					if (nome != null)
+						DefinisciSimbolo(new Simbolo(nome, tipo, contatore, valori.Count) { Grafia = grafia });
+					indirizzo = contatore;
+					contatore += valori.Count;
+					return valori;
+
+				default:
+					throw new CodiceException(CodiceErrore.Sintassi);
+			}
+		}
+
+		List<int> CompilaDatiIndirizzo(out int indirizzo)
+		{
 			indirizzo = LeggiIndirizzo();
 			if (EstraiToken() != ":")
 				throw new CodiceException(CodiceErrore.AttesoDuePunti);
@@ -368,6 +524,96 @@ namespace EasyCpu.Assembler.Parsing
 				throw new CodiceException(CodiceErrore.IntervalloIndirizzoDati);
 
 			return LeggiValori();
+		}
+
+		void VerificaFineRiga()
+		{
+			if (TestToken() != null)
+				throw new CodiceException(CodiceErrore.Sintassi);
+		}
+
+		void DefinisciSimbolo(Simbolo sim)
+		{
+			if (Registri.ContainsKey(sim.Nome) || CercaOpCode(sim.Nome, out _, out _) != -1)
+				throw new CodiceException(CodiceErrore.NomeSimboloNonValido);
+			if (_simboli.ContainsKey(sim.Nome))
+				throw new CodiceException(CodiceErrore.SimboloDuplicato);
+			_simboli.Add(sim.Nome, sim);
+			ElencoSimboli.Add(sim);
+		}
+
+		List<int> LeggiElementiDati(TipoSimbolo tipo)
+		{
+			var valori = new List<int>();
+			LeggiElementoDati(tipo, valori);
+			while (TestToken() == ",")
+			{
+				EstraiToken();
+				LeggiElementoDati(tipo, valori);
+			}
+			if (TestToken() != null)
+				throw new CodiceException(CodiceErrore.AttesaVirgola);
+			return valori;
+		}
+
+		// elemento: valore | ? | 'stringa' (solo DB) | n DUP(elemento)
+		void LeggiElementoDati(TipoSimbolo tipo, List<int> valori)
+		{
+			if (TestChar() == '\'')
+			{
+				string testo = LeggiStringa();
+				if (tipo == TipoSimbolo.Dw && testo.Length != 1)
+					throw new CodiceException(CodiceErrore.Formato);
+				foreach (char c in testo)
+					valori.Add(ValoreDato(tipo, c));
+				return;
+			}
+			if (TestToken() == "?")
+			{
+				EstraiToken();
+				valori.Add(0);
+				return;
+			}
+			int valore = LeggiEspressione(inParentesi: false).Valore;
+			if (TestToken() != "dup")
+			{
+				valori.Add(ValoreDato(tipo, valore));
+				return;
+			}
+			EstraiToken();
+			if (EstraiToken() != "(")
+				throw new CodiceException(CodiceErrore.Sintassi);
+			var ripetuti = new List<int>();
+			LeggiElementoDati(tipo, ripetuti);
+			if (EstraiToken() != ")")
+				throw new CodiceException(CodiceErrore.Sintassi);
+			if (valore <= 0 || valore * ripetuti.Count > Ram.INDIRIZZO_STACK)
+				throw new CodiceException(CodiceErrore.DatiInAreaStack);
+			for (int i = 0; i < valore; i++)
+				valori.AddRange(ripetuti);
+		}
+
+		static int ValoreDato(TipoSimbolo tipo, int valore)
+		{
+			bool ok = tipo == TipoSimbolo.Db
+				? valore >= sbyte.MinValue && valore <= byte.MaxValue
+				: valore >= short.MinValue && valore <= ushort.MaxValue;
+			if (!ok)
+				throw new CodiceException(CodiceErrore.CostanteFuoriIntervallo);
+			return valore;
+		}
+
+		// 'testo': restituisce i caratteri tra gli apici
+		string LeggiStringa()
+		{
+			int inizio = ++_indcar;     // salta l'apice iniziale
+			while (_riga[_indcar] != '\'' && _riga[_indcar] != FINE)
+				_indcar++;
+			if (_riga[_indcar] == FINE || _indcar == inizio)
+				throw new CodiceException(CodiceErrore.Formato);
+			string testo = _riga.Substring(inizio, _indcar - inizio);
+			_indcar++;                  // salta l'apice finale
+			return testo;
 		}
 
 		public Instruction Compila(string s, out string etichetta)

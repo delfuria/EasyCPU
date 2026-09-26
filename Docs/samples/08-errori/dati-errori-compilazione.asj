@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Errori di compilazione con i nomi",
+    "//",
+    "// Cosa illustra:",
+    "//   Righe con errori voluti, sia nella sezione dati sia nel codice:",
+    "//   il programma NON compila.",
+    "//",
+    "// Utilizzo:",
+    "//   Premere Compila e osservare il pannello Errori: il tipo indica se",
+    "//   l'errore è nei Dati o nel Codice; doppio clic per andare alla riga.",
+    "//",
+    "// Risultato atteso:",
+    "//   6 errori di tipo Dati e 4 di tipo Codice, con i messaggi indicati",
+    "//   nei commenti",
+    "// ======================================================================",
+    "",
+    "        mov ax, pippo       // nome non definito",
+    "        mov al, conta       // conta è DW: dimensione non coerente",
+    "        mov si, offset N    // offset di una costante",
+    "conta:  nop                // etichetta con il nome di una variabile"
+  ],
+  "data": [
+    "N       EQU 5",
+    "conta   DW 1",
+    "N       DW 2                // nome già definito",
+    "ax      DW 3                // nome riservato: è un registro",
+    "b       DB 300              // DB: valori da -128 a 255",
+    "w       DW 'ab'             // DW ammette un solo carattere",
+    "grande  DW 250 DUP(0)       // supera l'area dello stack",
+    "        ORG 245             // area dello stack"
+  ]
+}

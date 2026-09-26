@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Errore di esecuzione: servizio int 21h non valido",
+    "//",
+    "// Cosa illustra:",
+    "//   Il servizio di int 21h si sceglie con AH, come in DOS. Con mov ax, 2",
+    "//   AH vale 0, che non è un servizio: la vecchia convenzione di EasyCPU",
+    "//   (servizio in AX) non è più valida.",
+    "//",
+    "// Utilizzo:",
+    "//   Premere Avvia: l'esecuzione si interrompe e il pannello Errori mostra",
+    "//   un errore di tipo Esecuzione con la riga dell'istruzione responsabile.",
+    "//   Correzione: sostituire mov ax, 2 con mov ah, 2 e mov dx con mov dl.",
+    "//",
+    "// Risultato atteso:",
+    "//   Errore 'Servizio int 21h non valido (valore di AH)' sull'istruzione int",
+    "// ======================================================================",
+    "",
+    "        mov ax, 2           // AH = 0: servizio non valido",
+    "        mov dx, 'A'",
+    "        int 21h",
+    "        stop"
+  ],
+  "data": []
+}

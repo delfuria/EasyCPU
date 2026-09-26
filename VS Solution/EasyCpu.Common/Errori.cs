@@ -32,6 +32,11 @@ namespace EasyCpu.Common
 		DimensioneOperandi,
 		DivisionePerZero,
 		QuozienteFuoriIntervallo,
+		SimboloDuplicato,
+		SimboloNonDefinito,
+		NomeSimboloNonValido,
+		DatiInAreaStack,
+		ServizioNonValido,
 
 	}
 
@@ -67,6 +72,11 @@ namespace EasyCpu.Common
 				case CodiceErrore.DimensioneOperandi: return "Dimensione degli operandi non valida o non coerente (8/16 bit)";
 				case CodiceErrore.DivisionePerZero: return "Divisione per zero";
 				case CodiceErrore.QuozienteFuoriIntervallo: return "Il quoziente della divisione non sta nel registro destinazione";
+				case CodiceErrore.SimboloDuplicato: return "Nome già definito";
+				case CodiceErrore.SimboloNonDefinito: return "Nome di variabile o costante non definito";
+				case CodiceErrore.NomeSimboloNonValido: return "Nome non valido: non può essere un registro, un'istruzione o una parola riservata";
+				case CodiceErrore.DatiInAreaStack: return "I dati superano l'area riservata allo stack (indirizzi 240..255)";
+				case CodiceErrore.ServizioNonValido: return "Servizio int 21h non valido (valore di AH)";
 					//case CodiceErrore.: return "";
 					//case CodiceErrore.: return "";
 			}

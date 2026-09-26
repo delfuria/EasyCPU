@@ -105,53 +105,53 @@ public class CpuTests
     }
 
     [Fact]
-    public async Task Int21h_AX2_ScriveCarattereSuConsole()
+    public async Task Int21h_AH02_ScriveCarattereSuConsole()
     {
-        var cpu = BuildCpu(new[] { "mov ax,2", "mov dx,65", "int 21h", "stop" });
+        var cpu = BuildCpu(new[] { "mov ah,2", "mov dl,65", "int 21h", "stop" });
         char? scritto = null;
         cpu.ScriviSuConsole += c => scritto = c;
 
-        await cpu.StepInto(); // mov ax,2
-        await cpu.StepInto(); // mov dx,65
+        await cpu.StepInto(); // mov ah,2
+        await cpu.StepInto(); // mov dl,65
         await cpu.StepInto(); // int 21h
 
         Assert.Equal('A', scritto);
     }
 
     [Fact]
-    public async Task Int21h_AX7_LeggeCarattereSenzaEco()
+    public async Task Int21h_AH07_LeggeCarattereSenzaEco()
     {
-        var cpu = BuildCpu(new[] { "mov ax,7", "int 21h", "stop" });
+        var cpu = BuildCpu(new[] { "mov ah,7", "int 21h", "stop" });
         char? eco = null;
         cpu.ScriviSuConsole += c => eco = c;
         cpu.InviaCarattereTastiera(65); // 'A'
 
-        await cpu.StepInto(); // mov ax,7
+        await cpu.StepInto(); // mov ah,7
         await cpu.StepInto(); // int 21h
 
-        Assert.Equal(65, cpu.AX);
+        Assert.Equal(0x0741, cpu.AX); // AL = 'A', AH invariato
         Assert.Null(eco); // nessun eco: ScriviSuConsole non deve essere invocato
     }
 
     [Fact]
-    public async Task Int21h_AX1_LeggeCarattereConEcoAutomatico()
+    public async Task Int21h_AH01_LeggeCarattereConEcoAutomatico()
     {
-        var cpu = BuildCpu(new[] { "mov ax,1", "int 21h", "stop" });
+        var cpu = BuildCpu(new[] { "mov ah,1", "int 21h", "stop" });
         char? eco = null;
         cpu.ScriviSuConsole += c => eco = c;
         cpu.InviaCarattereTastiera(65); // 'A' già in coda prima della lettura
 
-        await cpu.StepInto(); // mov ax,1
+        await cpu.StepInto(); // mov ah,1
         await cpu.StepInto(); // int 21h
 
-        Assert.Equal(65, cpu.AX);
+        Assert.Equal(0x0141, cpu.AX); // AL = 'A'
         Assert.Equal('A', eco);
     }
 
     [Fact]
-    public async Task Int21h_AX1_CRTradottoInNewlineSoloNellEco()
+    public async Task Int21h_AH01_CRTradottoInNewlineSoloNellEco()
     {
-        var cpu = BuildCpu(new[] { "mov ax,1", "int 21h", "stop" });
+        var cpu = BuildCpu(new[] { "mov ah,1", "int 21h", "stop" });
         char? eco = null;
         cpu.ScriviSuConsole += c => eco = c;
         cpu.InviaCarattereTastiera(13); // CR
@@ -159,7 +159,7 @@ public class CpuTests
         await cpu.StepInto();
         await cpu.StepInto();
 
-        Assert.Equal(13, cpu.AX); // valore puro in AX, per "cmp ax, 13"
+        Assert.Equal(13, cpu.AX & 0xFF); // valore puro in AL, per "cmp al, 13"
         Assert.Equal('\n', eco); // eco tradotto solo per la visualizzazione
     }
 
@@ -186,7 +186,7 @@ public class CpuTests
     {
         Ambiente.Inizializza();
         var compiler = new Compiler();
-        var code = new[] { "mov ax,1", "int 21h", "stop" }.ToList();
+        var code = new[] { "mov ah,1", "int 21h", "stop" }.ToList();
         List<CompilerError>? errori = null;
         var instructions = compiler.CompilaCodice(code, ref errori);
         Assert.NotNull(instructions);
@@ -200,10 +200,10 @@ public class CpuTests
         cpu.Init(instructions, memDati, initRegs: true, 1000); // nuova Run: deve svuotare il buffer
         cpu.InviaCarattereTastiera(65); // 'A'
 
-        await cpu.StepInto(); // mov ax,1
+        await cpu.StepInto(); // mov ah,1
         await cpu.StepInto(); // int 21h
 
-        Assert.Equal(65, cpu.AX); // non 90: il carattere vecchio è stato scartato
+        Assert.Equal(65, cpu.AX & 0xFF); // non 90: il carattere vecchio è stato scartato
     }
 
     [Fact]

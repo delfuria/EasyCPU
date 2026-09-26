@@ -18,6 +18,9 @@ namespace EasyCpu.Assembler.Parsing
         public List<int> InstrToLineMap { get; private set; }  // indice istruzione → riga sorgente (0-based)
         public int[] LineToInstrMap { get; private set; }      // riga sorgente (0-based) → indice istruzione (-1 se non eseguibile)
 
+        // nomi definiti nella sezione dati: va compilata prima del codice che li usa
+        public IReadOnlyList<Simbolo> Simboli => _parser.ElencoSimboli;
+
         static bool SeCommento(string s)
         {
             return s[0] == '\'';
@@ -26,6 +29,8 @@ namespace EasyCpu.Assembler.Parsing
         public List<int> CompilaDati(List<string> data, ref List<CompilerError> errori)
         {
             List<int> memoria = new int[Ram.MASSIMO_INDIRIZZO + 1].ToList();
+            _parser.AzzeraSimboli();
+            int contatore = 0;      // prossimo indirizzo libero per DB/DW
             for (int indRiga = 0; indRiga < data.Count; indRiga++)
             {
                 try
@@ -33,7 +38,9 @@ namespace EasyCpu.Assembler.Parsing
                     int indirizzo;
                     string s = PreparaRiga(data[indRiga]);
                     if (s == "") continue;
-                    List<int> rigaDati = _parser.CompilaDati(s, indRiga, out indirizzo);
+                    // stessa riga senza conversione in minuscolo: fornisce la grafia originale dei nomi
+                    string originale = PreparaRiga(data[indRiga], minuscole: false);
+                    List<int> rigaDati = _parser.CompilaDati(s, originale, ref contatore, out indirizzo);
                     if (rigaDati.Count + indirizzo > Ram.MASSIMO_INDIRIZZO)
                         throw new CodiceException(CodiceErrore.IntervalloIndirizzoDati);
 
@@ -53,7 +60,7 @@ namespace EasyCpu.Assembler.Parsing
                 return null;
         }
 
-        public static string PreparaRiga(string riga)
+        public static string PreparaRiga(string riga, bool minuscole = true)
         {
             StringBuilder sb = new StringBuilder();
             bool inCostanteChar = false;
@@ -70,7 +77,7 @@ namespace EasyCpu.Assembler.Parsing
                     break;
                 if (riga[i] == '\'')
                     inCostanteChar = !inCostanteChar;
-                char c = (inCostanteChar) ? riga[i] : Char.ToLower(riga[i]);
+                char c = (inCostanteChar || !minuscole) ? riga[i] : Char.ToLower(riga[i]);
                 sb.Append(c);
             }
             riga = sb.ToString().Trim() + Parser.FINE;
@@ -107,7 +114,11 @@ namespace EasyCpu.Assembler.Parsing
                         indiceEtichetta = istruzioni.Count;
 
                     if (etichetta != null)
+                    {
+                        if (_parser.SeSimbolo(etichetta))
+                            throw new CodiceException(CodiceErrore.SimboloDuplicato);
                         etichette.Add(new IndirizzoEtichetta(etichetta, indiceEtichetta));
+                    }
                 }
                 catch (CodiceException e)
                 {

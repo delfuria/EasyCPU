@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// int 21h: lettura senza eco",
+    "//",
+    "// Cosa illustra:",
+    "//   Servizio AH = 07h: legge un tasto senza mostrarlo; il programma lo",
+    "//   trasforma in maiuscolo e lo stampa con il servizio AH = 02h.",
+    "//",
+    "// Utilizzo:",
+    "//   Premere Avvia, cliccare nel pannello Console e premere una lettera minuscola.",
+    "//",
+    "// Risultato atteso:",
+    "//   La console mostra la lettera maiuscola; DL = codice della maiuscola",
+    "// ======================================================================",
+    "",
+    "        mov ah, 7           // servizio: leggi carattere senza eco",
+    "        int 21h             // AL = carattere letto",
+    "        sub al, 32          // 'a' - 'A' = 32",
+    "        mov dl, al",
+    "        mov ah, 2           // servizio: scrivi carattere",
+    "        int 21h",
+    "        stop"
+  ],
+  "data": []
+}

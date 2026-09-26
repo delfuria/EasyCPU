@@ -467,6 +467,61 @@ inc [20] // incrementa di 1 il contenuto della locazione [20]
 
 inc [si] // incrementa di 1 il contenuto della locazione puntata da si
 
+### INT – Chiamata di un servizio di sistema
+
+Sintassi:
+
+**INT 21h**
+
+Operazione svolta:
+
+**esegue il servizio di sistema selezionato dal registro AH**
+
+Flag definiti:
+
+**Nessuno**
+
+Descrizione:
+
+INT 21h richiama un servizio di sistema, come nel sistema operativo DOS. Il servizio viene scelto in base al valore del registro AH; gli altri registri contengono i parametri e ricevono i risultati. L’unico numero di interrupt ammesso è 21h: un numero diverso produce l’errore «Numero di interrupt non valido», mentre un valore di AH non previsto produce l’errore «Servizio int 21h non valido (valore di AH)».
+
+I caratteri letti e scritti compaiono nel pannello Console, che si apre automaticamente. Durante una lettura il programma resta in attesa finché l’utente non preme un tasto nel pannello Console.
+
+| AH | Servizio | Parametri e risultati |
+|---|---|---|
+| 01h | Legge un carattere con eco | Il carattere letto va in AL e viene mostrato in console |
+| 02h | Scrive un carattere | Il carattere da scrivere è in DL |
+| 07h | Legge un carattere senza eco | Il carattere letto va in AL e non viene mostrato |
+| 09h | Scrive una stringa | DX contiene l’indirizzo della stringa, che termina con il carattere «$» |
+| 0Ah | Legge una riga | DX contiene l’indirizzo del buffer (vedi sotto) |
+| 4Ch | Termina il programma | Equivale all’istruzione STOP |
+
+Il tasto Invio corrisponde al codice 13 (CR). In scrittura, sia il codice 13 sia il codice 10 (LF) vanno a capo; la coppia 13, 10 usata nei programmi DOS produce un solo ritorno a capo.
+
+Il buffer del servizio 0Ah ha questo formato: la prima cella contiene il numero massimo di caratteri, Invio compreso; nella seconda cella il servizio scrive il numero di caratteri letti, Invio escluso; dalla terza cella in poi vengono memorizzati i caratteri letti, seguiti dal codice 13. Raggiunto il massimo, gli altri caratteri vengono ignorati fino alla pressione di Invio.
+
+buf DB 20, ?, 20 DUP(?) // buffer per una riga di al massimo 19 caratteri
+
+Come per le variabili DB, ogni carattere occupa il byte basso di una cella di memoria.
+
+Esempi:
+
+mov ah, 2 // servizio: scrivi carattere
+
+mov dl, 'A'
+
+int 21h // scrive A in console
+
+mov ah, 9 // servizio: scrivi stringa
+
+mov dx, offset msg
+
+int 21h // scrive la stringa msg
+
+mov ah, 4Ch
+
+int 21h // termina il programma
+
 ### JCXZ – Salto se CX è zero
 
 Sintassi:
@@ -1175,7 +1230,7 @@ xor ax, 4 // produce come risultato: 6
 
 ## Struttura di un programma assembly
 
-I programmi assembly compatibili con EasyCPU sono suddivisi in due sezioni, «codice» e «dati». La sezione codice contiene le istruzioni in linguaggio assembly e comincia con l’inizio del file. La parte dati, opzionale, è preceduta dalla direttiva «.DATA» e consente di inizializzare il contenuto di una o più celle di memoria. All’interno dell’IDE di EasyCPU, le due sezioni vengono gestite mediante due editor separati. Un programma può inoltre contenere delle righe di commento, prefissate dal simbolo “//”. Un commento può anche seguire il testo di un’istruzione.
+I programmi assembly compatibili con EasyCPU sono suddivisi in due sezioni, «codice» e «dati». La sezione codice contiene le istruzioni in linguaggio assembly e comincia con l’inizio del file. La parte dati, opzionale, è preceduta dalla direttiva «.DATA» e consente di definire variabili e costanti e di inizializzare il contenuto di una o più celle di memoria (vedi «La sezione dati»). All’interno dell’IDE di EasyCPU, le due sezioni vengono gestite mediante due editor separati. Un programma può inoltre contenere delle righe di commento, prefissate dal simbolo “//” oppure “;”. Un commento può anche seguire il testo di un’istruzione.
 
 Di seguito viene riportato un programma di esempio che calcola la somma degli elementi dispari all’interno di un sequenza. Questa è definita nella sezione dati a partire dell’indirizzo 1 di memoria. All’indirizzo 0 è memorizzato il numero di elementi.
 
@@ -1222,3 +1277,83 @@ stop
 0: 5
 
 1: 1, 3, 4, 6, 7
+
+## La sezione dati
+
+La sezione dati è composta da righe di questi tipi:
+
+| Forma | Significato |
+|---|---|
+| nome **DW** elemento, elemento, … | Variabile di parole (16 bit) |
+| nome **DB** elemento, elemento, … | Variabile di byte (8 bit) |
+| nome **EQU** valore | Costante simbolica: non occupa memoria |
+| **ORG** indirizzo | Le variabili successive partono dall’indirizzo indicato |
+| indirizzo: valore, valore, … | Scrive i valori a partire dall’indirizzo indicato (forma originale) |
+
+Le variabili DB e DW vengono collocate in memoria una dopo l’altra, a partire dall’indirizzo 0 o dall’ultimo ORG. Il nome è facoltativo: una riga DB o DW senza nome occupa comunque le celle, ad esempio per proseguire la variabile precedente. Le variabili non possono occupare l’area dello stack (indirizzi da 240 a 255).
+
+Un elemento può essere:
+
+- un valore numerico o carattere, oppure il nome di una costante EQU;
+- «?», che indica una cella non inizializzata (vale 0);
+- una stringa tra apici, come 'Ciao': ogni carattere occupa una cella (solo con DB);
+- «n DUP(elemento)», che ripete l’elemento n volte;
+- «offset nome», l’indirizzo di un’altra variabile.
+
+I valori di una variabile DB devono essere compresi tra –128 e 255, quelli di una variabile DW tra –32768 e 65535. Le celle di memoria restano di 16 bit: una variabile DB usa soltanto il byte basso di ogni cella.
+
+N EQU 5 // costante
+
+conta DW 0 // una parola, indirizzo 0
+
+vet DW 1, 3, 4, 6, 7 // cinque parole, indirizzi 1..5
+
+buffer DW N DUP(0) // cinque parole a zero, indirizzi 6..10
+
+msg DB 'Ciao mondo!$' // una cella per carattere
+
+ORG 100
+
+tabella DW N DUP(?) // cinque parole a partire dall'indirizzo 100
+
+I nomi non distinguono maiuscole e minuscole e non possono coincidere con un registro, un’istruzione, una parola riservata (DB, DW, EQU, ORG, DUP, OFFSET) o un’etichetta del codice.
+
+### Uso dei nomi nel codice
+
+EasyCPU segue la convenzione dell’assemblatore MASM:
+
+mov cx, N // costante EQU: CX = 5
+
+mov ax, conta // contenuto della variabile: come mov ax, [conta]
+
+mov ax, [conta] // contenuto della variabile
+
+mov si, offset vet // indirizzo della variabile: SI = 1
+
+mov ax, vet+2 // contenuto della cella vet + 2: come mov ax, [vet+2]
+
+mov ax, [vet+si] // contenuto della cella di indirizzo vet + SI
+
+mov ax, [bp+N] // un nome EQU può essere uno scostamento
+
+La dimensione di un accesso a una variabile dipende dal suo tipo: una variabile DB si usa con registri a 8 bit (mov al, msg) e una variabile DW con registri a 16 bit (mov ax, conta). Istruzioni come mov ax, msg o push msg (con msg di tipo DB) producono l’errore «Dimensione degli operandi non valida o non coerente». Anche un’istruzione con una sola variabile, come inc conta, opera sulla dimensione della variabile.
+
+Il pannello Memoria mostra, sotto il contenuto della memoria, l’elenco dei nomi definiti con indirizzo, tipo, numero di celle e valore corrente della prima cella.
+
+### Esempio: Hello world
+
+// sezione dati
+
+msg DB 'Ciao mondo!', 13, 10, '$'
+
+// sezione codice
+
+mov ah, 9 // servizio: scrivi stringa
+
+mov dx, offset msg
+
+int 21h
+
+mov ah, 4Ch // servizio: termina il programma
+
+int 21h

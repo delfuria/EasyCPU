@@ -1,3 +1,5 @@
+> **Nota (fase 2 di PROPOSTE-X86.md):** i servizi di `int 21h` ora si selezionano con **AH**, come in DOS (01h, 02h, 07h, 09h, 0Ah, 4Ch); la selezione con AX descritta qui sotto non è più valida. Riferimento aggiornato: sezione «INT» di `Docs/Easy CPU  Assembly Reference.md`.
+
 # Sistema Interrupt (stile x86) + Pannello Console — Spec di implementazione
 
 Stato: **da implementare**. Documento di riferimento per evitare ambiguità in sessione futura.

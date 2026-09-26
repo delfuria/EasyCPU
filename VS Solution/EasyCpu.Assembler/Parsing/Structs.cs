@@ -48,9 +48,10 @@ namespace EasyCpu.Assembler.Parsing
         public TipoOperando Tipo;
         public Registro Base;       // Registro: il registro; Indiretto: il registro base
         public int Scostamento;     // Costante: valore; Memoria: indirizzo; Indiretto: scostamento; Etichetta: indice istruzione
+        public int Dimensione;      // Memoria/Indiretto: 8 o 16 se l'accesso usa una variabile DB/DW, altrimenti 0
 
-        // 8 o 16 per i registri; 0 se la dimensione non è determinata dall'operando (costanti, memoria)
-        public int Larghezza => Tipo == TipoOperando.Registro ? (Base >= Registro.al ? 8 : 16) : 0;
+        // 8 o 16 per i registri e le variabili; 0 se la dimensione non è determinata dall'operando
+        public int Larghezza => Tipo == TipoOperando.Registro ? (Base >= Registro.al ? 8 : 16) : Dimensione;
 
         public static readonly Operando Nessuno = new Operando { Tipo = TipoOperando.Nessuno };
 
