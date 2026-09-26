@@ -226,7 +226,7 @@ Nota tecnica: l'enum `IdOp` più un `int offset` non basta a rappresentare base+
 | **da fare** | Divieto delle operazioni memoria-memoria (`mov [1], [2]`, `mov a, b`, `add a, b`), ammesse solo con le istruzioni stringa (P7, incongruenza 4) | Rimandato dalla fase 4 per non rompere i programmi esistenti; oggi EasyCPU le accetta, x86 no |
 | **da fare** | `jmp reg` / `call reg` / `call [bx]` e tabelle di salto (P4); progetto in `SALTI-INDIRETTI.md` | Rimandati dalla fase 3: le etichette del codice non sono ancora utilizzabili come valori (`mov ax, offset etichetta`, `tab DW lab1, lab2`), perché la sezione dati viene compilata prima del codice |
 | 4 | **P5** istruzioni stringa + **P7** base+indice | Avanzato |
-| 5 | Modalità "x86 fedele" con memoria a byte (P1 opzione B) | Solo se serve davvero, è il cambiamento più invasivo |
+| 5 | Modalità "x86 fedele" con memoria a byte (P1 opzione B); progetto in `MODALITA-X86-FEDELE.md` | Solo se serve davvero, è il cambiamento più invasivo |
 
 Esempio di obiettivo alla fine della fase 2, oggi impossibile:
 
