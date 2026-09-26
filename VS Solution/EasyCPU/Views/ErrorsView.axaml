@@ -12,8 +12,8 @@
               AutoGenerateColumns="False"
               SelectionMode="Single">
         <DataGrid.Columns>
-            <DataGridTextColumn Header="Tipo"      Binding="{Binding TipoDisplay}" Width="105" />
-            <DataGridTextColumn Header="Riga"      Binding="{Binding RigaDisplay}" Width="75" />
+            <DataGridTextColumn Header="Tipo"      Binding="{Binding TipoDisplay}" Width="105" MinWidth="105" />
+            <DataGridTextColumn Header="Riga"      Binding="{Binding RigaDisplay}" Width="75"  MinWidth="75" />
             <DataGridTextColumn Header="Messaggio" Binding="{Binding Msg}"         Width="*"  />
         </DataGrid.Columns>
     </DataGrid>
