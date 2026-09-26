@@ -286,11 +286,14 @@ public partial class MainViewModel : ObservableObject
         catch { return file.Name; }
     }
 
-    private static void SetEditorText(CodeEditorViewModel? vm, string text)
+    private void SetEditorText(CodeEditorViewModel? vm, string text)
     {
         if (vm is null) return;
         vm.SourceText = text;
         vm.SetSourceTextAction?.Invoke(text);
+        // Se la vista dell'editor Codice non è ancora stata creata (tab Dati attiva),
+        // Document.Changed non scatta: HasCode va aggiornato qui.
+        RefreshCodeState();
     }
 
     private static void SetEditorText(DataEditorViewModel? vm, string text)
