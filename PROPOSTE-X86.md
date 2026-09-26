@@ -224,7 +224,7 @@ Nota tecnica: l'enum `IdOp` più un `int offset` non basta a rappresentare base+
 | 2 | **P2** `.DATA` simbolica + **P6** `int 21h` con AH e servizio 09h | Insieme permettono il classico "Hello World" x86 |
 | 3 | **P3** CF e aritmetica senza segno + **P4** istruzioni mancanti (escluso `jmp`/`call` indiretti) | Completa il set per esercizi tipici |
 | **da fare** | Divieto delle operazioni memoria-memoria (`mov [1], [2]`, `mov a, b`, `add a, b`), ammesse solo con le istruzioni stringa (P7, incongruenza 4) | Rimandato dalla fase 4 per non rompere i programmi esistenti; oggi EasyCPU le accetta, x86 no |
-| **da fare** | `jmp reg` / `call reg` / `call [bx]` e tabelle di salto (P4) | Rimandati dalla fase 3: le etichette del codice non sono ancora utilizzabili come valori (`mov ax, offset etichetta`, `tab DW lab1, lab2`), perché la sezione dati viene compilata prima del codice |
+| **da fare** | `jmp reg` / `call reg` / `call [bx]` e tabelle di salto (P4); progetto in `SALTI-INDIRETTI.md` | Rimandati dalla fase 3: le etichette del codice non sono ancora utilizzabili come valori (`mov ax, offset etichetta`, `tab DW lab1, lab2`), perché la sezione dati viene compilata prima del codice |
 | 4 | **P5** istruzioni stringa + **P7** base+indice | Avanzato |
 | 5 | Modalità "x86 fedele" con memoria a byte (P1 opzione B) | Solo se serve davvero, è il cambiamento più invasivo |
 
