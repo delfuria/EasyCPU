@@ -48,6 +48,45 @@ namespace EasyCpu.Assembler.Parsing
 			new OpCode("stop", 0),
 			new OpCode("shl", 2),
 			new OpCode("shr", 2),
+			// fase 3: carry, aritmetica senza segno, istruzioni x86 comuni
+			new OpCode("adc", 2),
+			new OpCode("sbb", 2),
+			new OpCode("imul", 1),
+			new OpCode("idiv", 1),
+			new OpCode("cbw", 0),
+			new OpCode("cwd", 0),
+			new OpCode("clc", 0),
+			new OpCode("stc", 0),
+			new OpCode("cmc", 0),
+			new OpCode("test", 2),
+			new OpCode("xchg", 2),
+			new OpCode("lea", 2),
+			new OpCode("sar", 2),
+			new OpCode("rol", 2),
+			new OpCode("ror", 2),
+			new OpCode("rcl", 2),
+			new OpCode("rcr", 2),
+			new OpCode("ja", 1, TipoOp.Codice),
+			new OpCode("jae", 1, TipoOp.Codice),
+			new OpCode("jb", 1, TipoOp.Codice),
+			new OpCode("jbe", 1, TipoOp.Codice),
+			new OpCode("jc", 1, TipoOp.Codice),
+			new OpCode("jnc", 1, TipoOp.Codice),
+			new OpCode("jz", 1, TipoOp.Codice),
+			new OpCode("jnz", 1, TipoOp.Codice),
+			new OpCode("jna", 1, TipoOp.Codice),
+			new OpCode("jnae", 1, TipoOp.Codice),
+			new OpCode("jnb", 1, TipoOp.Codice),
+			new OpCode("jnbe", 1, TipoOp.Codice),
+			new OpCode("jng", 1, TipoOp.Codice),
+			new OpCode("jnge", 1, TipoOp.Codice),
+			new OpCode("jnl", 1, TipoOp.Codice),
+			new OpCode("jnle", 1, TipoOp.Codice),
+			new OpCode("loop", 1, TipoOp.Codice),
+			new OpCode("loope", 1, TipoOp.Codice),
+			new OpCode("loopz", 1, TipoOp.Codice),
+			new OpCode("loopne", 1, TipoOp.Codice),
+			new OpCode("loopnz", 1, TipoOp.Codice),
 		};
 
 		static readonly Dictionary<string, Registro> Registri =
@@ -640,6 +679,13 @@ namespace EasyCpu.Assembler.Parsing
 			switch (numOp)
 			{
 				case 0:
+					if (code == "ret" && TestToken() != null)     // ret n: numero di parametri da rimuovere
+					{
+						op1 = LeggiOperando();
+						if (op1.Tipo != TipoOperando.Costante || op1.Scostamento < 0 || TestToken() != null)
+							throw new CodiceException(CodiceErrore.OperandoNonValido);
+						return new Instruction(code, op1);
+					}
 					if (TestToken() != null)
 						throw new CodiceException(CodiceErrore.NumeroOperandi);
 					return new Instruction(code);

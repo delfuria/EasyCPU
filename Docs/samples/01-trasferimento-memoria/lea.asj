@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Indirizzo effettivo con LEA",
+    "//",
+    "// Cosa illustra:",
+    "//   LEA carica in un registro l'indirizzo dell'operando in memoria, non il",
+    "//   suo contenuto. lea si, vet equivale a mov si, offset vet; con un",
+    "//   registro calcola l'indirizzo [registro + scostamento].",
+    "//",
+    "// Utilizzo:",
+    "//   Eseguire con Step Into e confrontare AX (contenuto) con SI e DI (indirizzi).",
+    "//",
+    "// Risultato atteso:",
+    "//   SI = 2 (indirizzo di vet), DI = 5 (vet + 3), AX = 40 (contenuto di vet+3)",
+    "// ======================================================================",
+    "",
+    "        lea si, vet         // SI = indirizzo di vet",
+    "        lea di, [si+3]      // DI = SI + 3",
+    "        mov ax, [di]        // contenuto dell'elemento",
+    "        stop"
+  ],
+  "data": [
+    "a       DW 0, 0",
+    "vet     DW 10, 20, 30, 40"
+  ]
+}

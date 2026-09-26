@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Somma e sottrazione a 32 bit con ADC e SBB",
+    "//",
+    "// Cosa illustra:",
+    "//   Numeri a 32 bit in due registri (parte alta:parte bassa). ADC somma",
+    "//   anche il riporto CF, SBB sottrae anche il prestito.",
+    "//",
+    "// Utilizzo:",
+    "//   Aprire il file e premere Avvia; in alternativa eseguire con Step Into",
+    "//   un'istruzione alla volta, osservando i pannelli Registri e Memoria.",
+    "//",
+    "// Risultato atteso:",
+    "//   DX:AX = 0001:FFFFh + 0000:0001h = 0002:0000h",
+    "//   CX:BX = 0002:0000h - 0000:0001h = 0001:FFFFh",
+    "// ======================================================================",
+    "",
+    "        mov dx, 1           // DX:AX = 0001:FFFFh (131071)",
+    "        mov ax, 0FFFFh",
+    "        add ax, 1           // parte bassa: AX = 0, CF = 1",
+    "        adc dx, 0           // parte alta + riporto: DX = 2",
+    "        mov cx, 2           // CX:BX = 0002:0000h (131072)",
+    "        mov bx, 0",
+    "        sub bx, 1           // parte bassa: BX = FFFFh, CF = 1",
+    "        sbb cx, 0           // parte alta - prestito: CX = 1",
+    "        stop"
+  ],
+  "data": []
+}

@@ -24,10 +24,11 @@ namespace EasyCpu.Assembler.Processore
             Ferma
         }
 
-        // bit del registro dei flags
-        const short ZF = 1;
-        const short SF = 2;
-        const short OF = 4;
+        // bit del registro dei flags, nelle stesse posizioni di x86
+        const short CF = 1 << 0;
+        const short ZF = 1 << 6;
+        const short SF = 1 << 7;
+        const short OF = 1 << 11;
 
         const short TUTTI = (ZF | SF | OF);
 
@@ -76,6 +77,7 @@ namespace EasyCpu.Assembler.Processore
         public bool FlagSegno => TestFlag(SF);
         public bool FlagZero => TestFlag(ZF);
         public bool FlagOverflow => TestFlag(OF);
+        public bool FlagCarry => TestFlag(CF);
 
         public async Task Run(int IP)
         {
@@ -241,31 +243,55 @@ namespace EasyCpu.Assembler.Processore
             {
                 case "shl": Shl(); break;
                 case "shr": Shr(); break;
+                case "sar": Sar(); break;
+                case "rol": Rol(); break;
+                case "ror": Ror(); break;
+                case "rcl": Rcl(); break;
+                case "rcr": Rcr(); break;
                 case "and": And(); break;
                 case "or": Or(); break;
                 case "xor": Xor(); break;
+                case "test": Test(); break;
                 case "not": Not(); break;
                 case "neg": Neg(); break;
                 case "mov": Mov(); break;
                 case "movs": Movs(); break;
+                case "xchg": Xchg(); break;
+                case "lea": Lea(); break;
                 case "nop": Nop(); break;
                 case "add": Add(); break;
+                case "adc": Adc(); break;
                 case "sub": Sub(); break;
-                case "mul": IMul(); break;
-                case "div": IDiv(); break;
+                case "sbb": Sbb(); break;
+                case "mul": Mul(); break;
+                case "imul": IMul(); break;
+                case "div": Div(); break;
+                case "idiv": IDiv(); break;
+                case "cbw": ax = Basso(ax); break;
+                case "cwd": dx = (short)(ax < 0 ? -1 : 0); break;
                 case "cmp": Cmp(); break;
+                case "clc": SetFlag(CF, false); break;
+                case "stc": SetFlag(CF, true); break;
+                case "cmc": SetFlag(CF, !TestFlag(CF)); break;
                 case "jcxz": Jcxz(); break;
-                case "jg": Jg(); break;
-                case "jge": Jge(); break;
-                case "jl": Jl(); break;
-                case "jle": Jle(); break;
-                case "jne": Jne(); break;
-                case "je": Je(); break;
+                case "jg": case "jnle": Jg(); break;
+                case "jge": case "jnl": Jge(); break;
+                case "jl": case "jnge": Jl(); break;
+                case "jle": case "jng": Jle(); break;
+                case "jne": case "jnz": Jne(); break;
+                case "je": case "jz": Je(); break;
+                case "ja": case "jnbe": SaltaSe(!TestFlag(CF) && !TestFlag(ZF)); break;
+                case "jae": case "jnb": case "jnc": SaltaSe(!TestFlag(CF)); break;
+                case "jb": case "jnae": case "jc": SaltaSe(TestFlag(CF)); break;
+                case "jbe": case "jna": SaltaSe(TestFlag(CF) || TestFlag(ZF)); break;
                 case "jmp": Jmp(); break;
                 case "jo": Jo(); break;
                 case "jno": Jno(); break;
                 case "js": Js(); break;
                 case "jns": Jns(); break;
+                case "loop": Loop(true); break;
+                case "loope": case "loopz": Loop(TestFlag(ZF)); break;
+                case "loopne": case "loopnz": Loop(!TestFlag(ZF)); break;
                 case "dec": Dec(); break;
                 case "inc": Inc(); break;
                 case "pop": Pop(); break;
@@ -282,32 +308,21 @@ namespace EasyCpu.Assembler.Processore
 
         #region istruzioni
 
-        void And()
+        // AND, OR, XOR, TEST: CF = OF = 0
+        void Logica(Func<int, int, int> operazione, bool memorizza)
         {
-            int op = LoadOp(1);
-            op &= LoadOp(2);
-            StoreOp(op, 1);
-            SetFlags(op);
+            int ris = operazione(LoadOp(1), LoadOp(2));
+            if (memorizza)
+                StoreOp(ris, 1);
+            SetFlags(ZF + SF, ris);
             SetFlag(OF, false);
+            SetFlag(CF, false);
         }
 
-        void Or()
-        {
-            int op = LoadOp(1);
-            op |= LoadOp(2);
-            StoreOp(op, 1);
-            SetFlags(op);
-            SetFlag(OF, false);
-        }
-
-        void Xor()
-        {
-            short op = LoadOp(1);
-            op ^= LoadOp(2);
-            StoreOp(op, 1);
-            SetFlags(op);
-            SetFlag(OF, false);
-        }
+        void And() => Logica((a, b) => a & b, true);
+        void Or() => Logica((a, b) => a | b, true);
+        void Xor() => Logica((a, b) => a ^ b, true);
+        void Test() => Logica((a, b) => a & b, false);
 
         void Not()
         {
@@ -318,10 +333,11 @@ namespace EasyCpu.Assembler.Processore
 
         void Neg()
         {
-            short op = LoadOp(1);
-            op = (short)(0 - op);
-            StoreOp(op, 1);
-            SetFlags(op);
+            int op = LoadOp(1);
+            int ris = -op;
+            StoreOp(ris, 1);
+            SetFlags(ris);
+            SetFlag(CF, op != 0);
         }
 
         void Mov()
@@ -334,37 +350,122 @@ namespace EasyCpu.Assembler.Processore
             memoria[di] = memoria[si];
         }
 
-        void Add()
+        void Xchg()
         {
-            int op = LoadOp(1);
-            op += LoadOp(2);
-            StoreOp(op, 1);
-            SetFlags(op);
+            short op1 = LoadOp(1);
+            short op2 = LoadOp(2);
+            StoreOp(op2, 1);
+            StoreOp(op1, 2);
         }
 
-        void Sub()
+        // LEA: carica nel registro l'indirizzo dell'operando in memoria, non il suo contenuto
+        void Lea()
         {
-            int op = LoadOp(1);
-            op -= LoadOp(2);
-            StoreOp(op, 1);
-            SetFlags(op);
+            Operando op = curIstruzione.Op2;
+            int indirizzo = op.Tipo == TipoOperando.Indiretto
+                ? LeggiRegistro(op.Base) + op.Scostamento
+                : op.Scostamento;
+            StoreOp(indirizzo, 1);
         }
 
+        // valore senza segno sulla dimensione dell'istruzione (0..255 oppure 0..65535)
+        int Maschera => Larghezza == 8 ? 0xFF : 0xFFFF;
+        int SenzaSegno(int valore) => valore & Maschera;
+
+        // ADD/ADC: CF = riporto oltre il bit più significativo
+        void Somma(int riporto)
+        {
+            int a = LoadOp(1), b = LoadOp(2);
+            int ris = a + b + riporto;
+            StoreOp(ris, 1);
+            SetFlags(ris);
+            SetFlag(CF, SenzaSegno(a) + SenzaSegno(b) + riporto > Maschera);
+        }
+
+        // SUB/SBB/CMP: CF = prestito (primo operando minore del secondo, senza segno)
+        void Differenza(int prestito, bool memorizza)
+        {
+            int a = LoadOp(1), b = LoadOp(2);
+            int ris = a - b - prestito;
+            if (memorizza)
+                StoreOp(ris, 1);
+            SetFlags(ris);
+            SetFlag(CF, SenzaSegno(a) < SenzaSegno(b) + prestito);
+        }
+
+        int Carry => TestFlag(CF) ? 1 : 0;
+
+        void Add() => Somma(0);
+        void Adc() => Somma(Carry);
+        void Sub() => Differenza(0, true);
+        void Sbb() => Differenza(Carry, true);
+        void Cmp() => Differenza(0, false);
+
+        // MUL: senza segno. A 8 bit AX = AL * op, a 16 bit DX:AX = AX * op.
+        // CF = OF = 1 se la metà alta del risultato non è zero.
+        void Mul()
+        {
+            if (Larghezza == 8)
+            {
+                int prodotto = (ax & 0xFF) * SenzaSegno(LoadOp(1));
+                ax = (short)prodotto;
+                ImpostaFlagMoltiplicazione(prodotto, prodotto > 0xFF);
+                return;
+            }
+            uint tmp = (uint)(ushort)ax * (uint)SenzaSegno(LoadOp(1));
+            ax = (short)tmp;
+            dx = (short)(tmp >> 16);
+            ImpostaFlagMoltiplicazione((int)tmp, dx != 0);
+        }
+
+        // IMUL: con segno. CF = OF = 1 se il risultato non sta nella metà bassa.
         void IMul()
         {
             if (Larghezza == 8)
             {
-                int prodotto = Basso(ax) * LoadOp(1);  // AX = AL * op
+                int prodotto = Basso(ax) * LoadOp(1);
                 ax = (short)prodotto;
-                SetFlags(OF + ZF, prodotto);
+                ImpostaFlagMoltiplicazione(prodotto, prodotto != (sbyte)prodotto);
                 return;
             }
             int tmp = ax * LoadOp(1);
             ax = (short)tmp;
             dx = (short)(tmp >> 16);
-            SetFlags(OF + ZF, tmp);
+            ImpostaFlagMoltiplicazione(tmp, tmp != (short)tmp);
         }
 
+        void ImpostaFlagMoltiplicazione(int prodotto, bool metaAlta)
+        {
+            SetFlags(ZF, prodotto);
+            SetFlag(OF, metaAlta);
+            SetFlag(CF, metaAlta);
+        }
+
+        // DIV: senza segno. A 8 bit AL = AX / op, AH = AX % op; a 16 bit AX = DX:AX / op, DX = DX:AX % op.
+        void Div()
+        {
+            int divisore = SenzaSegno(LoadOp(1));
+            if (divisore == 0)
+                throw new CpuException(CodiceErrore.DivisionePerZero);
+
+            if (Larghezza == 8)
+            {
+                int dividendo = (ushort)ax;
+                int quoziente = dividendo / divisore;
+                if (quoziente > 0xFF)
+                    throw new CpuException(CodiceErrore.QuozienteFuoriIntervallo);
+                ax = ConAlto(ConBasso(ax, (short)quoziente), (short)(dividendo % divisore));
+                return;
+            }
+            uint dividendo32 = ((uint)(ushort)dx << 16) | (ushort)ax;
+            uint quoziente32 = dividendo32 / (uint)divisore;
+            if (quoziente32 > 0xFFFF)
+                throw new CpuException(CodiceErrore.QuozienteFuoriIntervallo);
+            dx = (short)(dividendo32 % (uint)divisore);
+            ax = (short)quoziente32;
+        }
+
+        // IDIV: con segno, stessi registri di DIV. Il resto ha il segno del dividendo.
         void IDiv()
         {
             int divisore = LoadOp(1);
@@ -373,13 +474,13 @@ namespace EasyCpu.Assembler.Processore
 
             if (Larghezza == 8)
             {
-                int quoziente = ax / divisore;          // AL = AX / op, AH = AX % op
+                int quoziente = ax / divisore;
                 if (quoziente < sbyte.MinValue || quoziente > sbyte.MaxValue)
                     throw new CpuException(CodiceErrore.QuozienteFuoriIntervallo);
                 ax = ConAlto(ConBasso(ax, (short)quoziente), (short)(ax % divisore));
                 return;
             }
-            long dividendo = ax + ((long)dx << 16);
+            long dividendo = (int)(((uint)(ushort)dx << 16) | (ushort)ax);
             long quoziente16 = dividendo / divisore;
             if (quoziente16 < short.MinValue || quoziente16 > short.MaxValue)
                 throw new CpuException(CodiceErrore.QuozienteFuoriIntervallo);
@@ -387,6 +488,7 @@ namespace EasyCpu.Assembler.Processore
             ax = (short)quoziente16;
         }
 
+        // INC e DEC non modificano CF
         void Inc()
         {
             int op = LoadOp(1);
@@ -403,11 +505,17 @@ namespace EasyCpu.Assembler.Processore
             SetFlags(op);
         }
 
-        void Cmp()
+        void SaltaSe(bool condizione)
         {
-            int op = LoadOp(1);
-            op -= LoadOp(2);
-            SetFlags(op);
+            if (condizione)
+                ip = NuovoIp();
+        }
+
+        // LOOP: decrementa CX (senza modificare i flag) e salta se CX != 0 e la condizione è vera
+        void Loop(bool condizione)
+        {
+            cx--;
+            SaltaSe(cx != 0 && condizione);
         }
 
         void Jmp()
@@ -522,26 +630,89 @@ namespace EasyCpu.Assembler.Processore
             ip = NuovoIp();
         }
 
+        // RET n: dopo il ritorno rimuove n parametri dallo stack
         void Ret()
         {
             ip = PopCode();
+            if (curIstruzione.Op1.Tipo != TipoOperando.Costante)
+                return;
+            int nuovoSp = sp + curIstruzione.Op1.Scostamento;
+            if (nuovoSp > Ram.MASSIMO_INDIRIZZO + 1)
+                throw new CpuException(CodiceErrore.StackUnderflow);
+            sp = (short)nuovoSp;
         }
+
+        // Shift e rotazioni: il conteggio usa solo i 5 bit bassi, come su x86; con conteggio 0 i flag non cambiano.
+        // CF riceve l'ultimo bit uscito; OF è definito solo per conteggio 1.
+        int Conteggio => LoadOp(2) & 0x1F;
+        int BitAlto(int valore) => (valore >> (Larghezza - 1)) & 1;
 
         void Shl()
         {
-            int op = LoadOp(1);
-            op <<= LoadOp(2);
-            StoreOp(op, 1);
-            SetFlags(ZF + SF, op);
+            int n = Conteggio;
+            if (n == 0) return;
+            int op = SenzaSegno(LoadOp(1));
+            int ris = op << n;
+            StoreOp(ris, 1);
+            SetFlags(ZF + SF, ris);
+            SetFlag(CF, ((ris >> Larghezza) & 1) != 0);
+            if (n == 1) SetFlag(OF, (BitAlto(ris) ^ Carry) != 0);
         }
 
+        // SHR: shift logico, entrano zeri a sinistra
         void Shr()
         {
-            int op = LoadOp(1);
-            op >>= LoadOp(2);
-            StoreOp(op, 1);
-            SetFlags(ZF + SF, op);
+            int n = Conteggio;
+            if (n == 0) return;
+            int op = SenzaSegno(LoadOp(1));
+            int ris = op >> n;
+            StoreOp(ris, 1);
+            SetFlags(ZF + SF, ris);
+            SetFlag(CF, ((op >> (n - 1)) & 1) != 0);
+            if (n == 1) SetFlag(OF, BitAlto(op) != 0);
         }
+
+        // SAR: shift aritmetico, conserva il segno
+        void Sar()
+        {
+            int n = Conteggio;
+            if (n == 0) return;
+            int op = LoadOp(1);
+            int ris = op >> n;
+            StoreOp(ris, 1);
+            SetFlags(ZF + SF, ris);
+            SetFlag(CF, ((op >> (n - 1)) & 1) != 0);
+            if (n == 1) SetFlag(OF, false);
+        }
+
+        // Rotazioni: modificano solo CF (e OF per conteggio 1)
+        void Ruota(bool sinistra, bool attraversoCarry)
+        {
+            int n = Conteggio;
+            if (n == 0) return;
+            int op = SenzaSegno(LoadOp(1));
+            int carry = Carry;
+            for (int i = 0; i < n; i++)
+            {
+                int uscito = sinistra ? BitAlto(op) : op & 1;
+                int entrante = attraversoCarry ? carry : uscito;
+                op = sinistra
+                    ? SenzaSegno((op << 1) | entrante)
+                    : (op >> 1) | (entrante << (Larghezza - 1));
+                carry = uscito;
+            }
+            StoreOp(op, 1);
+            SetFlag(CF, carry != 0);
+            if (n == 1)
+                SetFlag(OF, sinistra
+                    ? (BitAlto(op) ^ carry) != 0
+                    : (BitAlto(op) ^ ((op >> (Larghezza - 2)) & 1)) != 0);
+        }
+
+        void Rol() => Ruota(sinistra: true, attraversoCarry: false);
+        void Ror() => Ruota(sinistra: false, attraversoCarry: false);
+        void Rcl() => Ruota(sinistra: true, attraversoCarry: true);
+        void Rcr() => Ruota(sinistra: false, attraversoCarry: true);
 
         void Nop()
         {

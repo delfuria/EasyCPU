@@ -70,6 +70,8 @@ namespace EasyCpu.Assembler.Parsing
             return string.Format("{0} {1}{2} {3}", Code, strOp1, virgola, strOp2);
         }
 
+        static bool InMemoria(Operando op) => op.Tipo is TipoOperando.Memoria or TipoOperando.Indiretto;
+
         void VerificaIstruzione()
         {
             if (Op1.Tipo == TipoOperando.Costante && Op2.Tipo != TipoOperando.Nessuno)   // destinazione costante
@@ -81,8 +83,22 @@ namespace EasyCpu.Assembler.Parsing
                     throw new CodiceException(CodiceErrore.DestinazioneCostante);
             }
 
-            // dimensione: la determinano i registri; nelle shift il secondo operando è il conteggio
-            bool shift = Code == "shl" || Code == "shr";
+            if (Code == "xchg")     // scambio: nessuna costante, al massimo un operando in memoria
+            {
+                if (Op2.Tipo == TipoOperando.Costante || (InMemoria(Op1) && InMemoria(Op2)))
+                    throw new CodiceException(CodiceErrore.OperandoNonValido);
+            }
+
+            if (Code == "lea")      // lea registro16, memoria
+            {
+                if (Op1.Tipo != TipoOperando.Registro || Op1.Larghezza != 16 || !InMemoria(Op2))
+                    throw new CodiceException(CodiceErrore.OperandoNonValido);
+                Larghezza = 16;
+                return;
+            }
+
+            // dimensione: la determinano i registri; nelle shift e rotazioni il secondo operando è il conteggio
+            bool shift = Code is "shl" or "shr" or "sar" or "rol" or "ror" or "rcl" or "rcr";
             int larg1 = Op1.Larghezza;
             int larg2 = shift ? 0 : Op2.Larghezza;
             if (larg1 != 0 && larg2 != 0 && larg1 != larg2)

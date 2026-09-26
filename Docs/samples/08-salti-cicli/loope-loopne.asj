@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Ricerca in un vettore con LOOPNE",
+    "//",
+    "// Cosa illustra:",
+    "//   LOOPNE (o LOOPNZ) ripete il ciclo finché CX non è zero e l'ultimo",
+    "//   confronto ha dato 'diverso'; LOOPE (o LOOPZ) finché dà 'uguale'.",
+    "//",
+    "// Utilizzo:",
+    "//   Eseguire con Step Into; provare a cercare un valore assente (es. 9).",
+    "//",
+    "// Risultato atteso:",
+    "//   Valore 7 trovato: SI = 3 (posizione nel vettore), ZF = 1",
+    "// ======================================================================",
+    "",
+    "        mov si, -1",
+    "        mov cx, N",
+    "ciclo:  inc si",
+    "        cmp [vet+si], CERCATO",
+    "        loopne ciclo        // continua se diverso e CX != 0",
+    "        je trovato",
+    "        mov si, -1          // non trovato",
+    "trovato:",
+    "        stop"
+  ],
+  "data": [
+    "N       EQU 6",
+    "CERCATO EQU 7",
+    "vet     DW 4, 2, 8, 7, 1, 5"
+  ]
+}

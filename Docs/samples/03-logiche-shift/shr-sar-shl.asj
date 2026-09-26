@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Shift logici e aritmetici: SHL, SHR, SAR",
+    "//",
+    "// Cosa illustra:",
+    "//   SHR riempie con zeri (numeri senza segno), SAR ripete il bit del segno",
+    "//   (divisione per potenze di 2 con segno). L'ultimo bit uscito va in CF.",
+    "//",
+    "// Utilizzo:",
+    "//   Eseguire con Step Into (formato Hex) e osservare CF.",
+    "//",
+    "// Risultato atteso:",
+    "//   AX = 7FFCh (SHR di -8), BX = FFFCh (SAR di -8 = -4)",
+    "//   CX = 2 con CF = 1 (5 >> 1)",
+    "//   DX = 0 con CF = 1 (8000h << 1)",
+    "// ======================================================================",
+    "",
+    "        mov ax, -8          // FFF8h",
+    "        shr ax, 1           // 7FFCh: entra uno zero",
+    "        mov bx, -8",
+    "        sar bx, 1           // FFFCh = -4: il segno si conserva",
+    "        mov cx, 5",
+    "        shr cx, 1           // 2, esce 1 in CF",
+    "        mov dx, 8000h",
+    "        shl dx, 1           // 0, esce 1 in CF",
+    "        stop"
+  ],
+  "data": []
+}

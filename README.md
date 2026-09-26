@@ -93,17 +93,24 @@ Develop practical understanding of:
 
 ## 📖 Assembly Instruction Set
 
-EasyCPU implements 25 core assembly instructions covering arithmetic, logic, memory access, control flow, and I/O operations:
+EasyCPU implements an 8086-style instruction set (16-bit and 8-bit registers, CF/ZF/SF/OF flags with x86 bit layout):
 
-**Arithmetic:** ADD, SUB, MUL, DIV, INC, DEC, NEG  
-**Logic:** AND, OR, XOR, NOT  
-**Data Transfer:** MOV, MOVS  
+**Arithmetic:** ADD, ADC, SUB, SBB, MUL, IMUL, DIV, IDIV, INC, DEC, NEG, CBW, CWD  
+**Logic:** AND, OR, XOR, NOT, TEST  
+**Shift/Rotate:** SHL, SHR, SAR, ROL, ROR, RCL, RCR  
+**Data Transfer:** MOV, MOVS, XCHG, LEA  
 **Comparison:** CMP  
-**Conditional Jumps:** JE, JNE, JL, JLE, JG, JGE, JO, JNO, JS, JNS  
-**Unconditional Control:** JMP, JCXZ  
-**Procedure Calls:** CALL, RET  
+**Conditional Jumps (signed):** JE/JZ, JNE/JNZ, JL, JLE, JG, JGE, JO, JNO, JS, JNS (plus x86 synonyms JNGE, JNG, JNLE, JNL)  
+**Conditional Jumps (unsigned):** JA, JAE, JB, JBE, JC, JNC (plus synonyms JNBE, JNB, JNAE, JNA)  
+**Loops:** LOOP, LOOPE/LOOPZ, LOOPNE/LOOPNZ, JCXZ  
+**Unconditional Control:** JMP  
+**Procedure Calls:** CALL, RET, RET n  
+**Stack:** PUSH, POP, PUSHF, POPF  
+**Flags:** CLC, STC, CMC  
 **Interrupts:** INT (DOS-style `int 21h` console services)  
-**Miscellaneous:** NOP
+**Miscellaneous:** NOP, STOP
+
+MUL/DIV operate on unsigned values, IMUL/IDIV on signed values.
 
 `int 21h` provides DOS-style services selected via `AH`: `01h` read a character with echo (into `AL`), `02h` write the character in `DL`, `07h` read a character without echo, `09h` write the `$`-terminated string at `DX`, `0Ah` read a line into the buffer at `DX`, `4Ch` terminate the program. Output and keyboard input are shown/captured in the dedicated **Console** panel.
 

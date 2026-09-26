@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Errori di compilazione: XCHG, LEA, RET n",
+    "//",
+    "// Cosa illustra:",
+    "//   Ogni riga contiene un errore voluto: il programma NON compila.",
+    "//",
+    "// Utilizzo:",
+    "//   Premere Compila e osservare il pannello Errori.",
+    "//",
+    "// Risultato atteso:",
+    "//   6 errori di tipo Codice: 5 'Operando sconosciuto o non valido' e",
+    "//   1 'Dimensione degli operandi non valida o non coerente (8/16 bit)'",
+    "// ======================================================================",
+    "",
+    "        xchg ax, 5          // XCHG non accetta costanti",
+    "        xchg [1], [2]       // al massimo un operando in memoria",
+    "        xchg al, bx         // dimensioni diverse",
+    "        lea al, [1]         // LEA vuole un registro a 16 bit",
+    "        lea ax, bx          // LEA vuole un operando in memoria",
+    "        ret ax              // RET n vuole una costante"
+  ],
+  "data": []
+}

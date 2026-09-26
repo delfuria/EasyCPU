@@ -1083,7 +1083,7 @@ public partial class MainViewModel : ObservableObject
         var regs = Cpu.DumpRegs();
         if (_factory.Registers is { } rv)
             rv.Dump = string.Join("\n", regs) +
-                      $"\nZ={(Cpu.FlagZero ? 1 : 0)}  S={(Cpu.FlagSegno ? 1 : 0)}  O={(Cpu.FlagOverflow ? 1 : 0)}";
+                      $"\nC={(Cpu.FlagCarry ? 1 : 0)}  Z={(Cpu.FlagZero ? 1 : 0)}  S={(Cpu.FlagSegno ? 1 : 0)}  O={(Cpu.FlagOverflow ? 1 : 0)}";
 
         var mem = Cpu.DumpMemoria(0, Ram.INDIRIZZO_STACK, 8);
         if (mem is not null && Compiler.Simboli.Count > 0)

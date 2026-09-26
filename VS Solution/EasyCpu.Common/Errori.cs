@@ -55,12 +55,12 @@ namespace EasyCpu.Common
 				case CodiceErrore.AttesaCostante: return "E' atteso un numero";
 				case CodiceErrore.CostanteFuoriIntervallo: return "Valore fuori dall'intervallo consentito";
 				case CodiceErrore.NumeroOperandi: return "Numero operandi errato";
-				case CodiceErrore.DestinazioneCostante: return "L'operando destinazione non pu� essere una costante";
+				case CodiceErrore.DestinazioneCostante: return "L'operando destinazione non può essere una costante";
 				case CodiceErrore.Sconosciuto: return "Errore sconosciuto";
 				case CodiceErrore.StackOverflow: return "Stack overflow";
 				case CodiceErrore.StackUnderflow: return "Stack underflow";
 				case CodiceErrore.Formato: return "Formato numerico non valido";
-				case CodiceErrore.OperandoNonValido: return "Operando sconociuto o non valido";
+				case CodiceErrore.OperandoNonValido: return "Operando sconosciuto o non valido";
 				case CodiceErrore.EtichettaNonValida: return "Etichetta sconosciuta o non valida";
 				case CodiceErrore.IntervalloIndirizzoDati: return "Indirizzo dati fuori dall'intervallo";
 				case CodiceErrore.Sintassi: return "Errore sintattico";

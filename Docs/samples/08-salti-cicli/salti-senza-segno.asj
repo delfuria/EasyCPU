@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Salti con e senza segno",
+    "//",
+    "// Cosa illustra:",
+    "//   Dopo CMP, JA/JB/JAE/JBE confrontano i numeri senza segno (usano CF e ZF),",
+    "//   JG/JL/JGE/JLE con segno (usano SF, OF e ZF). FFFFh è 65535 senza segno",
+    "//   e -1 con segno: i due confronti danno risultati opposti.",
+    "//   Sinonimi: JZ = JE, JNZ = JNE, JC = JB, JNC = JAE, JNA = JBE, ...",
+    "//",
+    "// Utilizzo:",
+    "//   Eseguire con Step Into e seguire quali salti vengono eseguiti.",
+    "//",
+    "// Risultato atteso:",
+    "//   BX = 1 (JBE non salta: 65535 > 1 senza segno)",
+    "//   CX = 0 (JL salta: -1 < 1 con segno)",
+    "// ======================================================================",
+    "",
+    "        mov bx, 0",
+    "        mov cx, 0",
+    "        mov ax, 0FFFFh",
+    "        cmp ax, 1",
+    "        jbe noA             // 65535 > 1: non salta",
+    "        mov bx, 1",
+    "noA:    jl fine             // -1 < 1: salta",
+    "        mov cx, 1",
+    "fine:   stop"
+  ],
+  "data": []
+}

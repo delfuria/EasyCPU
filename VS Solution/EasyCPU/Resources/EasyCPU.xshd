@@ -58,6 +58,8 @@
     <Keywords color="OpcodeMove">
       <Word>mov</Word>
       <Word>movs</Word>
+      <Word>xchg</Word>
+      <Word>lea</Word>
     </Keywords>
 
     <!-- Aritmetica -->
@@ -69,6 +71,12 @@
       <Word>inc</Word>
       <Word>dec</Word>
       <Word>neg</Word>
+      <Word>adc</Word>
+      <Word>sbb</Word>
+      <Word>imul</Word>
+      <Word>idiv</Word>
+      <Word>cbw</Word>
+      <Word>cwd</Word>
     </Keywords>
 
     <!-- Logica e shift -->
@@ -79,11 +87,20 @@
       <Word>not</Word>
       <Word>shl</Word>
       <Word>shr</Word>
+      <Word>test</Word>
+      <Word>sar</Word>
+      <Word>rol</Word>
+      <Word>ror</Word>
+      <Word>rcl</Word>
+      <Word>rcr</Word>
     </Keywords>
 
     <!-- Confronto -->
     <Keywords color="OpcodeCmp">
       <Word>cmp</Word>
+      <Word>clc</Word>
+      <Word>stc</Word>
+      <Word>cmc</Word>
     </Keywords>
 
     <!-- Stack -->
@@ -108,6 +125,27 @@
       <Word>js</Word>
       <Word>jns</Word>
       <Word>jcxz</Word>
+      <Word>ja</Word>
+      <Word>jae</Word>
+      <Word>jb</Word>
+      <Word>jbe</Word>
+      <Word>jc</Word>
+      <Word>jnc</Word>
+      <Word>jz</Word>
+      <Word>jnz</Word>
+      <Word>jna</Word>
+      <Word>jnae</Word>
+      <Word>jnb</Word>
+      <Word>jnbe</Word>
+      <Word>jng</Word>
+      <Word>jnge</Word>
+      <Word>jnl</Word>
+      <Word>jnle</Word>
+      <Word>loop</Word>
+      <Word>loope</Word>
+      <Word>loopz</Word>
+      <Word>loopne</Word>
+      <Word>loopnz</Word>
       <Word>call</Word>
       <Word>ret</Word>
     </Keywords>

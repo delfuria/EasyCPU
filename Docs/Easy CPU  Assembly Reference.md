@@ -114,6 +114,8 @@ EasyCPU supporta l’aritmetica a 16 bit e a 8 bit. Ogni valore, sia esso immedi
 
 Le istruzioni che usano un registro a 8 bit (vedi «Registri») operano a 8 bit, con un intervallo di variazione da –128 a +127.
 
+Gli stessi bit possono rappresentare un numero con segno o senza segno: FFFFh vale –1 con segno e 65535 senza segno (a 8 bit, FFh vale –1 oppure 255). ADD, SUB, INC, DEC e CMP producono lo stesso risultato nei due casi; cambia l’interpretazione dei flag (OF e SF per i numeri con segno, CF per quelli senza segno) e quindi il salto condizionato da usare dopo un confronto. Per la moltiplicazione e la divisione ci sono istruzioni distinte: MUL e DIV senza segno, IMUL e IDIV con segno.
+
 ### Memoria dati
 
 EasyCPU supporta una memoria non segmentata di 256 elementi interi. Di questi, gli ultimi 16 sono riservati allo «stack»:
@@ -230,7 +232,9 @@ Il tentativo di allocare un numero di valori supereriori alla dimensione dello s
 
 ### Flags
 
-EasyCPU supporta i flag di segno (SF), zero (ZF) e overflow (OF), i quali vengono prevalentemente impiegati per l’esecuzione dei salti condizionati e sono influenzati dalle operazioni aritmetico logiche (esclusa DIV).
+EasyCPU supporta i flag di carry (CF), segno (SF), zero (ZF) e overflow (OF), i quali vengono prevalentemente impiegati per l’esecuzione dei salti condizionati e sono influenzati dalle operazioni aritmetico logiche (escluse DIV e IDIV).
+
+Il flag CF è settato se un’addizione produce un riporto oltre il bit più significativo, o se una sottrazione (o un confronto) richiede un prestito, cioè se il primo operando, letto come numero senza segno, è minore del secondo. Indica quindi un risultato fuori dall’intervallo dei numeri senza segno (da 0 a 65535, o da 0 a 255 a 8 bit). Negli shift e nelle rotazioni CF riceve l’ultimo bit uscito. INC e DEC non modificano CF. CF può essere impostato direttamente con STC, CLC e CMC.
 
 Il flag SF è settato se il risultato di un’operazione aritmetico-logica produce un risultato negativo, e dunque riflette il valore del bit di ordine superiore del risultato.
 
@@ -241,6 +245,17 @@ Il flag OF è settato se il risultato di un’operazione aritmetico-logica ecced
 Nelle operazioni a 8 bit i flag si riferiscono al byte: SF riflette il bit 7 del risultato e OF indica un risultato fuori dall’intervallo da –128 a +127.
 
 Un test classico sui flag prevede un confronto tra due operandi tramite l’istruzione CMP, la quale sottrae il secondo operando dal primo senza però memorizzare il risultato, ma influenzando egualmente lo stato dei flag.
+
+I flag sono memorizzati nei bit di un registro a 16 bit, nelle stesse posizioni dei microprocessori X86; è il valore che PUSHF deposita nello stack e POPF preleva:
+
+| Flag | Bit | Valore |
+|---|---|---|
+| CF | 0 | 0001h |
+| ZF | 6 | 0040h |
+| SF | 7 | 0080h |
+| OF | 11 | 0800h |
+
+Il pannello Registri mostra i quattro flag come C, Z, S, O.
 
 ## Set di istruzioni
 
@@ -273,6 +288,29 @@ Nei microprocessori X86, alcune istruzioni pur non settando direttamente i flag 
 
 EasyCPU si comporta in modo diverso. Un flag può essere impostato oppure lasciato inalterato; in sostanza non esiste lo stato indefinito.
 
+### ADC – Addizione con riporto
+
+Sintassi:
+
+**ADC *destinazione*, *sorgente***
+
+Operazione svolta:
+
+**destinazione = destinazione + sorgente + CF**
+
+Flag definiti:
+
+**SF, ZF, OF, CF**
+
+Descrizione:
+
+ADC somma all’operando destinazione l’operando sorgente e il valore del flag CF (0 o 1). Si usa per sommare numeri più grandi di un registro: si sommano prima le parti basse con ADD, poi le parti alte con ADC, che aggiunge il riporto della prima somma.
+
+Esempi:
+
+add ax, bx // parti basse
+
+adc dx, cx // parti alte più il riporto: DX:AX = DX:AX + CX:BX
 ### ADD – Addizione
 
 Sintassi:
@@ -285,7 +323,7 @@ Operazione svolta:
 
 Flag definiti:
 
-**SF*,* ZF, OF**
+**SF, ZF, OF, CF**
 
 Descrizione:
 
@@ -309,7 +347,7 @@ Operazione svolta:
 
 Flag definiti:
 
-**SF*,* ZF; OF = 0**
+**SF, ZF; OF = 0, CF = 0**
 
 Descrizione:
 
@@ -351,6 +389,71 @@ call ciclo // IP viene punta alla istruzione designata da "ciclo"
 
 ciclo: *<inizio della procedura>*
 
+### CBW – Estensione del segno da byte a parola
+
+Sintassi:
+
+**CBW**
+
+Operazione svolta:
+
+**AX = AL esteso con segno**
+
+Flag definiti:
+
+**Nessuno**
+
+Descrizione:
+
+CBW copia in tutti i bit di AH il bit di segno di AL, così che AX contenga lo stesso numero con segno di AL. Si usa prima di IDIV con operando a 8 bit, che divide AX.
+
+Esempi:
+
+mov al, -5 // AL = FBh
+
+cbw // AX = FFFBh = -5
+### CLC – Azzeramento del carry
+
+Sintassi:
+
+**CLC**
+
+Operazione svolta:
+
+**CF = 0**
+
+Flag definiti:
+
+**CF**
+
+Descrizione:
+
+CLC imposta a 0 il flag CF.
+
+Esempi:
+
+clc
+### CMC – Inversione del carry
+
+Sintassi:
+
+**CMC**
+
+Operazione svolta:
+
+**CF = not CF**
+
+Flag definiti:
+
+**CF**
+
+Descrizione:
+
+CMC inverte il valore del flag CF.
+
+Esempi:
+
+cmc
 ### CMP – Confronto
 
 Sintassi:
@@ -363,7 +466,7 @@ Operazione svolta:
 
 Flag definiti:
 
-**ZF, SF,OF**
+**ZF, SF, OF, CF**
 
 Descrizione:
 
@@ -375,6 +478,33 @@ cmp ax, bx // confronta ax con bx
 
 je salto // salta se ax è uguale a bx (e dunque il flag zero è 1)
 
+### CWD – Estensione del segno da parola a doppia parola
+
+Sintassi:
+
+**CWD**
+
+Operazione svolta:
+
+**DX:AX = AX esteso con segno**
+
+Flag definiti:
+
+**Nessuno**
+
+Descrizione:
+
+CWD copia in tutti i bit di DX il bit di segno di AX: DX diventa FFFFh se AX è negativo, 0 altrimenti. Si usa prima di IDIV con operando a 16 bit, che divide DX:AX.
+
+Esempi:
+
+mov ax, -7
+
+cwd // DX = FFFFh: DX:AX = -7
+
+mov bx, 2
+
+idiv bx // AX = -3, DX = -1
 ### DEC – Decremento
 
 Sintassi:
@@ -387,7 +517,7 @@ Operazione svolta:
 
 Flag definiti:
 
-**ZF, SF, OF**
+**ZF, SF, OF (CF non cambia)**
 
 Descrizione:
 
@@ -401,7 +531,7 @@ dec [20] // decrementa di 1 il contenuto della locazione [20]
 
 dec [si] // decrementa di 1 il contenuto della locazione puntata da si
 
-### DIV – Divisione intera
+### DIV – Divisione senza segno
 
 Sintassi:
 
@@ -413,11 +543,7 @@ Operazione svolta:
 
 **DX = DX:AX % sorgente**
 
-Se sorgente è un registro a 8 bit:
-
-**AL = AX / sorgente**
-
-**AH = AX % sorgente**
+**Se sorgente è a 8 bit: AL = AX / sorgente, AH = AX % sorgente**
 
 Flag definiti:
 
@@ -425,13 +551,17 @@ Flag definiti:
 
 Descrizione:
 
-DIV divide il valore memorizzato nella coppia di registri DX:AX per l’operando, memorizzando in AX il quoziente intero della divisione e in DX il resto intero.
+DIV divide il numero a 32 bit memorizzato nella coppia di registri DX:AX (DX contiene la parte alta) per l’operando, considerando entrambi numeri senza segno; memorizza in AX il quoziente intero e in DX il resto. Prima di dividere un numero contenuto soltanto in AX occorre quindi azzerare DX.
 
-Se l’operando è un registro a 8 bit, DIV divide AX per l’operando, memorizzando in AL il quoziente e in AH il resto.
+Se l’operando è a 8 bit, DIV divide AX per l’operando, memorizzando in AL il quoziente e in AH il resto.
 
-Se l’operando vale zero, l’esecuzione si interrompe con l’errore «Divisione per zero». Se il quoziente non sta nel registro destinazione (AX, oppure AL per la divisione a 8 bit), l’esecuzione si interrompe con l’errore «Il quoziente della divisione non sta nel registro destinazione».
+Se l’operando vale zero, l’esecuzione si interrompe con l’errore «Divisione per zero». Se il quoziente non sta nel registro destinazione (da 0 a 65535 in AX, da 0 a 255 in AL), l’esecuzione si interrompe con l’errore «Il quoziente della divisione non sta nel registro destinazione».
+
+Per dividere numeri con segno si usa IDIV.
 
 Esempi:
+
+mov dx, 0
 
 div 2 // divide dx:ax per 2
 
@@ -441,6 +571,68 @@ div [si] // divide dx:ax per il contenuto della locazione puntata da si
 
 div bl // divide ax per bl: quoziente in al, resto in ah
 
+### IDIV – Divisione con segno
+
+Sintassi:
+
+**IDIV *sorgente***
+
+Operazione svolta:
+
+**AX = DX:AX / sorgente**
+
+**DX = DX:AX % sorgente**
+
+**Se sorgente è a 8 bit: AL = AX / sorgente, AH = AX % sorgente**
+
+Flag definiti:
+
+**Nessuno**
+
+Descrizione:
+
+IDIV esegue la divisione come DIV, ma considera il dividendo e l’operando come numeri con segno. Il quoziente è arrotondato verso zero e il resto ha il segno del dividendo.
+
+Il dividendo deve essere esteso con segno: con operando a 16 bit si usa CWD per estendere AX in DX:AX, con operando a 8 bit CBW per estendere AL in AX.
+
+Gli errori sono quelli di DIV; il quoziente deve essere compreso tra –32768 e 32767 (tra –128 e 127 a 8 bit).
+
+Esempi:
+
+mov ax, -7
+
+cwd
+
+mov bx, 2
+
+idiv bx // AX = -3, DX = -1
+### IMUL – Moltiplicazione con segno
+
+Sintassi:
+
+**IMUL *sorgente***
+
+Operazione svolta:
+
+**DX:AX = AX \* sorgente**
+
+**Se sorgente è a 8 bit: AX = AL \* sorgente**
+
+Flag definiti:
+
+**CF, OF**
+
+Descrizione:
+
+IMUL esegue la moltiplicazione come MUL, ma considera gli operandi come numeri con segno. CF e OF valgono 1 se il risultato non sta nella sola metà bassa (AX, o AL a 8 bit).
+
+Esempi:
+
+mov al, -3
+
+mov bl, 20
+
+imul bl // AX = -60
 ### INC – Incremento
 
 Sintassi:
@@ -453,7 +645,7 @@ Operazione svolta:
 
 Flag definiti:
 
-**ZF, SF, OF**
+**ZF, SF, OF (CF non cambia)**
 
 Descrizione:
 
@@ -522,6 +714,120 @@ mov ah, 4Ch
 
 int 21h // termina il programma
 
+### JA – Salto se superiore (senza segno)
+
+Sintassi:
+
+**JA *etichetta***
+
+Operazione svolta:
+
+**se CF == 0 e ZF == 0 esegue:**
+
+**IP = indirizzo designato dall’etichetta**
+
+Flag definiti:
+
+**Nessuno**
+
+Descrizione:
+
+JA salta se, dopo un confronto, il primo operando è maggiore del secondo considerando i numeri senza segno.
+
+Sinonimi: JNBE.
+
+Esempi:
+
+mov ax, 0FFFFh
+
+cmp ax, 1
+
+ja salto // salta: 65535 > 1 (JG non salterebbe: -1 < 1)
+### JAE – Salto se superiore o uguale (senza segno)
+
+Sintassi:
+
+**JAE *etichetta***
+
+Operazione svolta:
+
+**se CF == 0 esegue:**
+
+**IP = indirizzo designato dall’etichetta**
+
+Flag definiti:
+
+**Nessuno**
+
+Descrizione:
+
+JAE salta se, dopo un confronto, il primo operando è maggiore o uguale al secondo considerando i numeri senza segno, cioè se non c’è stato prestito.
+
+Sinonimi: JNB, JNC.
+
+Esempi:
+
+cmp ax, bx
+
+jae salto
+### JB – Salto se inferiore (senza segno)
+
+Sintassi:
+
+**JB *etichetta***
+
+Operazione svolta:
+
+**se CF == 1 esegue:**
+
+**IP = indirizzo designato dall’etichetta**
+
+Flag definiti:
+
+**Nessuno**
+
+Descrizione:
+
+JB salta se, dopo un confronto, il primo operando è minore del secondo considerando i numeri senza segno. Come JC salta se c’è stato un riporto, ad esempio dopo ADD o uno shift.
+
+Sinonimi: JNAE, JC.
+
+Esempi:
+
+cmp ax, bx
+
+jb salto
+
+shr ax, 1
+
+jc dispari // il bit uscito era 1
+### JBE – Salto se inferiore o uguale (senza segno)
+
+Sintassi:
+
+**JBE *etichetta***
+
+Operazione svolta:
+
+**se CF == 1 oppure ZF == 1 esegue:**
+
+**IP = indirizzo designato dall’etichetta**
+
+Flag definiti:
+
+**Nessuno**
+
+Descrizione:
+
+JBE salta se, dopo un confronto, il primo operando è minore o uguale al secondo considerando i numeri senza segno.
+
+Sinonimi: JNA.
+
+Esempi:
+
+cmp ax, bx
+
+jbe salto
 ### JCXZ – Salto se CX è zero
 
 Sintassi:
@@ -570,6 +876,8 @@ Descrizione:
 
 JE assegna al registro IP un nuovo indirizzo nella memoria delle istruzioni, ma soltanto se ZF è 1. JE è di norma impiegata dopo un’istruzione CMP, che confronta due operandi alterando lo stato dei flags.
 
+Sinonimo: JZ.
+
 Esempi:
 
 cmp ax, bx
@@ -595,6 +903,8 @@ Flag definiti:
 Descrizione:
 
 JG assegna al registro IP un nuovo indirizzo nella memoria delle istruzioni in base al risultato dell’ultima operazione. Se impiegata dopo l’istruzione di confronto CMP, JG produce il salto se il primo operando è maggior del secondo.
+
+Sinonimo: JNLE. Confronta numeri con segno; per i numeri senza segno si usa JA.
 
 Esempi:
 
@@ -622,6 +932,8 @@ Descrizione:
 
 JGE assegna al registro IP un nuovo indirizzo nella memoria delle istruzioni in base al risultato dell’ultima operazione. Se impiegata dopo l’istruzione di confronto CMP, JGE produce il salto se il primo operando è maggiore o uguale al secondo.
 
+Sinonimo: JNL. Confronta numeri con segno; per i numeri senza segno si usa JAE.
+
 Esempi:
 
 cmp ax, bx
@@ -648,6 +960,8 @@ Descrizione:
 
 JL assegna al registro IP un nuovo indirizzo nella memoria delle istruzioni in base al risultato dell’ultima operazione. Se impiegata dopo l’istruzione di confronto CMP, JL produce il salto se il primo operando è minore del secondo.
 
+Sinonimo: JNGE. Confronta numeri con segno; per i numeri senza segno si usa JB.
+
 Esempi:
 
 cmp ax, bx
@@ -673,6 +987,8 @@ Flag definiti:
 Descrizione:
 
 JLE assegna al registro IP un nuovo indirizzo nella memoria delle istruzioni in base al risultato dell’ultima operazione. Se impiegata dopo l’istruzione di confronto CMP, JLE produce il salto se il primo operando è minore o uguale al secondo.
+
+Sinonimo: JNG. Confronta numeri con segno; per i numeri senza segno si usa JBE.
 
 Esempi:
 
@@ -723,6 +1039,8 @@ Flag definiti:
 Descrizione:
 
 JNE assegna al registro IP un nuovo indirizzo nella memoria delle istruzioni, ma soltanto se ZF è 0. Essa viene di norma impiegata dopo un’istruzione CMP, che confronta due operandi alterando lo stato dei flags.
+
+Sinonimo: JNZ.
 
 Esempi:
 
@@ -834,6 +1152,72 @@ sub ax, bx
 
 js salto // se "ax < 0" IP punta alla istruzione designata da "salto"
 
+### LEA – Caricamento dell’indirizzo effettivo
+
+Sintassi:
+
+**LEA *registro*, *memoria***
+
+Operazione svolta:
+
+**registro = indirizzo dell’operando in memoria**
+
+Flag definiti:
+
+**Nessuno**
+
+Descrizione:
+
+LEA calcola l’indirizzo dell’operando in memoria e lo memorizza nel registro, senza leggere la memoria. La destinazione deve essere un registro a 16 bit e la sorgente un operando in memoria (diretto, indiretto o una variabile): lea si, vet equivale a mov si, offset vet.
+
+Esempi:
+
+lea si, vet // SI = indirizzo di vet
+
+lea di, [si+3] // DI = SI + 3
+### LOOP, LOOPE, LOOPNE – Cicli con contatore
+
+Sintassi:
+
+**LOOP *etichetta***
+
+**LOOPE *etichetta***
+
+**LOOPNE *etichetta***
+
+Operazione svolta:
+
+**CX = CX - 1**
+
+**LOOP: se CX != 0 esegue IP = indirizzo designato dall’etichetta**
+
+**LOOPE: se CX != 0 e ZF == 1 salta**
+
+**LOOPNE: se CX != 0 e ZF == 0 salta**
+
+Flag definiti:
+
+**Nessuno**
+
+Descrizione:
+
+LOOP decrementa CX e salta all’etichetta se CX non è diventato zero: ripete quindi un ciclo tante volte quanto il valore iniziale di CX. Il decremento non modifica i flag. Se CX vale 0 prima del LOOP, il decremento lo porta a 65535 e il ciclo viene ripetuto 65536 volte.
+
+LOOPE (sinonimo LOOPZ) salta solo se, oltre a CX diverso da zero, ZF vale 1; LOOPNE (sinonimo LOOPNZ) solo se ZF vale 0. Servono ad esempio per cercare un valore in un vettore, uscendo dal ciclo quando il confronto ha successo.
+
+Esempi:
+
+mov cx, 5
+
+ciclo: add ax, cx
+
+loop ciclo // ripete 5 volte
+
+cerca: inc si
+
+cmp [vet+si], 7
+
+loopne cerca // continua finché diverso da 7
 ### MOV – Trasferimento
 
 Sintassi:
@@ -884,7 +1268,7 @@ mov si, 10 // imposta a 10 si
 
 movs // equivale a: memoria[0] = memoria[10]
 
-### MUL – Moltiplicazione intera
+### MUL – Moltiplicazione senza segno
 
 Sintassi:
 
@@ -894,19 +1278,19 @@ Operazione svolta:
 
 **DX:AX = AX \* sorgente**
 
-Se sorgente è un registro a 8 bit:
-
-**AX = AL \* sorgente**
+**Se sorgente è a 8 bit: AX = AL \* sorgente**
 
 Flag definiti:
 
-**OF**
+**CF, OF**
 
 Descrizione:
 
-MUL moltiplica il registro AX per l’operando, memorizzando nella coppia di registri DX:AX il risultato della moltiplicazione. Se il flag OF viene settato significa che DX contiene delle cifre significative.
+MUL moltiplica il registro AX per l’operando, considerando entrambi numeri senza segno (da 0 a 65535), e memorizza il risultato a 32 bit nella coppia di registri DX:AX. CF e OF valgono 1 se DX contiene cifre significative, cioè se il risultato non sta in AX.
 
-Se l’operando è un registro a 8 bit, MUL moltiplica AL per l’operando e memorizza il risultato in AX; il flag OF viene settato se il risultato non sta in AL.
+Se l’operando è a 8 bit (un registro a 8 bit o una variabile DB), MUL moltiplica AL per l’operando (da 0 a 255) e memorizza il risultato in AX; CF e OF valgono 1 se il risultato non sta in AL.
+
+Per moltiplicare numeri con segno si usa IMUL.
 
 Esempi:
 
@@ -917,6 +1301,12 @@ mul [20] // moltiplica ax per il contenuto della locazione [20]
 mul [si] // moltiplica ax per il contenuto della locazione puntata da si
 
 mul bl // moltiplica al per bl, risultato in ax
+
+mov al, 0FFh
+
+mov bl, 2
+
+mul bl // AX = 255 * 2 = 510 (con IMUL: -1 * 2 = -2)
 
 ### NEG – Negazione (formazione del complemento a 2)
 
@@ -930,11 +1320,11 @@ Operazione svolta:
 
 Flag definiti:
 
-**SF, ZF**
+**SF, ZF, OF, CF**
 
 Descrizione:
 
-NEG sottrae l’operando a 0, ottenendo così il suo complemento a 2.
+NEG sottrae l’operando a 0, ottenendo così il suo complemento a 2. CF vale 1, tranne quando l’operando è 0.
 
 Esempi:
 
@@ -1024,7 +1414,7 @@ Operazione svolta:
 
 Flag definiti:
 
-**SF, ZF, OF**
+**CF, SF, ZF, OF**
 
 Descrizione:
 
@@ -1084,17 +1474,50 @@ Esempi:
 
 pushf // copia il registro dei flags in testa allo stack
 
+### RCL, RCR – Rotazione attraverso il carry
+
+Sintassi:
+
+**RCL *destinazione*, *contatore***
+
+**RCR *destinazione*, *contatore***
+
+Operazione svolta:
+
+**ruota i bit dell’operando insieme a CF, a sinistra (RCL) o a destra (RCR)**
+
+Flag definiti:
+
+**CF; OF se contatore = 1**
+
+Descrizione:
+
+RCL e RCR ruotano i bit dell’operando considerando CF come un bit in più: il bit che esce va in CF e il vecchio valore di CF entra dall’altra parte. Servono a spostare bit tra registri, ad esempio negli shift di numeri a 32 bit. Per il contatore valgono le regole di SHL.
+
+Esempi:
+
+clc
+
+mov al, 80h
+
+rcl al, 1 // AL = 00h, CF = 1
+
+rcl al, 1 // AL = 01h, CF = 0
 ### RET – Ritorno da una procedura
 
 Sintassi:
 
 **RET**
 
+**RET *n***
+
 Operazione svolta:
+
+**IP viene prelevato dallo stack**
 
 **SP = SP + 1**
 
-**IP viene prelevato dallo stack**
+**con RET n: SP = SP + n**
 
 Flag definiti:
 
@@ -1103,6 +1526,8 @@ Flag definiti:
 Descrizione:
 
 RET modifica il flusso di esecuzione delle istruzioni, prelevando IP dallo stack e quindi assegnandogli un nuovo indirizzo nella memoria delle istruzioni. Si presuppone che RET termini una procedura che sia stata precedentemente avviata da un’istruzione CALL.
+
+La forma RET n, dove n è una costante, dopo il ritorno rimuove n valori dallo stack: la procedura elimina così i parametri che il chiamante vi aveva depositato, invece di lasciarlo fare al chiamante con ADD SP, n. Se lo stack contiene meno di n valori si produce l’errore «Stack underflow».
 
 Esempi:
 
@@ -1116,6 +1541,81 @@ ciclo: *<inizio della procedura>*
 
 ret // ritorno all’istruzione successiva a CALL
 
+ret 2 // ritorno e rimozione di due parametri dallo stack
+
+### ROL, ROR – Rotazione
+
+Sintassi:
+
+**ROL *destinazione*, *contatore***
+
+**ROR *destinazione*, *contatore***
+
+Operazione svolta:
+
+**ruota i bit dell’operando a sinistra (ROL) o a destra (ROR)**
+
+Flag definiti:
+
+**CF; OF se contatore = 1**
+
+Descrizione:
+
+ROL e ROR ruotano i bit dell’operando: il bit che esce da una parte rientra dall’altra e viene copiato anche in CF. Nessun bit va perso. Per il contatore valgono le regole di SHL.
+
+Esempi:
+
+mov ax, 1234h
+
+rol ax, 4 // AX = 2341h
+
+ror ax, 4 // AX = 1234h
+### SAR – Shift aritmetico a destra
+
+Sintassi:
+
+**SAR *destinazione*, *contatore***
+
+Operazione svolta:
+
+**sposta a destra i bit dell’operando, ripetendo il bit di segno**
+
+Flag definiti:
+
+**SF, ZF, CF; OF = 0 se contatore = 1**
+
+Descrizione:
+
+SAR sposta a destra i bit dell’operando come SHR, ma nel bit più a sinistra ripete il bit di segno: il numero conserva il segno. Ogni spostamento equivale a una divisione per 2 di un numero con segno, arrotondata verso il basso. Per il contatore valgono le regole di SHL.
+
+Esempi:
+
+mov ax, -8
+
+sar ax, 1 // AX = -4 (con SHR: 32764)
+### SBB – Sottrazione con prestito
+
+Sintassi:
+
+**SBB *destinazione*, *sorgente***
+
+Operazione svolta:
+
+**destinazione = destinazione - sorgente - CF**
+
+Flag definiti:
+
+**SF, ZF, OF, CF**
+
+Descrizione:
+
+SBB sottrae dall’operando destinazione l’operando sorgente e il valore del flag CF. Si usa per sottrarre numeri più grandi di un registro: si sottraggono prima le parti basse con SUB, poi le parti alte con SBB, che tiene conto del prestito.
+
+Esempi:
+
+sub ax, bx // parti basse
+
+sbb dx, cx // parti alte meno il prestito: DX:AX = DX:AX - CX:BX
 ### SHL – Shift logico a sinistra
 
 Sintassi:
@@ -1128,17 +1628,23 @@ Operazione svolta:
 
 Flag definiti:
 
-**SF, ZF**
+**SF, ZF, CF; OF se contatore = 1**
 
 Descrizione:
 
-SHL, sposta a sinistra i bit dell’operando destinazione per un numero di posizioni equivalente all’operando contatore. Ad ogni spostamento, nel bit più a destra viene memorizzato il valore zero.
+SHL sposta a sinistra i bit dell’operando destinazione per un numero di posizioni pari all’operando contatore. A ogni spostamento, nel bit più a destra viene memorizzato il valore zero, mentre il bit più a sinistra esce e va in CF. Ogni spostamento equivale a una moltiplicazione per 2.
+
+Il contatore può essere una costante o un registro (tipicamente CL); come nei microprocessori X86 se ne usano soltanto i 5 bit bassi (da 0 a 31). Con contatore 0 i flag non cambiano. OF è definito solo per contatore 1: vale 1 se il bit di segno è cambiato.
 
 Esempi:
 
 mov ax, 2
 
-shl ax, 3 // produce: 10
+shl ax, 3 // produce: 16
+
+mov ax, 8000h
+
+shl ax, 1 // produce: 0, con CF = 1
 
 ### SHR – Shift logico a destra
 
@@ -1152,11 +1658,13 @@ Operazione svolta:
 
 Flag definiti:
 
-**SF, ZF**
+**SF, ZF, CF; OF se contatore = 1**
 
 Descrizione:
 
-SHR, sposta a destra i bit dell’operando destinazione per un numero di posizioni equivalente all’operando contatore. Ad ogni spostamento, nel bit più a sinistra viene memorizzato il valore zero.
+SHR sposta a destra i bit dell’operando destinazione per un numero di posizioni pari all’operando contatore. A ogni spostamento, nel bit più a sinistra viene memorizzato il valore zero, mentre il bit più a destra esce e va in CF. Ogni spostamento equivale a una divisione per 2 di un numero senza segno; per i numeri con segno si usa SAR.
+
+Per il contatore valgono le regole di SHL. OF, per contatore 1, riceve il bit di segno originale.
 
 Esempi:
 
@@ -1164,6 +1672,31 @@ mov ax, 4
 
 shr ax, 2 // produce: 1
 
+mov ax, -8
+
+shr ax, 1 // produce: 7FFCh (32764): entra uno zero
+
+### STC – Impostazione del carry
+
+Sintassi:
+
+**STC**
+
+Operazione svolta:
+
+**CF = 1**
+
+Flag definiti:
+
+**CF**
+
+Descrizione:
+
+STC imposta a 1 il flag CF.
+
+Esempi:
+
+stc
 ### STOP – Arresta la CPU
 
 Sintassi:
@@ -1194,7 +1727,7 @@ Operazione svolta:
 
 Flag definiti:
 
-**SF*,* ZF, OF**
+**SF, ZF, OF, CF**
 
 Descrizione:
 
@@ -1206,6 +1739,54 @@ sub ax, bx // equivale a: ax = ax - bx
 
 sub [10], 2 // equivale a: [1] = [1] - 2
 
+### TEST – Test logico
+
+Sintassi:
+
+**TEST *destinazione*, *sorgente***
+
+Operazione svolta:
+
+**destinazione & sorgente, senza memorizzare il risultato**
+
+Flag definiti:
+
+**SF, ZF; OF = 0, CF = 0**
+
+Descrizione:
+
+TEST esegue un AND tra i due operandi senza modificarli, aggiornando soltanto i flag: sta ad AND come CMP sta a SUB. Si usa per controllare il valore di uno o più bit.
+
+Esempi:
+
+test ax, 1
+
+jz pari // salta se il bit 0 di AX è 0
+### XCHG – Scambio
+
+Sintassi:
+
+**XCHG *operando1*, *operando2***
+
+Operazione svolta:
+
+**scambia il contenuto dei due operandi**
+
+Flag definiti:
+
+**Nessuno**
+
+Descrizione:
+
+XCHG scambia il contenuto di due registri, o di un registro e di una locazione di memoria, senza bisogno di un registro d’appoggio. Gli operandi devono avere la stessa dimensione; non sono ammesse costanti né due operandi in memoria.
+
+Esempi:
+
+xchg ax, bx
+
+xchg cl, ch // scambia i due byte di CX
+
+xchg dx, [10]
 ### XOR – Or esclusivo
 
 Sintassi:
@@ -1216,7 +1797,7 @@ Sintassi:
 
 Flag definiti:
 
-**SF*,* ZF, OF = 0**
+**SF, ZF; OF = 0, CF = 0**
 
 Descrizione:
 

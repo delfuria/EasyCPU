@@ -1,6 +1,6 @@
 # Proposte di estensione x86 per EasyCPU
 
-Stato: **fasi 0, 1 e 2 implementate** (operando strutturato, registri a 8 bit con memoria a parole, errori di divisione, `.DATA` simbolica, `int 21h` con AH); il resto è ancora proposta. Il documento parte da un'analisi del codice attuale (`EasyCpu.Assembler`) e propone estensioni in ordine di priorità.
+Stato: **fasi 0, 1, 2 e 3 implementate** (operando strutturato, registri a 8 bit con memoria a parole, errori di divisione, `.DATA` simbolica, `int 21h` con AH, CF e aritmetica senza segno, istruzioni x86 comuni); `jmp`/`call` indiretti rimandati (vedi roadmap); il resto è ancora proposta. Il documento parte da un'analisi del codice attuale (`EasyCpu.Assembler`) e propone estensioni in ordine di priorità.
 
 ---
 
@@ -222,7 +222,8 @@ Nota tecnica: l'enum `IdOp` più un `int offset` non basta a rappresentare base+
 | 0 | Refactor dell'operando in struct (nota P7) + test di regressione sugli esempi in `Docs/Subroutines` | Base solida, evita di riscrivere due volte `LoadOp`/`StoreOp` |
 | 1 | **P1** registri a 8 bit (memoria a parole) + **P8** | Richiesta principale, basso rischio |
 | 2 | **P2** `.DATA` simbolica + **P6** `int 21h` con AH e servizio 09h | Insieme permettono il classico "Hello World" x86 |
-| 3 | **P3** CF e aritmetica senza segno + **P4** istruzioni mancanti | Completa il set per esercizi tipici |
+| 3 | **P3** CF e aritmetica senza segno + **P4** istruzioni mancanti (escluso `jmp`/`call` indiretti) | Completa il set per esercizi tipici |
+| **da fare** | `jmp reg` / `call reg` / `call [bx]` e tabelle di salto (P4) | Rimandati dalla fase 3: le etichette del codice non sono ancora utilizzabili come valori (`mov ax, offset etichetta`, `tab DW lab1, lab2`), perché la sezione dati viene compilata prima del codice |
 | 4 | **P5** istruzioni stringa + **P7** base+indice | Avanzato |
 | 5 | Modalità "x86 fedele" con memoria a byte (P1 opzione B) | Solo se serve davvero, è il cambiamento più invasivo |
 

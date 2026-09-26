@@ -106,29 +106,29 @@ public class Registri8BitTests
     }
 
     [Fact]
-    public async Task Mul8()
+    public async Task IMul8()
     {
         // AX = AL * BL, con segno
-        var cpu = await Esegui(["mov ax, 7F10h", "mov bx, 0", "mov bl, 20", "mul bl", "mov cx, ax", "mov al, -3", "mul bl", "stop"]);
+        var cpu = await Esegui(["mov ax, 7F10h", "mov bx, 0", "mov bl, 20", "imul bl", "mov cx, ax", "mov al, -3", "imul bl", "stop"]);
         Assert.Equal(320, cpu.CX);
         Assert.Equal(-60, cpu.AX);
         Assert.False(cpu.FlagZero);
     }
 
     [Fact]
-    public async Task Mul8_OverflowSeProdottoNonStaInByte()
+    public async Task IMul8_OverflowSeProdottoNonStaInByte()
     {
-        var cpu = await Esegui(["mov ax, 10", "mov bx, 20", "mul bl", "stop"]);
+        var cpu = await Esegui(["mov ax, 10", "mov bx, 20", "imul bl", "stop"]);
         Assert.True(cpu.FlagOverflow);
-        var cpu2 = await Esegui(["mov ax, 10", "mov bx, 2", "mul bl", "stop"]);
+        var cpu2 = await Esegui(["mov ax, 10", "mov bx, 2", "imul bl", "stop"]);
         Assert.False(cpu2.FlagOverflow);
     }
 
     [Fact]
-    public async Task Div8()
+    public async Task IDiv8()
     {
-        // AL = AX / CL, AH = AX % CL
-        var cpu = await Esegui(["mov ax, 300", "mov cx, 7", "div cl", "mov bx, ax", "mov ax, -7", "div cl", "stop"]);
+        // AL = AX / CL, AH = AX % CL, con segno
+        var cpu = await Esegui(["mov ax, 300", "mov cx, 7", "idiv cl", "mov bx, ax", "mov ax, -7", "idiv cl", "stop"]);
         Assert.Equal((300 % 7) << 8 | (300 / 7), cpu.BX);
         Assert.Equal(0x00FF, cpu.AX);   // -7 / 7: AL = -1 (FFh), AH = resto 0
     }

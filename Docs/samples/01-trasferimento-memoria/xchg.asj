@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Scambio con XCHG",
+    "//",
+    "// Cosa illustra:",
+    "//   XCHG scambia due registri, o un registro con una cella di memoria,",
+    "//   senza bisogno di un registro d'appoggio.",
+    "//",
+    "// Utilizzo:",
+    "//   Eseguire con Step Into.",
+    "//",
+    "// Risultato atteso:",
+    "//   AX = 2, BX = 1, CX = 0201h, DX = 7, memoria[0] = 9",
+    "// ======================================================================",
+    "",
+    "        mov ax, 1",
+    "        mov bx, 2",
+    "        xchg ax, bx",
+    "        mov cx, 0102h",
+    "        xchg cl, ch         // scambia i due byte",
+    "        mov dx, 9",
+    "        xchg dx, valore     // registro <-> memoria",
+    "        stop"
+  ],
+  "data": [
+    "valore  DW 7"
+  ]
+}
