@@ -1,5 +1,9 @@
 # EasyCPU
 
+[![Deploy Browser app to GitHub Pages](https://github.com/delfuria/EasyCPU/actions/workflows/deploy-browser.yml/badge.svg)](https://github.com/delfuria/EasyCPU/actions/workflows/deploy-browser.yml)
+
+**🌐 Live demo: [delfuria.github.io/EasyCPU](https://delfuria.github.io/EasyCPU/)** — run EasyCPU directly in your browser, no installation required.
+
 A comprehensive, cross-platform IDE for teaching Assembly language programming and X86 processor architecture fundamentals.
 
 EasyCPU is an educational tool designed to make learning assembly language and CPU architecture accessible and intuitive. It provides a simplified but functional virtual CPU that implements a subset of X86 instructions, allowing students to write, execute, and debug assembly programs with immediate visual feedback on CPU state.
