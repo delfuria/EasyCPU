@@ -98,7 +98,12 @@ public partial class MainViewModel : ObservableObject
             if (e.PropertyName == nameof(SettingsViewModel.Theme))
                 NotifyThemeProps();
             if (e.PropertyName == nameof(SettingsViewModel.FormatoDati))
+            {
                 RefreshDebugViews();
+                // la scelta fatta dalla toolbar va salvata subito: altrimenti al prossimo
+                // avvio si riparte dall'ultimo formato confermato nella finestra Opzioni
+                Storage.SalvaOpzioni();
+            }
         };
         Breakpoints.CollectionChanged += (_, _) => SyncBreakpointsToCpu();
 
