@@ -1,6 +1,6 @@
 # Fase 5 – Modalità «x86 fedele»: memoria a byte (P1, opzione B)
 
-Stato: **progetto**, niente ancora implementato. È la proposta C (fase 5) di `PROPOSTE-X86.md`: la più invasiva, da affrontare solo dopo le altre. Il documento descrive il modello, le scelte, l'impatto sul codice e le operazioni da eseguire.
+Stato: **progetto**, decisioni prese il 27 settembre 2026 (sezione 10), niente ancora implementato. È la proposta C (fase 5) di `PROPOSTE-X86.md`: la più invasiva, da affrontare solo dopo le altre. Il documento descrive il modello, le scelte, l'impatto sul codice e le operazioni da eseguire.
 
 ---
 
@@ -53,21 +53,20 @@ Un accesso a parola che esce dalla memoria (per esempio all'indirizzo 1023) prod
 
 ## 3. Come si sceglie la modalità
 
-La modalità è una proprietà del **programma**, non dell'IDE: un programma scritto per la memoria a byte (`add si, 2`, `[bp+4]`) dà risultati sbagliati nell'altra modalità, e viceversa. Si propone una **direttiva nella sezione dati**:
+La modalità è una proprietà del **programma**, non dell'IDE: un programma scritto per la memoria a byte (`add si, 2`, `[bp+4]`) dà risultati sbagliati nell'altra modalità, e viceversa. È salvata come **campo del file `.asj`** (decisione del 27 settembre 2026):
 
-```asm
-.MEMORIA BYTE        ; modalità x86 fedele
-.MEMORIA PAROLE      ; modalità a parole (predefinita, si può omettere)
+```json
+{ "version": 1, "memoria": "byte", "code": [ ... ], "data": [ ... ] }
 ```
 
-- Va scritta come prima riga significativa della sezione dati (editor Dati), prima di ogni DB/DW/EQU/ORG.
-- Se manca, la modalità è **a parole**: i programmi esistenti non cambiano.
-- Funziona con entrambi i formati di file (`.as` e `.asj`) senza modificarne la struttura, ed è visibile allo studente.
-- Una scelta nelle Opzioni («modalità dei nuovi programmi») può inserire automaticamente la direttiva in File → Nuovo.
+- Valori: `"parole"` o `"byte"`. Se il campo manca, la modalità è **a parole**: i file esistenti non cambiano e non viene scritto il campo per i programmi a parole.
+- Si sceglie nell'IDE con una voce a spunta «Memoria a byte (x86)» nel menu Esegui (menu desktop, menu nativo macOS, menu laterale del browser). Cambiarla segna il programma come modificato e richiede una nuova compilazione.
+- File → Nuovo riporta la modalità a parole.
+- I file `.as` (formato storico, di sola lettura) sono sempre a parole.
+- Nel browser la modalità viaggia con il contenuto del programma nei «Recenti», perché il programma vi è conservato in formato `.asj`.
+- La modalità non è visibile nel sorgente: l'IDE la mostra nel titolo del pannello Memoria («Memoria (byte)») e nella barra di stato dopo la compilazione.
 
-L'alternativa, un campo nel file `.asj` (per esempio `"memoria": "byte"`) gestito da un selettore nell'IDE, è discussa nelle *Decisioni aperte*.
-
-La modalità si applica alla compilazione: `Compiler` la riconosce nella sezione dati e la passa alla CPU con il programma compilato. Durante l'esecuzione non cambia.
+La modalità si applica alla compilazione: `Compiler` la riceve dall'IDE (`Compiler.Modello`) e la passa alla CPU con il programma compilato. Durante l'esecuzione non cambia.
 
 ---
 
@@ -102,7 +101,11 @@ Nella modalità a byte, un'istruzione i cui operandi non ne determinano la dimen
 
 ### 4.3 La vecchia forma `indirizzo: valori`
 
-Nella sezione dati la forma originale `10: 4, 2, 3` non ha un tipo. Nella modalità a byte si propone di trattare i valori come **parole** (come `DW`), perché questa è la sua semantica originale, e di scrivere l'indirizzo come indirizzo di byte. Alternativa: vietarla in modalità a byte (vedi *Decisioni aperte*).
+Nella sezione dati la forma originale `10: 4, 2, 3` non ha un tipo. Nella modalità a byte è **vietata** (decisione del 27 settembre 2026): produce un errore che invita a usare `DB` o `DW`, che dichiarano la dimensione. Nella modalità a parole resta valida come oggi.
+
+### 4.4 Operazioni memoria-memoria
+
+Nella modalità a byte un'istruzione con entrambi gli operandi in memoria (`mov [1], [2]`, `mov a, b`, `add conta, [si]`) è un errore, come su x86 (proposta B di `PROPOSTE-X86.md`); restano ammesse le istruzioni stringa. Nella modalità a parole resta tutto come oggi.
 
 ---
 
@@ -161,10 +164,10 @@ I flag, i registri e le istruzioni aritmetiche e logiche non cambiano: dipendono
 | `Simbolo.Celle` | diventa `Dimensione` in unità di memoria; il pannello Simboli la mostra in byte nella modalità a byte |
 | `DUP`, stringhe, `?` | invariati nella sintassi; occupazione calcolata come sopra |
 | `IndirizzoOk`, `ORG`, controllo dell'area dello stack | limiti del modello invece di `Ram.MASSIMO_INDIRIZZO`/`INDIRIZZO_STACK` |
-| `Compiler.CompilaDati` | riconosce `.MEMORIA` in testa ai dati; crea l'immagine della memoria della dimensione giusta; espone la modalità (`Compiler.Modello`) |
+| `Compiler.CompilaDati` | riceve la modalità (`Compiler.Modello`, impostata dall'IDE dal campo del file); crea l'immagine della memoria della dimensione giusta; in modalità a byte rifiuta la forma `indirizzo: valori` |
 | Operandi | nuovi token `byte`, `word`, `ptr` in `LeggiOperando`; `Operando.Dimensione` impostata da `byte ptr`/`word ptr` |
-| `Instruction.VerificaIstruzione` | in modalità a byte, errore se la larghezza non è determinata (4.2); la modalità arriva dal parser |
-| Nuovi errori (`EasyCpu.Common/Errori.cs`) | `DimensioneNonSpecificata`, `DirettivaMemoriaNonValida` (direttiva dopo altre dichiarazioni o valore sconosciuto) |
+| `Instruction.VerificaIstruzione` | in modalità a byte, errore se la larghezza non è determinata (4.2) e se entrambi gli operandi sono in memoria (4.4); la modalità arriva dal parser |
+| Nuovi errori (`EasyCpu.Common/Errori.cs`) | `DimensioneNonSpecificata`, `IndirizzoValoriInModalitaByte`, `OperandiMemoriaMemoria` |
 
 ### 5.4 IDE (`EasyCPU`)
 
@@ -174,8 +177,9 @@ I flag, i registri e le istruzioni aritmetiche e logiche non cambiano: dipendono
 | Reset dei pannelli (riga 329): `new int[Ram.MASSIMO_INDIRIZZO + 1]` | memoria vuota della modalità corrente |
 | `RefreshDebugViews`: `DumpMemoria(0, INDIRIZZO_STACK, 8)` e stack | limiti presi dalla memoria della CPU |
 | Barra di stato o titolo del pannello Memoria | indicazione della modalità: «Memoria (parole)» / «Memoria (byte)» |
-| Evidenziazione (`EasyCPU.xshd`) | nuove parole `byte`, `word`, `ptr`; direttiva `.MEMORIA` |
-| File → Nuovo | eventuale direttiva automatica secondo l'opzione dei nuovi programmi |
+| Evidenziazione (`EasyCPU.xshd`) | nuove parole `byte`, `word`, `ptr` |
+| Menu Esegui (desktop, nativo macOS, browser) | voce a spunta «Memoria a byte (x86)»; cambia la modalità del programma e lo segna come modificato |
+| Apertura e salvataggio (`EasyFileSerializer`, `FileDoc`) | campo facoltativo `memoria`; assente = parole; File → Nuovo = parole |
 
 ### 5.5 Pannelli Memoria e Stack
 
@@ -197,7 +201,7 @@ Somma di un vettore di parole:
 
 ```asm
 ; modalità a parole                     ; modalità a byte
-                                        ; .MEMORIA BYTE   (sezione dati)
+                                        ; (menu Esegui: Memoria a byte)
 vet  DW 3, 8, 1                         vet  DW 3, 8, 1
 N    EQU 3                              N    EQU 3
 
@@ -241,29 +245,31 @@ Ogni passo lascia il progetto compilabile e i test verdi. I passi 1–2 sono ref
    - Parser, `Operando.Dimensione`, controlli di coerenza.
    - Test nella modalità a parole; esempio `byte-ptr-word-ptr`.
 
-4. **Direttiva `.MEMORIA` e `MemoriaAByte`**
-   - Riconoscimento della direttiva ed errore `DirettivaMemoriaNonValida`.
+4. **Campo `memoria` del file `.asj` e `MemoriaAByte`**
+   - Campo facoltativo in `FileDoc`/`EasyFileSerializer`; `Compiler.Modello`.
    - `MemoriaAByte` (little-endian, limiti); `PassoParola = 2`.
-   - Allocazione dei dati a byte; forma `indirizzo: valori` secondo la decisione presa.
-   - Errore `DimensioneNonSpecificata` per gli operandi ambigui.
+   - Allocazione dei dati a byte; forma `indirizzo: valori` vietata (`IndirizzoValoriInModalitaByte`).
+   - Errore `DimensioneNonSpecificata` per gli operandi ambigui; errore `OperandiMemoriaMemoria` (4.4).
 
 5. **CPU in modalità a byte**
    - Stack a passi di 2, `ret n`, istruzioni stringa W a passi di 2, `int 21h` 09h/0Ah a byte.
    - Test dedicati (sezione 8).
 
 6. **IDE**
-   - Modalità passata a `Cpu.Init`; pannelli Memoria, Stack e Simboli (5.5); indicazione della modalità; evidenziazione; eventuale opzione per File → Nuovo.
+   - Voce «Memoria a byte (x86)» nel menu Esegui; modalità salvata nel file e passata a compilatore e `Cpu.Init`; pannelli Memoria, Stack e Simboli (5.5); indicazione della modalità; evidenziazione.
 
-7. **Esempi** (nuova cartella, ad esempio `10-memoria-byte`, con gli errori che scalano a `11-errori`)
+7. **Esempi** (nuova cartella `12-memoria-byte`; il campo `memoria` è scritto nei file)
    - `byte-endianness`: `mov [10], 1234h` e lettura dei singoli byte.
    - `byte-somma-vettore`: `add si, 2` (confronto con l'esempio a parole).
    - `byte-subroutine-parametri`: `[bp+4]`, `ret 4`.
    - `byte-stringhe`: `rep movsb`/`movsw` con passi diversi; Hello world con `int 21h`.
-   - `byte-ptr-word-ptr`: le due forme, e gli errori di dimensione ambigua negli esempi di errore.
+   - `byte-ptr-word-ptr`: le due forme.
+   - `byte-errori-compilazione`: dimensione ambigua, operazioni memoria-memoria, forma `indirizzo: valori`.
+   - Le tabelle di salto in modalità a byte si indicizzano con passo 2 (`shl bx, 1`): da mostrare in un esempio.
    - Ogni esempio con l'intestazione standard e verificato eseguendolo.
 
 8. **Documentazione**
-   - Assembly Reference: nuovo capitolo «Modalità x86 fedele» (modello, direttiva, `byte ptr`/`word ptr`, differenze nelle istruzioni coinvolte: PUSH, POP, CALL, RET, istruzioni stringa, INT 21h); nota nelle sezioni della memoria e dello stack.
+   - Assembly Reference: nuovo capitolo «Modalità x86 fedele» (modello, scelta nell'IDE, `byte ptr`/`word ptr`, divieto memoria-memoria, differenze nelle istruzioni coinvolte: PUSH, POP, CALL, RET, istruzioni stringa, INT 21h); nota nelle sezioni della memoria e dello stack.
    - README e `PROPOSTE-X86.md` (stato della fase 5).
 
 ---
@@ -280,7 +286,8 @@ Ogni passo lascia il progetto compilabile e i test verdi. I passi 1–2 sono ref
 - `int 21h` 09h su una stringa DB; 0Ah con il buffer a byte.
 - `byte ptr`/`word ptr`; `inc [si]` → `DimensioneNonSpecificata`; `inc conta` ammesso.
 - Accesso a parola all'ultimo byte → `ViolazioneMemoria`.
-- Direttiva: assente → modalità a parole; in posizione sbagliata o con valore sconosciuto → errore.
+- Campo `memoria`: assente → parole; `"byte"` → byte; salvataggio e riapertura; `.as` sempre a parole.
+- Forma `indirizzo: valori` in modalità a byte → errore; `mov a, b` e `mov [1], [si]` → errore in modalità a byte, ammessi a parole; `rep movsb` ammesso.
 
 ---
 
@@ -288,17 +295,20 @@ Ogni passo lascia il progetto compilabile e i test verdi. I passi 1–2 sono ref
 
 - **Ampiezza del refactoring**: `Cpu` accede alla memoria in molti punti (operandi, stack, istruzioni stringa, `int 21h`, dump). Il passo 1, a comportamento invariato e verificato da 91 test e 63 esempi, isola il rischio prima di introdurre la memoria a byte.
 - **Costanti statiche di `Ram`**: sono usate da quattro progetti/aree (CPU, parser, compilatore, ViewModel). Vanno sostituite tutte, altrimenti la modalità a byte userebbe limiti sbagliati: una ricerca di `MASSIMO_INDIRIZZO`/`INDIRIZZO_STACK` deve risultare vuota alla fine del passo 1.
-- **Confusione dello studente tra le modalità**: mitigata dalla direttiva visibile nel sorgente, dall'indicazione nel pannello Memoria e da esempi separati per modalità.
+- **Confusione dello studente tra le modalità**: la modalità non è scritta nel sorgente (campo del file); la mitigano la spunta nel menu Esegui, l'indicazione nel pannello Memoria e nella barra di stato, ed esempi separati per modalità.
 - **Interazione con altre funzionalità in sospeso**:
-  - *salti indiretti* (`SALTI-INDIRETTI.md`): in modalità a byte una tabella `DW` di etichette si indicizza con passo 2 (`shl bx, 1`), cosa che va mostrata negli esempi;
-  - *divieto delle operazioni memoria-memoria*: indipendente, ma naturale da attivare almeno nella modalità fedele.
+  - *salti indiretti* (`SALTI-INDIRETTI.md`, già implementati): in modalità a byte una tabella `DW` di etichette si indicizza con passo 2 (`shl bx, 1`), cosa che va mostrata negli esempi;
+  - *divieto delle operazioni memoria-memoria*: attivo nella modalità fedele (4.4).
 
 ---
 
-## 10. Decisioni aperte
+## 10. Decisioni
 
-1. **Come si sceglie la modalità**: direttiva `.MEMORIA BYTE` nel sorgente (consigliata: visibile, funziona con `.as` e `.asj`) oppure campo nel file `.asj` con un selettore nell'IDE?
-2. **Dimensioni**: memoria di 1024 byte con stack di 128 byte (proposta), oppure 256 byte con stack di 32 byte (come l'attuale per numero di indirizzi, ma con poco spazio per i dati), oppure 4 KB?
-3. **Forma `indirizzo: valori` in modalità a byte**: valori come parole (proposta) o come byte, oppure vietata?
-4. **Divieto delle operazioni memoria-memoria**: attivarlo automaticamente nella modalità fedele?
-5. **Ordine rispetto ai salti indiretti**: implementare prima i salti indiretti (più semplici e utili in entrambe le modalità) e poi la fase 5?
+Prese il 27 settembre 2026:
+
+1. **Scelta della modalità**: campo `memoria` nel file `.asj`, impostato dalla voce «Memoria a byte (x86)» del menu Esegui (sezione 3); nessuna direttiva nel sorgente.
+2. **Dimensioni**: memoria di 1024 byte, stack di 128 byte (byte 896..1023, 64 parole), SP iniziale 1024.
+3. **Forma `indirizzo: valori`**: vietata nella modalità a byte.
+4. **Divieto delle operazioni memoria-memoria**: attivo automaticamente nella modalità a byte (4.4).
+5. **Ordine rispetto ai salti indiretti**: i salti indiretti sono stati implementati prima.
+6. **Esempi**: nuova cartella `Docs/samples/12-memoria-byte`.

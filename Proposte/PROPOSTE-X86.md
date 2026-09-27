@@ -114,7 +114,7 @@ Rendere un errore di compilazione `mov [1], [2]`, `mov a, b`, `add a, b`, come s
 
 ### C — Modalità x86 fedele (fase 5) · V3 · S3
 
-Memoria a byte, parole little-endian, stack a passi di 2, `byte ptr`/`word ptr`, operandi di dimensione ambigua come errore. Modalità **opzionale**, scelta con la direttiva `.MEMORIA BYTE` nella sezione dati: la modalità a parole resta la predefinita.
+Memoria a byte, parole little-endian, stack a passi di 2, `byte ptr`/`word ptr`, operandi di dimensione ambigua come errore. Modalità **opzionale**, scelta con la voce «Memoria a byte (x86)» del menu Esegui e salvata nel file `.asj`: la modalità a parole resta la predefinita.
 
 - È il cambiamento più invasivo: tocca memoria, CPU, parser, compilatore e pannelli.
 - Il progetto prevede prima un refactoring a comportamento invariato, verificato da tutti i test e gli esempi.
@@ -188,7 +188,7 @@ Raccolte dai documenti di progetto; la scelta consigliata è indicata tra parent
 7. ~~Cartella degli esempi~~ — **deciso**: nuova cartella `11-salti-indiretti`.
 
 **Modalità x86 fedele (C, B)**
-8. Scelta della modalità: direttiva `.MEMORIA BYTE` (consigliata) o campo nel file `.asj`?
-9. Dimensioni: 1 KB di memoria e 128 byte di stack (consigliate), 256 byte o 4 KB?
-10. Forma `indirizzo: valori` nella memoria a byte: valori come parole (consigliata), come byte o vietata?
-11. Divieto memoria-memoria attivo automaticamente nella modalità fedele (consigliato)?
+8. ~~Scelta della modalità~~ — **deciso**: campo `memoria` nel file `.asj`, con una voce a spunta nel menu Esegui.
+9. ~~Dimensioni~~ — **deciso**: 1 KB di memoria, 128 byte di stack.
+10. ~~Forma `indirizzo: valori` nella memoria a byte~~ — **deciso**: vietata.
+11. ~~Divieto memoria-memoria nella modalità fedele~~ — **deciso**: attivo automaticamente.
