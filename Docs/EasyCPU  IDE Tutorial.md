@@ -71,6 +71,8 @@ Questa rappresenta l’editor del programma, sia per quanto riguarda la scrittur
 
 Quest’area rappresenta una finestra sul contenuto della memoria della CPU, esclusa la zona dedicata allo stack. Esistono tre modalità di visualizzazione dei dati: decimale, esadecimale e carattere. L’utente può decidere se visualizzare o nascondere quest’area.
 
+Se la sezione dati definisce dei nomi (variabili DB e DW, costanti EQU), sotto il contenuto della memoria compare la sezione «Simboli»: per ogni nome riporta l’indirizzo, il tipo, il numero di celle e il valore corrente della prima cella, così da ritrovare facilmente le variabili del programma.
+
 In caso di errori di compilazione del programma, l’area di memoria viene nascosta e viene mostrato l’elenco degli errori di sintassi riscontrati. Cliccando su un errore è il caret dell’editor viene posizionato automaticamente sulla posizione corrispondente nel programma.
 
 ### Area «stack»
@@ -79,7 +81,7 @@ Rappresenta una finestra sull’area di memoria riservata allo stack. Anche in q
 
 ### Area «registri»
 
-Visualizza il contenuto dei registri, in formato decimale o esadecimale. I flag vengono visualizzati separatamente, in verde-minuscolo se valgono zero, in rosso-maiuscolo se valgono 1.
+Visualizza il contenuto dei registri nel formato scelto. Per AX, BX, CX e DX sono mostrati anche il byte alto e il byte basso (ad esempio AX = 0141 [AH=01 AL=41]). Sotto i registri sono elencati i flag C (carry), Z (zero), S (segno), O (overflow) e D (direzione), ciascuno con il valore 0 o 1.
 
 ### Toolbar
 
@@ -95,7 +97,9 @@ Figura 1 IDE di EasyCPU.
 
 ## Scrittura, esecuzione e debug di un programma assembly
 
-Un programma EasyCPU è rappresentato da un normale file di testo con estensione predefinita «as». Data la natura della CPU virtuale implementata, un programma non può interagire con l’utente, ma è in grado soltanto di eseguire operazioni sui registri e sulla memoria della CPU.
+Un programma EasyCPU è memorizzato in un file con estensione «asj»; i programmi nel formato originale «as» possono essere aperti e vengono salvati nel formato «asj». Oltre a operare sui registri e sulla memoria della CPU, un programma può interagire con l’utente mediante i servizi dell’istruzione INT 21h, che leggono i tasti premuti e scrivono testo nel pannello «Console».
+
+Nella cartella Docs/samples sono disponibili numerosi programmi di esempio, suddivisi per argomento; ognuno inizia con un commento che spiega cosa illustra, come usarlo e quale risultato attendersi.
 
 ### Struttura di un programma assembly
 
@@ -119,11 +123,15 @@ add ax, bx
 
 2: 22
 
-Come si vede, un programma può contenere dei commenti, prefissati dal simbolo “//”.
+Come si vede, un programma può contenere dei commenti, prefissati dal simbolo “//” oppure “;”.
+
+Oltre alla forma «indirizzo: valori» dell’esempio, la sezione dati può definire variabili e costanti con nome (DB, DW, EQU, DUP, ORG), da usare poi nel codice: la sintassi è descritta nel capitolo «La sezione dati» dell’Assembly Reference.
 
 ### Gestione programmi: menu «File»
 
-Come in qualsiasi IDE, mediante i comandi del menù «File» ed i pulsanti della tool bar è possibile creare un nuovo programma, aprirne uno esistente e salvare il programma in fase di editing. Il menù «File» definisce inoltre l’elenco dei quattro programmi più recenti caricati nell’IDE.
+Come in qualsiasi IDE, mediante i comandi del menù «File» ed i pulsanti della tool bar è possibile creare un nuovo programma, aprirne uno esistente e salvare il programma in fase di editing. Il menù «File» definisce inoltre, nel sottomenu «Recenti», l’elenco dei dieci programmi più recenti caricati nell’IDE.
+
+Nella versione Browser i comandi del menù «File» si trovano nel menu laterale, che si apre con il pulsante ☰ in alto a sinistra. La voce «Recenti» apre e chiude l’elenco dei programmi recenti; poiché il browser non consente di riaprire un file dal suo percorso, EasyCPU ne conserva una copia e la riapre da lì. Un programma riaperto dai recenti non è collegato a un file: il comando «Salva» chiede dove salvarlo.
 
 ### Editor di codice e dati
 
@@ -151,6 +159,10 @@ La figura seguente mostra un frammento di programma contenente due errori; per o
 
 In alcuni casi sia il messaggio visualizzato che il posizionamento del caret possono essere fuorvianti.
 
+Errori di esecuzione
+
+Alcuni errori si possono rilevare soltanto durante l’esecuzione: ad esempio una divisione per zero, uno stack overflow o un salto a un’istruzione inesistente. In questo caso l’esecuzione si interrompe e il pannello degli errori mostra un errore di tipo «Esecuzione», con la riga dell’istruzione che lo ha causato (se il registro IP non indica più un’istruzione del programma, la riga non è indicata). Lo stesso messaggio compare nella barra di stato. Anche per questi errori, cliccando sull’errore il caret viene portato sulla riga corrispondente.
+
 ### Debug di un programma (esecuzione “passo passo”)
 
 Una delle caratteristiche principali di EasyCPU è data dalla possibilità di eseguire il programma un’istruzione alla volta, in modo simile ai moderni IDE. Ciò non solo semplifica lo sviluppo del programma, ma rappresenta uno strumento ideale per l’apprendimento del linguaggio, poiché consente di verificare gli effetti (sulla CPU) di ogni singola istruzione.
@@ -174,6 +186,8 @@ Mediante:
 * il bottone ![](data:image/png;base64...)
 
 è possibile eseguire l’istruzione corrente, evidenziata con lo sfondo giallo. Dopodiché l’esecuzione sarà sospesa sulla prossima istruzione (o terminata se non ci sono più istruzioni).
+
+Un’istruzione stringa con il prefisso REP (ad esempio rep movsw) fa eccezione: ogni comando «Esegui istruzione» esegue una sola ripetizione, e l’istruzione resta evidenziata finché il registro CX non arriva a zero. In questo modo si possono osservare SI, DI e CX cambiare a ogni ripetizione. Un breakpoint su quella riga sospende l’esecuzione soltanto all’arrivo sull’istruzione, non a ogni ripetizione.
 
 Esegui fino all’istruzione
 
@@ -230,7 +244,7 @@ La tool bar contiene quattro pulsanti che consentono di intervenire sulla modali
 
 Formato di visualizzazione dei dati
 
-Mediante i tre pulsanti ![](data:image/png;base64...) è possibile stabilire se visualizzare i dati di memoria, stack e registri nel formato esadecimale, decimale e carattere. Esiste una parziale eccezione per i registri, i cui valori possono essere visualizzati soltanto in formato decimale o esadecimale. (Cliccando sul pulsante![](data:image/png;base64...) si ottiene comunque una visualizzazione in formato decimale.)
+Mediante i tre pulsanti ![](data:image/png;base64...) è possibile stabilire se visualizzare i dati di memoria, stack e registri nel formato esadecimale, decimale e carattere. Nella versione attuale dell’IDE il formato si sceglie dalla casella a discesa della toolbar (Car, Dec, Hex); la scelta viene ricordata e ripristinata all’avvio successivo, e al primo avvio il formato è Dec. Esiste una parziale eccezione per i registri, i cui valori possono essere visualizzati soltanto in formato decimale o esadecimale. (Cliccando sul pulsante![](data:image/png;base64...) si ottiene comunque una visualizzazione in formato decimale.)
 
 Visualizzare/nascondere l’area di memoria
 
@@ -271,3 +285,7 @@ EasyCPU mantiene un contatore interno per ogni istruzione che consente di indivi
 Inizializza registri all’avvio
 
 Attivando questa opzioni, EasyCPU imposta automaticamente a zero il valore di tutti i registri prima di avviare l’esecuzione del programma, altrimenti li lascia nello stato prodotto dalla precedente esecuzione.
+
+### Impostazioni conservate tra le sessioni
+
+EasyCPU ricorda tra una sessione e l’altra le opzioni, la disposizione dei pannelli, l’elenco dei programmi recenti e i breakpoint di ogni programma. Nella versione Desktop sono salvati in file nella cartella dei dati dell’applicazione (i breakpoint in un file con estensione «bkpt» accanto al programma). Nella versione Browser sono salvati nella memoria locale del browser (localStorage) del sito di EasyCPU: per ripristinare le impostazioni iniziali basta cancellare i dati del sito dalle impostazioni del browser.

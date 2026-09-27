@@ -32,14 +32,15 @@ EasyCPU is an educational tool designed to make learning assembly language and C
 - **Interactive Assembly Editor** – Write assembly code with syntax support for EasyCPU's instruction set
 - **Step-by-Step Debugging** – Execute programs one instruction at a time to understand control flow and side effects
 - **Real-Time CPU State Visualization** – Monitor registers, memory, stack, and flags as code executes
-- **Integrated Compiler** – Parse and compile assembly code with detailed syntax error reporting
+- **Integrated Compiler** – Parse and compile assembly code with detailed syntax error reporting; runtime errors (division by zero, stack overflow, invalid IP…) are reported with the offending line
 - **Multiple Data Format Viewers** – Display memory, stack, and register values in decimal, hexadecimal, or ASCII
 - **Infinite Loop Detection** – Safely interrupt runaway programs with configurable thresholds
-- **Code & Data Separation** – Organize assembly into code and data sections with a simple `.DATA` directive
+- **Code & Data Separation** – Organize assembly into code and data sections; the data section supports MASM-style `DB`/`DW` variables, `EQU` constants, strings, `DUP` and `ORG`
+- **Console I/O** – DOS-style `int 21h` services for keyboard input and text output
 
 ### Educational Features
 - **Live Register & Flag Tracking** – Watch how each instruction modifies CPU state
-- **Memory Inspection** – View arbitrary memory locations and stack contents
+- **Memory Inspection** – View memory and stack contents, plus a Symbols list with the address, type and current value of each data name
 - **Run-to-Instruction** – Execute all instructions up to a selected line for faster iteration
 - **Execution State Indicators** – Visual feedback on whether program is running, paused, or stopped
 - **Error Highlighting** – Clicking compilation errors jumps directly to problematic code
@@ -129,10 +130,10 @@ The EasyCPU IDE is organized into four main areas:
 Side-by-side editors for assembly code and data section initialization. Supports syntax highlighting and automatic indentation.
 
 ### Register Viewer
-Displays all CPU registers (AX, BX, CX, DX, SI, DI, BP, SP) with values in decimal or hexadecimal. Flags are shown separately in color (green for 0, red for 1).
+Displays all CPU registers (AX, BX, CX, DX, SI, DI, BP, SP, IP) in the selected format, with the high and low bytes of AX–DX (`AX = 0141 [AH=01 AL=41]`). The flags are listed as C, Z, S, O, D (carry, zero, sign, overflow, direction).
 
 ### Memory Inspector
-Shows arbitrary memory locations and the stack. Toggle between decimal, hexadecimal, and ASCII formats; view stack in one or two columns.
+Shows the data memory and the stack. Toggle between decimal, hexadecimal, and character formats (the choice is remembered); view the stack in one or two columns. Below the memory, the **Symbols** section lists the names defined in the data section.
 
 ### Console Panel
 Displays output and captures keyboard input for `int 21h` calls. Auto-activates on `int 21h` and shows a blinking cursor while waiting for a keypress.
@@ -140,13 +141,16 @@ Displays output and captures keyboard input for `int 21h` calls. Auto-activates 
 ### Execution Controls
 Toolbar buttons and menu commands for:
 - **Run** – Execute until program end or infinite loop detection
-- **Step** (F10) – Execute one instruction
+- **Step** (F10) – Execute one instruction (for `rep`-prefixed string instructions, one repetition per step)
 - **Run to Instruction** (F4) – Execute until selected line
 - **Stop** (Shift+F5) – Halt execution
-- **New/Open/Save** – File management
+- **New/Open/Save** – File management, with the 10 most recent programs (in the browser, under the **Recenti** entry of the side menu)
 
 ### Compilation & Error Reporting
-Automatic compilation before execution. Syntax errors are listed with line numbers and descriptions; click an error to navigate directly to it in the editor.
+Automatic compilation before execution. Syntax errors are listed with line numbers and descriptions; click an error to navigate directly to it in the editor. Errors detected while the program runs are shown in the same panel as *Esecuzione* errors, with the line of the instruction that caused them.
+
+### Settings Persistence
+Options, panel layout, recent programs and breakpoints are kept between sessions: in files on the desktop, in the browser's `localStorage` in the web version (clear the site data to reset them).
 
 For detailed step-by-step tutorials and screenshots, see the [**EasyCPU IDE Tutorial**](./Docs/EasyCPU%20%20IDE%20Tutorial.md).
 *(Note: Tutorial focuses on Windows UI; layouts differ slightly on other platforms.)*
@@ -161,7 +165,9 @@ Complete documentation is available in the `Docs/` folder:
 - **[EasyCPU IDE Tutorial](./Docs/EasyCPU%20%20IDE%20Tutorial.md)** – Step-by-step guide to using the IDE, debugging, and managing programs
 - **[Toolbar Icons Reference](./ICONE-TOOLBAR.md)** – Visual guide to IDE toolbar buttons
 
-Additional examples and subroutine patterns are available in `Docs/Subroutines/`.
+Ready-to-run example programs (`.asj`) are available in [`Docs/samples/`](./Docs/samples), organized by topic (data transfer, arithmetic and flags, logic and shifts, stack and subroutines, data section, `int 21h` console, complete programs, jumps and loops, string instructions, errors); each one starts with a comment describing what it shows and the expected result. The original examples in the legacy `.as` format are in `Docs/Subroutines/`.
+
+Design documents for the x86 extensions (roadmap, open proposals and their designs) are in [`Proposte/`](./Proposte).
 
 ---
 
@@ -181,10 +187,12 @@ EasyCPU/
 ├── EasyCPU.iOS/                # iOS platform
 ├── EasyCPU.Android/            # Android platform
 ├── EasyCpu.Assembler.Tests/    # Unit tests for assembler
-└── Docs/                       # Documentation
-    ├── Easy CPU Assembly Reference.md
-    ├── EasyCPU IDE Tutorial.md
-    └── Subroutines/            # Subroutine examples and patterns
+├── Docs/                       # Documentation
+│   ├── Easy CPU Assembly Reference.md
+│   ├── EasyCPU IDE Tutorial.md
+│   ├── samples/                # Example programs (.asj) by topic
+│   └── Subroutines/            # Original examples (.as)
+└── Proposte/                   # x86 extension roadmap and design documents
 ```
 
 ---
@@ -249,8 +257,8 @@ EasyCPU is built on a modular architecture with clear separation of concerns:
 
 ### Core Components
 
-- **EasyCpu.Assembler** – Assembly language parser and compiler; translates assembly source to internal instruction format
-- **EasyCpu.Backend** – Virtual CPU implementation; simulates X86-subset processor with registers, memory, stack, and instruction execution
+- **EasyCpu.Assembler** – Assembly language parser and compiler, and the virtual CPU that executes the compiled program (registers, flags, memory, stack)
+- **EasyCpu.Backend** – File formats (`.asj`, legacy `.as`) and settings storage (files on the desktop, `localStorage` in the browser)
 - **EasyCpu.Common** – Shared data structures and utilities used across projects
 - **EasyCPU.* (UI Projects)** – Platform-specific front-ends (Desktop, Browser, iOS, Android)
 

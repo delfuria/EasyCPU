@@ -4,7 +4,7 @@ Stato: **implementato** (27 settembre 2026), con l'opzione A per i file recenti 
 
 Differenze rispetto al progetto emerse durante l'implementazione:
 
-- La versione Browser (`MainView`) non aveva un menu dei file recenti: è stata aggiunta la sezione **RECENTI** nel menu laterale, visibile quando l'elenco non è vuoto.
+- La versione Browser (`MainView`) non aveva un menu dei file recenti: nel menu laterale è stata aggiunta la voce **Recenti** (visibile quando l'elenco non è vuoto) che, come il sottomenu del Desktop, apre e chiude l'elenco dei programmi senza chiudere il menu; l'elenco torna chiuso alla chiusura del menu. L'elenco contiene al massimo 10 programmi (`Ambiente.MAXFILERECENTI`).
 - Il layout era serializzato con la reflection, disattivata nella build WebAssembly: ora usa un contesto generato in compilazione (`LayoutJsonContext`), con lo stesso formato JSON (i `layout.json` esistenti restano validi).
 - I breakpoint si salvano a ogni modifica; mentre l'elenco viene svuotato o ricaricato (apertura di un file, Nuovo) il salvataggio è sospeso, per non cancellare quelli già salvati.
 

@@ -1,6 +1,6 @@
 # Proposte di estensione x86 per EasyCPU
 
-Stato al 26 settembre 2026: **fasi 0–4 completate**. Restano aperte quattro proposte principali (salti indiretti, divieto delle operazioni memoria-memoria, modalità x86 fedele, persistenza nel browser) e alcuni interventi di manutenzione. Il documento riassume lo stato attuale, le decisioni prese, le differenze che restano rispetto a x86 e l'**ordine consigliato** per le prossime fasi.
+Stato al 27 settembre 2026: **fasi 0–4 completate** e **persistenza nel browser (D) implementata**. Restano aperte tre proposte principali (salti indiretti, divieto delle operazioni memoria-memoria, modalità x86 fedele), la bozza automatica e alcuni interventi di manutenzione. Il documento riassume lo stato attuale, le decisioni prese, le differenze che restano rispetto a x86 e l'**ordine consigliato** per le prossime fasi.
 
 Documenti di progetto collegati, nella stessa cartella:
 
@@ -53,11 +53,11 @@ Stile MASM: `DB`, `DW`, `EQU`, `ORG`, `DUP`, `?`, stringhe tra apici, `offset`; 
 
 ### IDE
 
-Pannello Registri con byte alto/basso e flag C, Z, S, O, D; pannello Memoria con la sezione Simboli; errori di compilazione e di esecuzione nel pannello Errori con la riga responsabile; ripetizioni dei prefissi REP eseguite una per Step.
+Pannello Registri con byte alto/basso e flag C, Z, S, O, D; pannello Memoria con la sezione Simboli; errori di compilazione e di esecuzione nel pannello Errori con la riga responsabile; ripetizioni dei prefissi REP eseguite una per Step. Opzioni, layout, file recenti (al massimo 10) e breakpoint sono conservati tra le sessioni: in file sul Desktop, in `localStorage` nel browser; nel browser il menu laterale ha la voce «Recenti» che apre l'elenco dei programmi.
 
 ### Verifica
 
-91 test automatici (`EasyCpu.Assembler.Tests`) e 63 programmi di esempio in `Docs/samples`, suddivisi in 10 cartelle per argomento, ognuno con un commento iniziale che descrive il risultato atteso.
+95 test automatici (`EasyCpu.Assembler.Tests`) e 63 programmi di esempio in `Docs/samples`, suddivisi in 10 cartelle per argomento, ognuno con un commento iniziale che descrive il risultato atteso.
 
 ---
 
@@ -101,7 +101,7 @@ Valore didattico (**V**) e sforzo (**S**) su una scala da 1 a 3.
 `jmp ax`, `jmp [tab+bx]`, `call [procedure+si]`, con le etichette usabili come valori (`offset etichetta`, `tab DW caso0, caso1`). Insegna tabelle di salto (`switch`/`case`) e puntatori a funzione.
 
 - L'esecuzione è già quasi pronta (`NuovoIp()` legge qualsiasi operando); il lavoro è nel compilatore: una **pre-scansione** delle etichette prima della sezione dati.
-- Rischio medio: cambia l'ordine di compilazione; lo coprono i 91 test e i 63 esempi.
+- Rischio medio: cambia l'ordine di compilazione; lo coprono i test di regressione e i 63 esempi.
 - Progetto completo: [`SALTI-INDIRETTI.md`](SALTI-INDIRETTI.md).
 
 ### B — Divieto delle operazioni memoria-memoria · V2 · S1
@@ -157,7 +157,7 @@ Piccoli interventi emersi durante le fasi 0–4:
 
 | Ordine | Proposta | Perché in questa posizione |
 |---|---|---|
-| 1 | **D** – Persistenza nel browser (con **F.2–F.4**) | Beneficio immediato per la versione pubblicata, rischio basso, nessun effetto sui programmi. Le piccole correzioni F.2–F.4 sono indipendenti e si possono unire a questa fase. |
+| 1 | ✅ **D** – Persistenza nel browser | Fatta. Le piccole correzioni F.2–F.4 sono rimaste fuori (scelta di tenere la fase dedicata) e si possono fare in qualsiasi momento. |
 | 2 | **A** – Salti indiretti | Completa il set di istruzioni 8086 di base in entrambe le modalità. Cambia l'ordine di compilazione: meglio farlo e stabilizzarlo **prima** del grande refactoring della fase 5. |
 | 3 | **C** – Modalità x86 fedele, con **B** attivo solo in questa modalità | La più invasiva, da affrontare con il resto stabile. Il divieto memoria-memoria nasce dentro una modalità nuova e opzionale, senza rompere i programmi esistenti. |
 | 4 | **E** – Bozza automatica | Miglioramento dell'IDE, può anche seguire subito D se la perdita del lavoro si rivela un problema frequente. |
@@ -165,8 +165,8 @@ Piccoli interventi emersi durante le fasi 0–4:
 | 6 | **F.1, F.5** – Manuale `.docx`/`.odt` e nota sul modello | Alla fine, quando il linguaggio è stabile: evita di riallineare i manuali più volte. |
 
 ```
-D (+F.2–F.4) ──► A ──► C (+B) ──► F.1, F.5
-   └──► E (in qualsiasi momento dopo D)
+D ✅ ──► A ──► C (+B) ──► F.1, F.5
+   └──► E e F.2–F.4 (in qualsiasi momento)
                         B in modalità a parole: facoltativo, dopo C
 ```
 
@@ -177,9 +177,9 @@ D (+F.2–F.4) ──► A ──► C (+B) ──► F.1, F.5
 Raccolte dai documenti di progetto; la scelta consigliata è indicata tra parentesi.
 
 **Persistenza nel browser (D, E)**
-1. File recenti nel browser: conservare il contenuto dei programmi in `localStorage` (consigliata) o nascondere il menu?
+1. ~~File recenti nel browser~~ — **deciso**: il contenuto dei programmi è conservato in `localStorage` e riaperto dalla voce «Recenti» del menu laterale.
 2. Bozza automatica: subito dopo D o più avanti?
-3. Breakpoint identificati dal solo nome del file: accettabile (consigliato) o con una firma del contenuto?
+3. ~~Breakpoint identificati dal solo nome del file~~ — **deciso**: accettato così per l'uso didattico.
 
 **Salti indiretti (A)**
 4. Etichetta senza `offset` nel codice (`mov bx, caso0`): errore con suggerimento (consigliato) o costante?
