@@ -82,6 +82,7 @@ public partial class MainWindow : Window
                            or nameof(MainViewModel.IsStackVisible)
                            or nameof(MainViewModel.IsMemoryVisible)
                            or nameof(MainViewModel.IsErrorsVisible)
+                           or nameof(MainViewModel.IsConsoleVisible)
             && sender is MainViewModel vm)
         {
             UpdateNativeCheckmarks(vm);
@@ -95,13 +96,14 @@ public partial class MainWindow : Window
         // Root order: File(0), Modifica(1), Esegui(2), Finestre(3), Strumenti(4)
         if (nativeMenu.Items[3] is not NativeMenuItem finestre) return;
         var items = finestre.Menu?.Items;
-        if (items is null || items.Count < 6) return;
+        if (items is null || items.Count < 7) return;
         SetCheck(items[0], vm.IsCodeEditorVisible);
         SetCheck(items[1], vm.IsDataEditorVisible);
         SetCheck(items[2], vm.IsRegistersVisible);
         SetCheck(items[3], vm.IsStackVisible);
         SetCheck(items[4], vm.IsMemoryVisible);
         SetCheck(items[5], vm.IsErrorsVisible);
+        SetCheck(items[6], vm.IsConsoleVisible);
     }
 
     private static void SetCheck(NativeMenuItemBase item, bool value)

@@ -235,6 +235,7 @@
                 </CheckBox>
                 <CheckBox Classes="drawer-item" Command="{Binding ToggleConsoleCommand}" IsChecked="{ReflectionBinding IsConsoleVisible, Mode=OneWay}">
                     <StackPanel Orientation="Horizontal" Spacing="12">
+                        <icons:ThemedIcon Source="/images/toolbar/panel_console.png" Width="20" Height="20"/>
                         <TextBlock Text="Console" VerticalAlignment="Center"/>
                     </StackPanel>
                 </CheckBox>

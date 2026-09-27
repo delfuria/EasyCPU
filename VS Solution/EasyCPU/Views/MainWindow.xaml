@@ -194,7 +194,9 @@
                 <MenuItem Header="_Errori"         ToggleType="CheckBox" Command="{Binding ToggleErrorsCommand}"     IsChecked="{ReflectionBinding IsErrorsVisible,     Mode=OneWay}">
                     <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/panel_errors.png"/></MenuItem.Icon>
                 </MenuItem>
-                <MenuItem Header="_Console"        ToggleType="CheckBox" Command="{Binding ToggleConsoleCommand}"    IsChecked="{ReflectionBinding IsConsoleVisible,    Mode=OneWay}"/>
+                <MenuItem Header="_Console"        ToggleType="CheckBox" Command="{Binding ToggleConsoleCommand}"    IsChecked="{ReflectionBinding IsConsoleVisible,    Mode=OneWay}">
+                    <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/panel_console.png"/></MenuItem.Icon>
+                </MenuItem>
                 <Separator />
                 <MenuItem Header="Ripristina _layout" Command="{Binding ResetLayoutCommand}">
                     <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/reset_layout.png"/></MenuItem.Icon>

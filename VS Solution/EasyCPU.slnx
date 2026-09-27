@@ -35,6 +35,7 @@
     <File Path="..\images\toolbar\open.png" />
     <File Path="..\images\toolbar\options.png" />
     <File Path="..\images\toolbar\panel_code.png" />
+    <File Path="..\images\toolbar\panel_console.png" />
     <File Path="..\images\toolbar\panel_data.png" />
     <File Path="..\images\toolbar\panel_errors.png" />
     <File Path="..\images\toolbar\panel_memory.png" />
