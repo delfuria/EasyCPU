@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// byte ptr e word ptr",
+    "//",
+    "// Cosa illustra:",
+    "//   byte ptr e word ptr fissano la dimensione di un operando in memoria",
+    "//   quando registri o variabili non la determinano, e hanno la precedenza",
+    "//   sul tipo della variabile. Nella memoria a parole byte ptr accede al",
+    "//   byte basso della cella: il byte alto non cambia.",
+    "//",
+    "// Utilizzo:",
+    "//   Eseguire con Step Into osservando i pannelli Registri e Memoria",
+    "//   (formato Hex).",
+    "//",
+    "// Risultato atteso:",
+    "//   cella 3 (cont) = 12FFh diventa 1200h (inc byte ptr: FFh + 1 = 00h,",
+    "//   senza riporto nel byte alto); cella 4 = 0041h ('A');",
+    "//   AL = CDh (byte basso di conta); BX = 0078h ('x'); car = 1234h",
+    "// ======================================================================",
+    "",
+    "        mov si, offset cont",
+    "        inc byte ptr [si]       // un byte: FFh + 1 = 00h",
+    "        mov byte ptr [si+1], 'A'",
+    "        mov al, byte ptr conta  // conta è DW: byte ptr legge il byte basso",
+    "        mov bx, word ptr car    // car è DB: word ptr legge la cella intera",
+    "        mov word ptr car, 1234h",
+    "        stop"
+  ],
+  "data": [
+    "conta   DW 0ABCDh",
+    "car     DB 'x'",
+    "        DB 0",
+    "cont    DW 12FFh",
+    "        DW 0"
+  ]
+}

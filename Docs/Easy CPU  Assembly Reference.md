@@ -232,6 +232,18 @@ mov dx, **[mat+bx+si]** // con il nome di una variabile come scostamento
 
 Combinazioni come [si+di] o [bx+bp] producono l’errore «Combinazione di registri non valida»; un registro non può essere sottratto.
 
+Dimensione dell’operando: byte ptr e word ptr
+
+La dimensione di un accesso alla memoria è determinata dal registro usato (mov al, [si] a 8 bit, mov ax, [si] a 16 bit) o dal tipo della variabile (DB o DW). Quando nessuno dei due la determina, come in inc [si] o mov [di], 5, l’accesso è a 16 bit. Scrivendo **byte ptr** o **word ptr** davanti all’operando in memoria se ne fissa la dimensione, anche in contrasto con il tipo della variabile:
+
+inc **byte ptr** [si] // incrementa solo il byte basso della cella
+
+mov **word ptr** [di], 5 // scrive una parola
+
+mov al, **byte ptr** conta // byte basso della variabile DW conta
+
+Con byte ptr, come per gli altri accessi a 8 bit, si legge o si scrive il byte basso della cella. Le regole di coerenza restano valide: mov al, word ptr [si] produce l’errore «Dimensione degli operandi non valida o non coerente»; byte ptr e word ptr non si possono usare con un registro o una costante.
+
 ### Gestione dello stack
 
 In EasyCPU lo stack viene gestito in modo analogo a quanto avviene nei microprocessori della serie X86, ma in forma semplificata. La parte di memoria riservata allo stack inizia a un indirizzo di base immutabile, che è 240; essa occupa esattamente 16 byte.

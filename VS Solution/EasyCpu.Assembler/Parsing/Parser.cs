@@ -518,7 +518,39 @@ namespace EasyCpu.Assembler.Parsing
 				throw new CodiceException(CodiceErrore.CostanteFuoriIntervallo);
 		}
 
+		// byte ptr / word ptr davanti a un operando in memoria: ne fissano la dimensione,
+		// con la precedenza sul tipo della variabile
 		Operando LeggiOperando()
+		{
+			int dimensione = LeggiPtr();
+			Operando op = LeggiOperandoSemplice();
+			if (dimensione != 0)
+			{
+				if (op.Tipo is not (TipoOperando.Memoria or TipoOperando.Indiretto))
+					throw new CodiceException(CodiceErrore.OperandoNonValido);
+				op.Dimensione = dimensione;
+			}
+			return op;
+		}
+
+		// 8 per byte ptr, 16 per word ptr, 0 se assente; byte e word senza ptr restano nomi qualsiasi
+		int LeggiPtr()
+		{
+			string token = TestToken();
+			if (token is not ("byte" or "word"))
+				return 0;
+			int inizio = _indcar;
+			EstraiToken();
+			if (TestToken() != "ptr")
+			{
+				_indcar = inizio;
+				return 0;
+			}
+			EstraiToken();
+			return token == "byte" ? 8 : 16;
+		}
+
+		Operando LeggiOperandoSemplice()
 		{
 			string token = TestToken();
 			if (token == "[")
@@ -773,7 +805,8 @@ namespace EasyCpu.Assembler.Parsing
 				return false;
 			if (_simboli.TryGetValue(token, out Simbolo sim))
 				return sim.Tipo != TipoSimbolo.Etichetta;
-			return !(Char.IsLetter(token[0]) || token[0] == '_') || Registri.ContainsKey(token) || token == "offset";
+			return !(Char.IsLetter(token[0]) || token[0] == '_') || Registri.ContainsKey(token)
+				|| token is "offset" or "byte" or "word";
 		}
 
 		public Instruction Compila(string s, out string etichetta)

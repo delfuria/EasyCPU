@@ -44,6 +44,9 @@
     <!-- Marcatore sezione dati -->
     <Rule color="Directive">\.DATA\b</Rule>
 
+    <!-- byte ptr / word ptr: solo nella forma completa, byte e word da soli possono essere nomi -->
+    <Rule color="Directive">\b(byte|word)\s+ptr\b</Rule>
+
     <!-- Direttive della sezione dati e operatore offset -->
     <Keywords color="Directive">
       <Word>db</Word>

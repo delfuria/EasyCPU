@@ -116,7 +116,7 @@ MUL/DIV operate on unsigned values, IMUL/IDIV on signed values.
 
 `int 21h` provides DOS-style services selected via `AH`: `01h` read a character with echo (into `AL`), `02h` write the character in `DL`, `07h` read a character without echo, `09h` write the `$`-terminated string at `DX`, `0Ah` read a line into the buffer at `DX`, `4Ch` terminate the program. Output and keyboard input are shown/captured in the dedicated **Console** panel.
 
-The data section supports MASM-style symbolic declarations: `DB`/`DW` variables, `EQU` constants, strings, `DUP`, `ORG` and `offset`; code labels can be used as values (`offset label` in code, `tab DW case0, case1` in data) to build jump tables (example programs in [`Docs/samples`](./Docs/samples)).
+The data section supports MASM-style symbolic declarations: `DB`/`DW` variables, `EQU` constants, strings, `DUP`, `ORG` and `offset`; code labels can be used as values (`offset label` in code, `tab DW case0, case1` in data) to build jump tables. `byte ptr` and `word ptr` set the size of a memory operand (example programs in [`Docs/samples`](./Docs/samples)).
 
 For complete instruction documentation, register definitions, addressing modes, and flag behavior, see the [**Easy CPU Assembly Reference**](./Docs/Easy%20CPU%20%20Assembly%20Reference.md).
 

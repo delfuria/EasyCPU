@@ -1,6 +1,6 @@
 # Fase 5 – Modalità «x86 fedele»: memoria a byte (P1, opzione B)
 
-Stato: **in corso**. Decisioni prese il 27 settembre 2026 (sezione 10). Fatti i passi 1–2 della sezione 7 (refactoring a comportamento invariato): `ModelloMemoria`, classe astratta `MemoriaCpu` (non `Memoria`, per non coincidere con il namespace `EasyCpu.Assembler.Memoria`) e `MemoriaAParole` al posto di `Ram`; allocazione di DB/DW per unità di memoria. `Simbolo.Celle` resta il numero di elementi. È la proposta C (fase 5) di `PROPOSTE-X86.md`: la più invasiva, da affrontare solo dopo le altre. Il documento descrive il modello, le scelte, l'impatto sul codice e le operazioni da eseguire.
+Stato: **in corso**. Decisioni prese il 27 settembre 2026 (sezione 10). Fatti i passi 1–2 della sezione 7 (refactoring a comportamento invariato): `ModelloMemoria`, classe astratta `MemoriaCpu` (non `Memoria`, per non coincidere con il namespace `EasyCpu.Assembler.Memoria`) e `MemoriaAParole` al posto di `Ram`; allocazione di DB/DW per unità di memoria. `Simbolo.Celle` resta il numero di elementi. Fatto il passo 3: `byte ptr`/`word ptr` in entrambe le modalità (esempio `01-trasferimento-memoria/byte-ptr-word-ptr.asj`). È la proposta C (fase 5) di `PROPOSTE-X86.md`: la più invasiva, da affrontare solo dopo le altre. Il documento descrive il modello, le scelte, l'impatto sul codice e le operazioni da eseguire.
 
 ---
 
