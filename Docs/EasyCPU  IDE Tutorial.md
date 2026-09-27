@@ -189,7 +189,7 @@ Esegui istruzione
 
 Mediante:
 
-* il tasto F10,
+* il tasto F11 (oppure F10, comando «Passo», che esegue una CALL come un’unica istruzione),
 * il comando «Esegui | Esegui istruzione»,
 * il bottone ![](data:image/png;base64...)
 
@@ -201,7 +201,7 @@ Esegui fino all’istruzione
 
 Mediante:
 
-* il tasto F4 e
+* i tasti Ctrl+F5 e
 * il comando «Esegui | Esegui fino a »,
 
 è possibile eseguire tutte le istruzioni che precedono quella selezionata, sulla quale l’esecuzione sarà sospesa. Quest’ultima è rappresentata dalla riga contenente il caret, oppure dalla riga selezionata (testo bianco su sfondo blu) se è il programma è già in esecuzione.
@@ -224,7 +224,7 @@ La compilazione, il comando Stop e il cambio di formato di visualizzazione (Dec,
 
 Durante il debug del programma è sempre possibile riprendere la normale esecuzione mediante il comando «Esegui | Esegui», oppure arrestarla mediante:
 
-* il tasto MAIUSC-F5,
+* il tasto F8,
 * il comando «Esegui | Stop »,
 * il bottone ![](data:image/png;base64...).
 

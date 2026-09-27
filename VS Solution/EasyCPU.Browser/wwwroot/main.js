@@ -20,6 +20,15 @@ if (host) {
     new MutationObserver(hideSplashIfAppAttached).observe(host, { childList: true });
 }
 
+// Scorciatoie dell'IDE (Views/Scorciatoie.cs): il browser non deve eseguire anche la propria
+// azione (F5 ricarica, F1 guida, F11 schermo intero, F10 menu, Ctrl+B segnalibri). Avalonia
+// elabora il tasto in modo asincrono e non può annullarla da sé.
+const tastiIde = new Set(["F1", "F5", "F8", "F9", "F10", "F11"]);
+window.addEventListener("keydown", e => {
+    if (tastiIde.has(e.key) || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b"))
+        e.preventDefault();
+}, true);
+
 const dotnetRuntime = await dotnet
     .withDiagnosticTracing(false)
     .withApplicationArgumentsFromQuery()

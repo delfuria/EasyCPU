@@ -27,9 +27,6 @@
       <Setter Property="Margin" Value="16,12,16,4"/>
     </Style>
   </UserControl.Styles>
-  <UserControl.KeyBindings>
-    <KeyBinding Gesture="F1" Command="{Binding ShowGuidaCommand}"/>
-  </UserControl.KeyBindings>
   <Grid>
     <SplitView IsPaneOpen="False"
                PaneClosed="OnDrawerClosed"

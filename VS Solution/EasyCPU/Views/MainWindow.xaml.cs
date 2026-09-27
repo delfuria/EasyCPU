@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using CommunityToolkit.Mvvm.Input;
 using EasyCPU.ViewModels;
+using EasyCPU.Views;
 
 namespace EasyCPU;
 
@@ -23,6 +24,8 @@ public partial class MainWindow : Window
             this.FindControl<Menu>("MainMenu")!.IsVisible = false;
             DataContextChanged += OnDataContextChanged;
         }
+        else
+            DataContextChanged += (_, _) => { if (DataContext is MainViewModel vm) Scorciatoie.Collega(this, vm); };
     }
 
     private void OnWindowClosing(object? sender, WindowClosingEventArgs e)

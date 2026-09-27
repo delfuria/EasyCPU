@@ -15,6 +15,7 @@ public partial class MainView : UserControl
         InitializeComponent();
         AttachedToVisualTree += OnAttachedToVisualTree;
         AddHandler(Button.ClickEvent, OnAnyButtonClicked, RoutingStrategies.Bubble);
+        DataContextChanged += (_, _) => { if (DataContext is MainViewModel vm) Scorciatoie.Collega(this, vm); };
     }
 
     private void OnHamburgerClick(object? sender, RoutedEventArgs e)

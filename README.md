@@ -144,10 +144,10 @@ Displays output and captures keyboard input for `int 21h` calls. Auto-activates 
 
 ### Execution Controls
 Toolbar buttons and menu commands for:
-- **Run** – Execute until program end or infinite loop detection
-- **Step** (F10) – Execute one instruction (for `rep`-prefixed string instructions, one repetition per step)
-- **Run to Instruction** (F4) – Execute until selected line
-- **Stop** (Shift+F5) – Halt execution
+- **Run** (F5) – Execute until program end, a breakpoint (F9) or infinite loop detection
+- **Step** (F11; F10 steps over a `call`) – Execute one instruction (for `rep`-prefixed string instructions, one repetition per step)
+- **Run to Instruction** (Ctrl+F5) – Execute until selected line
+- **Stop** (F8) – Halt execution
 - **New/Open/Save** – File management, with the 10 most recent programs (in the browser, under the **Recenti** entry of the side menu)
 
 ### Compilation & Error Reporting
