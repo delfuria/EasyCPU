@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Windows.Input;
 using Avalonia.Input;
 using EasyCPU.ViewModels;
@@ -5,16 +6,18 @@ using EasyCPU.ViewModels;
 namespace EasyCPU.Views;
 
 /// <summary>
-/// Scorciatoie da tastiera dei comandi di esecuzione e della guida. Le InputGesture dei MenuItem
+/// Scorciatoie da tastiera dei comandi di esecuzione, della guida e (desktop) dei file. Le InputGesture dei MenuItem
 /// sono solo testo: servono KeyBinding sulla finestra (Windows/Linux) o su MainView (browser, mobile).
 /// Su macOS le gestisce il menu nativo (Gesture dei NativeMenuItem).
 /// </summary>
 public static class Scorciatoie
 {
-    public static void Collega(InputElement elemento, MainViewModel vm)
+    /// <param name="comandiFile">Anche Nuovo/Apri/Salva/Salva come/Stampa: solo sulla finestra desktop,
+    /// nel browser Ctrl+N e simili sono riservati al browser.</param>
+    public static void Collega(InputElement elemento, MainViewModel vm, bool comandiFile)
     {
         if (elemento.KeyBindings.Count > 0) return;
-        (string Tasti, ICommand Comando)[] elenco =
+        List<(string Tasti, ICommand Comando)> elenco =
         [
             ("F1",        vm.ShowGuidaCommand),
             ("Ctrl+B",    vm.CompileCommand),
@@ -26,6 +29,15 @@ public static class Scorciatoie
             ("F8",        vm.StopCommand),
             ("F9",        vm.ToggleBreakpointCommand),
         ];
+        if (comandiFile)
+            elenco.AddRange(
+            [
+                ("Ctrl+N",       vm.NewCommand),
+                ("Ctrl+O",       vm.OpenCommand),
+                ("Ctrl+S",       vm.SaveCommand),
+                ("Ctrl+Shift+S", vm.SaveAsCommand),
+                ("Ctrl+P",       vm.PrintCommand),
+            ]);
         foreach (var (tasti, comando) in elenco)
             elemento.KeyBindings.Add(new KeyBinding { Gesture = KeyGesture.Parse(tasti), Command = comando });
     }

@@ -25,7 +25,7 @@ public partial class MainWindow : Window
             DataContextChanged += OnDataContextChanged;
         }
         else
-            DataContextChanged += (_, _) => { if (DataContext is MainViewModel vm) Scorciatoie.Collega(this, vm); };
+            DataContextChanged += (_, _) => { if (DataContext is MainViewModel vm) Scorciatoie.Collega(this, vm, comandiFile: true); };
     }
 
     private void OnWindowClosing(object? sender, WindowClosingEventArgs e)
