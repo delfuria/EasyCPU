@@ -218,4 +218,141 @@ public class Fase5Tests
             Assert.Equal(memoria, letta);
         }
     }
+
+    // ── Passo 5: CPU in modalità a byte ───────────────────────────────────
+
+    static async Task<Cpu> EseguiByte(string[] codice, string[]? dati = null, Action<char>? console = null, string tasti = "")
+    {
+        Ambiente.Inizializza();
+        var compiler = new Compiler { Modello = B };
+        List<CompilerError>? errori = null;
+        var memoria = compiler.CompilaDati((dati ?? []).ToList(), ref errori, codice.ToList());
+        var istruzioni = compiler.CompilaCodice(codice.ToList(), ref errori);
+        Assert.Null(errori);
+        var cpu = new Cpu();
+        cpu.Init(istruzioni, memoria, initRegs: true, 1000, B);
+        if (console != null) cpu.ScriviSuConsole += console;
+        foreach (char c in tasti)
+            cpu.InviaCarattereTastiera((short)c);
+        await cpu.Run();
+        return cpu;
+    }
+
+    [Fact]
+    public async Task Stack_PassiDiDueByte()
+    {
+        var cpu = await EseguiByte(["mov ax, 1234h", "push ax", "mov bx, sp", "push 5", "pop cx", "pop dx", "stop"]);
+        Assert.Equal(510, cpu.BX);
+        Assert.Equal((0x34, 0x12), (cpu.LeggiByte(510), cpu.LeggiByte(511)));
+        Assert.Equal(5, cpu.CX);
+        Assert.Equal(0x1234, cpu.DX);
+        Assert.Equal(512, cpu.SP);
+    }
+
+    [Fact]
+    public async Task Procedura_ParametriBp4_Ret4()
+    {
+        var cpu = await EseguiByte(
+        [
+            "        mov ax, 5",
+            "        push ax",
+            "        mov ax, 7",
+            "        push ax",
+            "        call somma",
+            "        mov cx, sp",
+            "        stop",
+            "somma:  push bp",
+            "        mov bp, sp",
+            "        mov ax, [bp+4]      // ultimo parametro",
+            "        add ax, [bp+6]",
+            "        pop bp",
+            "        ret 4",
+        ]);
+        Assert.Equal(12, cpu.AX);
+        Assert.Equal(512, cpu.CX);
+    }
+
+    [Fact]
+    public async Task Stack_32ParoleEOverflow()
+    {
+        var cpu = await EseguiByte(["mov cx, 32", "ciclo: push ax", "loop ciclo", "stop"]);
+        Assert.Equal(448, cpu.SP);
+        var ex = await Assert.ThrowsAsync<CpuException>(() => EseguiByte(["mov cx, 33", "ciclo: push ax", "loop ciclo", "stop"]));
+        Assert.Equal(CodiceErrore.StackOverflow, ex.err);
+    }
+
+    [Fact]
+    public async Task Stack_Underflow()
+    {
+        var ex = await Assert.ThrowsAsync<CpuException>(() => EseguiByte(["pop ax", "stop"]));
+        Assert.Equal(CodiceErrore.StackUnderflow, ex.err);
+        ex = await Assert.ThrowsAsync<CpuException>(() => EseguiByte(["call p", "stop", "p: ret 4"]));
+        Assert.Equal(CodiceErrore.StackUnderflow, ex.err);
+    }
+
+    [Fact]
+    public async Task Stringhe_PassoUnoPerByteDuePerParola()
+    {
+        string[] dati = ["src DW 1, 2, 3", "dst DW 3 DUP(0)", "s DB 'abc'", "d DB 3 DUP(0)"];
+        var cpu = await EseguiByte(
+            ["mov si, offset src", "mov di, offset dst", "mov cx, 3", "cld", "rep movsw",
+             "mov bx, si", "mov dx, di",
+             "mov si, offset s", "mov di, offset d", "mov cx, 3", "rep movsb", "stop"], dati);
+        Assert.Equal([1, 2, 3], Enumerable.Range(0, 3).Select(i => (int)cpu.LeggiMemoria(6 + 2 * i)));
+        Assert.Equal((6, 12), (cpu.BX, cpu.DX));
+        Assert.Equal("abc", string.Concat(Enumerable.Range(15, 3).Select(i => (char)cpu.LeggiByte(i))));
+        Assert.Equal((15, 18), (cpu.SI, cpu.DI));
+    }
+
+    [Fact]
+    public async Task Stringhe_IndietroConDf()
+    {
+        var cpu = await EseguiByte(
+            ["mov si, offset src+4", "mov di, offset dst+4", "mov cx, 3", "std", "rep movsw", "stop"],
+            ["src DW 1, 2, 3", "dst DW 3 DUP(0)"]);
+        Assert.Equal([1, 2, 3], Enumerable.Range(0, 3).Select(i => (int)cpu.LeggiMemoria(6 + 2 * i)));
+        Assert.Equal((-2, 4), (cpu.SI, cpu.DI));
+    }
+
+    [Fact]
+    public async Task Stringhe_LodswScasbStosb()
+    {
+        var cpu = await EseguiByte(
+            ["mov si, offset v", "cld", "lodsw", "lodsw", "mov bp, ax", "mov bx, si",
+             "mov di, offset s", "mov al, 'c'", "mov cx, 3", "repne scasb", "mov dx, di",
+             "mov di, offset s", "mov al, 'X'", "stosb", "stop"],
+            ["v DW 10, 20", "s DB 'abc'"]);
+        Assert.Equal(20, cpu.BP);
+        Assert.Equal(4, cpu.BX);
+        Assert.Equal(7, cpu.DX);            // s = 4: dopo la 'c' (byte 6)
+        Assert.True(cpu.FlagZero);
+        Assert.Equal('X', (char)cpu.LeggiByte(4));
+        Assert.Equal('b', (char)cpu.LeggiByte(5));
+    }
+
+    [Fact]
+    public async Task Int21h_StringaERigaABbyte()
+    {
+        string output = "";
+        var cpu = await EseguiByte(
+            ["mov ah, 9", "mov dx, offset msg", "int 21h", "mov ah, 0Ah", "mov dx, offset buf", "int 21h", "stop"],
+            ["msg DB 'Nome? $'", "buf DB 5, ?, 5 DUP(?)", "dopo DB 77h"],
+            c => output += c, "abc\r");
+        Assert.Equal("Nome? abc\n", output);
+        int buf = 7;
+        Assert.Equal(3, cpu.LeggiByte(buf + 1));
+        Assert.Equal("abc", string.Concat(Enumerable.Range(buf + 2, 3).Select(i => (char)cpu.LeggiByte(i))));
+        Assert.Equal(13, cpu.LeggiByte(buf + 5));
+        Assert.Equal(0x77, cpu.LeggiByte(buf + 7));        // la variabile dopo il buffer non cambia
+    }
+
+    [Fact]
+    public async Task TabellaDiSalto_PassoDue()
+    {
+        var cpu = await EseguiByte(
+            ["mov bx, 2", "shl bx, 1", "jmp [tab+bx]", "c0: mov ax, 10", "jmp fine", "c1: mov ax, 11", "jmp fine",
+             "c2: mov ax, 12", "fine: stop"],
+            ["tab DW c0, c1, c2"]);
+        Assert.Equal(12, cpu.AX);
+    }
 }
