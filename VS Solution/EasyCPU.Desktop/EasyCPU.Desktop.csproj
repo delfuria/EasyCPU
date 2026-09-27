@@ -4,7 +4,6 @@
         <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
-        <Version>0.25</Version>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -33,6 +32,9 @@
         <MakeDir Directories="$(AppBundleDir)/Contents/MacOS" />
         <MakeDir Directories="$(AppBundleDir)/Contents/Resources" />
         <Copy SourceFiles="Info.plist" DestinationFolder="$(AppBundleDir)/Contents" />
+        <!-- Versione da Directory.Build.props -->
+        <Exec Command="plutil -replace CFBundleShortVersionString -string $(ApplicationDisplayVersion) &quot;$(AppBundleDir)/Contents/Info.plist&quot;" />
+        <Exec Command="plutil -replace CFBundleVersion -string $(ApplicationVersion) &quot;$(AppBundleDir)/Contents/Info.plist&quot;" />
         <Copy SourceFiles="..\..\images\app-icon\AppIcon.icns" DestinationFolder="$(AppBundleDir)/Contents/Resources" />
         <ItemGroup>
             <PublishedFiles Include="$(PublishDir)**\*" Exclude="$(AppBundleDir)\**\*" />

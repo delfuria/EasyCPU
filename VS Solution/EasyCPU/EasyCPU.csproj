@@ -7,7 +7,6 @@
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <SignAssembly>false</SignAssembly>
     <LangVersion>latest</LangVersion>
-    <Version>0.25</Version>
   </PropertyGroup>
 
   <ItemGroup>

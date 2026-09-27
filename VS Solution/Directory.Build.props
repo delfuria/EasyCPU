@@ -2,4 +2,19 @@
   <PropertyGroup>
     <AvaloniaVersion>12.0.5</AvaloniaVersion>
   </PropertyGroup>
+
+  <!-- Versione dell'app: unica fonte di verità per tutti i progetti, i bundle macOS/iOS,
+       l'installer Inno Setup e i pacchetti MSIX (letta dagli script di build con
+       dotnet msbuild -getProperty:Version). -->
+  <PropertyGroup>
+    <!-- Formato major.minor: il pacchetto MSIX aggiunge ".0.0" -->
+    <EasyCpuVersion>2.0</EasyCpuVersion>
+    <!-- Numero di build (versionCode Android, CFBundleVersion iOS/macOS):
+         intero da aumentare a ogni pubblicazione sugli store -->
+    <EasyCpuBuild>1</EasyCpuBuild>
+
+    <Version>$(EasyCpuVersion)</Version>
+    <ApplicationDisplayVersion>$(EasyCpuVersion)</ApplicationDisplayVersion>
+    <ApplicationVersion>$(EasyCpuBuild)</ApplicationVersion>
+  </PropertyGroup>
 </Project>

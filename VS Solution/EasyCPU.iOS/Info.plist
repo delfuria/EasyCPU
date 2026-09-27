@@ -8,10 +8,6 @@
 	<string>EasyCPU</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.easycpu.app</string>
-	<key>CFBundleShortVersionString</key>
-	<string>0.25</string>
-	<key>CFBundleVersion</key>
-	<string>25</string>
 	<key>XSAppIconAssets</key>
 	<string>Assets.xcassets/AppIcon.appiconset</string>
 	<key>LSRequiresIPhoneOS</key>
