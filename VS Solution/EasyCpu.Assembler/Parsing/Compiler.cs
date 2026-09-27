@@ -39,6 +39,9 @@ namespace EasyCpu.Assembler.Parsing
         // nomi definiti nella sezione dati ed etichette del codice: i dati vanno compilati prima del codice che li usa
         public IReadOnlyList<Simbolo> Simboli => _parser.ElencoSimboli;
 
+        // riga della sezione dati (0-based) → prima cella e numero di celle occupate (null se non occupa memoria)
+        public (int Inizio, int Celle)?[] CelleDati { get; private set; }
+
         static bool SeCommento(string s)
         {
             return s[0] == '\'';
@@ -53,6 +56,7 @@ namespace EasyCpu.Assembler.Parsing
             if (codice != null)
                 LeggiEtichette(codice);
             int contatore = 0;      // prossimo indirizzo libero per DB/DW
+            CelleDati = new (int, int)?[data.Count];
             for (int indRiga = 0; indRiga < data.Count; indRiga++)
             {
                 try
@@ -68,6 +72,8 @@ namespace EasyCpu.Assembler.Parsing
 
                     for (int i = 0; i < rigaDati.Count; i++)
                         memoria[indirizzo + i] = rigaDati[i];
+                    if (rigaDati.Count > 0)
+                        CelleDati[indRiga] = (indirizzo, rigaDati.Count);
                 }
                 catch (CodiceException e)
                 {

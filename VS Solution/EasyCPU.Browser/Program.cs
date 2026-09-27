@@ -18,6 +18,8 @@ internal sealed partial class Program
         await JSHost.ImportAsync(ArchivioLocalStorage.Modulo, "../persistenza.js");
         Storage.Archivio = new ArchivioLocalStorage();
         ArchivioLocalStorage.RegistraSalvataggioAllUscita(() => (Application.Current as App)?.SalvaTutto());
+        await JSHost.ImportAsync("stampa", "../stampa.js");
+        Stampa.NelBrowser = StampaJs;
         Guida.IndirizzoWeb = new System.Uri(new System.Uri(
             JSHost.GlobalThis.GetPropertyAsJSObject("document")!.GetPropertyAsString("baseURI")!), "help/reference.html");
 
@@ -26,6 +28,9 @@ internal sealed partial class Program
             .AfterSetup(_ => InputElement.KeyDownEvent.AddClassHandler<TopLevel>(TranslateCommandKey, RoutingStrategies.Tunnel))
             .StartBrowserAppAsync("out");
     }
+
+    [JSImport("stampa", "stampa")]
+    private static partial void StampaJs(string html);
 
     public static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<App>();

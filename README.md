@@ -45,6 +45,7 @@ EasyCPU is an educational tool designed to make learning assembly language and C
 - **Run-to-Instruction** – Execute all instructions up to a selected line for faster iteration
 - **Execution State Indicators** – Visual feedback on whether program is running, paused, or stopped
 - **Error Highlighting** – Clicking compilation errors jumps directly to problematic code
+- **Print** (Ctrl+P / ⌘P) – Prints the data section, with the memory address of each declaration, and the code with line numbers and syntax colors, through the browser's print dialog (which can also save as PDF)
 - **Contextual Help (F1)** – Opens the [Assembly Reference](https://delfuria.github.io/EasyCPU/help/reference.html) in the browser at the instruction under the cursor (offline on desktop, online on iOS/Android)
 
 ---

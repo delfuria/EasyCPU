@@ -135,6 +135,8 @@ Come in qualsiasi IDE, mediante i comandi del menù «File» ed i pulsanti della
 
 Nella versione Browser i comandi del menù «File» si trovano nel menu laterale, che si apre con il pulsante ☰ in alto a sinistra. La voce «Recenti» apre e chiude l’elenco dei programmi recenti; poiché il browser non consente di riaprire un file dal suo percorso, EasyCPU ne conserva una copia e la riapre da lì. Un programma riaperto dai recenti non è collegato a un file: il comando «Salva» chiede dove salvarlo.
 
+Il comando «Stampa» (Ctrl+P, ⌘P su macOS) stampa il programma: prima la sezione dati, con accanto a ogni dichiarazione l’indirizzo della memoria che occupa (per esempio «0–2» per un vettore di tre parole; nessun indirizzo per EQU e ORG), poi il codice, con i numeri di riga e i colori dell’editor. L’intestazione riporta il nome del programma, la modalità di memoria e la data. Se la sezione dati contiene errori la stampa avviene comunque, senza la colonna degli indirizzi. La stampa passa dalla finestra di stampa del browser, che consente anche di salvare in PDF: nella versione Desktop il programma si apre nel browser predefinito, nella versione Browser la finestra di stampa compare direttamente. Nella versione Browser Ctrl+P resta la stampa della pagina del browser: si usa la voce «Stampa» del menu laterale.
+
 ### Editor di codice e dati
 
 Pur essendo memorizzati nello stesso file, le sezioni «codice» e «dati» di un programma sono gestire da editor separati. Per entrambi è possibile stabilire il font utilizzato mediante il comando «Preferenze | Font codice e dati…».

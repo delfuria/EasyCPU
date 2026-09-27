@@ -11,6 +11,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -602,7 +603,33 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    [RelayCommand] private void Print() { }
+    // Dati e codice su carta. Compilatore a parte: non tocca il programma caricato nella CPU.
+    // Se i dati non compilano si stampa comunque, senza la colonna degli indirizzi.
+    [RelayCommand]
+    private async Task Print()
+    {
+        var codice = Righe(_factory.CodeEditor?.SourceText);
+        var dati = Righe(_factory.DataEditor?.SourceText);
+
+        var compilatore = new Compiler { Modello = ModelloProgramma };
+        List<CompilerError> errori = null!;
+        compilatore.CompilaDati([.. dati], ref errori, [.. codice]);
+
+        var versione = typeof(Stampa).Assembly.GetName().Version?.ToString(2);
+        var sottotitolo = $"EasyCPU {versione} · memoria a {(IsMemoriaAByte ? "byte" : "parole")} · {DateTime.Now:g}";
+        var html = Stampa.GeneraHtml(CurrentFileName, sottotitolo, dati, errori is null ? compilatore.CelleDati : null,
+            codice, App.EasyCpuHighlighting(ThemeVariant.Light));
+
+        try
+        {
+            if (!await Stampa.ApriAsync(GetTopLevel(), html))
+                StatusMessage = "Impossibile stampare";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Errore stampa: {ex.Message}";
+        }
+    }
 
     [RelayCommand]
     private void Exit()

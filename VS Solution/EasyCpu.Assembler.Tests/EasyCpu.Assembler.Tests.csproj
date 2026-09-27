@@ -23,6 +23,7 @@
     <ProjectReference Include="..\EasyCpu.Common\EasyCpu.Common.csproj" />
     <ProjectReference Include="..\EasyCpu.Backend\EasyCpu.Backend.csproj" />
     <ProjectReference Include="..\EasyCpu.DocGen\EasyCpu.DocGen.csproj" />
+    <ProjectReference Include="..\EasyCPU\EasyCPU.csproj" />
   </ItemGroup>
 
 </Project>
