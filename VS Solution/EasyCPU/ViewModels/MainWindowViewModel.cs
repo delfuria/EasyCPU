@@ -824,9 +824,9 @@ public partial class MainViewModel : ObservableObject
             StatusMessage = n == 1 ? "Compilazione: 1 errore" : $"Compilazione: {n} errori";
             IsErrorsVisible = true;
             if (_factory.Errors is { } ep) _factory.SetActiveDockable(ep);
-            if (_factory.Registers is { } rv) rv.Dump = "";
-            if (_factory.Memory is { } mv) mv.Dump = "";
-            if (_factory.Stack is { } sv) sv.Dump = "";
+            _factory.Registers?.Svuota();
+            _factory.Memory?.Svuota();
+            _factory.Stack?.Svuota();
             Cpu.Stop();
             CurrentSourceLine = -1;
             NotifyCpuStatusChanged();
@@ -881,7 +881,7 @@ public partial class MainViewModel : ObservableObject
             if (Cpu.stop)
             {
                 UpdateCurrentSourceLine();
-                RefreshDebugViews();
+                RefreshDebugViews(evidenzia: true);
                 StatusMessage = "Esecuzione terminata";
                 return;
             }
@@ -916,7 +916,7 @@ public partial class MainViewModel : ObservableObject
         }
 
         UpdateCurrentSourceLine();
-        RefreshDebugViews();
+        RefreshDebugViews(evidenzia: true);
         if (_atBreakpoint)
             StatusMessage = CurrentSourceLine > 0
                 ? $"Breakpoint — riga {CurrentSourceLine}"
@@ -939,7 +939,7 @@ public partial class MainViewModel : ObservableObject
             if (Cpu.stop)
             {
                 UpdateCurrentSourceLine();
-                RefreshDebugViews();
+                RefreshDebugViews(evidenzia: true);
                 StatusMessage = "Esecuzione terminata";
                 return;
             }
@@ -989,7 +989,7 @@ public partial class MainViewModel : ObservableObject
             Cpu.Breakpoints.Remove(instrIdx);
 
         UpdateCurrentSourceLine();
-        RefreshDebugViews();
+        RefreshDebugViews(evidenzia: true);
         if (_atBreakpoint)
             StatusMessage = CurrentSourceLine > 0
                 ? $"Breakpoint — riga {CurrentSourceLine}"
@@ -1033,7 +1033,7 @@ public partial class MainViewModel : ObservableObject
         catch (CpuTrapException) { _atBreakpoint = true; }
         catch (CpuException e) { ShowRuntimeError(e); return; }
         UpdateCurrentSourceLine();
-        RefreshDebugViews();
+        RefreshDebugViews(evidenzia: true);
         StatusMessage = CurrentSourceLine > 0 ? $"Riga {CurrentSourceLine}" : "Esecuzione terminata";
     }
 
@@ -1049,7 +1049,7 @@ public partial class MainViewModel : ObservableObject
         catch (CpuTrapException) { _atBreakpoint = true; }
         catch (CpuException e) { ShowRuntimeError(e); return; }
         UpdateCurrentSourceLine();
-        RefreshDebugViews();
+        RefreshDebugViews(evidenzia: true);
         StatusMessage = CurrentSourceLine > 0 ? $"Riga {CurrentSourceLine}" : "Esecuzione terminata";
     }
 
@@ -1065,7 +1065,7 @@ public partial class MainViewModel : ObservableObject
         catch (CpuTrapException) { _atBreakpoint = true; }
         catch (CpuException e) { ShowRuntimeError(e); return; }
         UpdateCurrentSourceLine();
-        RefreshDebugViews();
+        RefreshDebugViews(evidenzia: true);
         StatusMessage = CurrentSourceLine > 0 ? $"Riga {CurrentSourceLine}" : "Esecuzione terminata";
     }
 
@@ -1085,7 +1085,7 @@ public partial class MainViewModel : ObservableObject
             _factory.SetActiveDockable(ev);
         }
         UpdateCurrentSourceLine();
-        RefreshDebugViews();
+        RefreshDebugViews(evidenzia: true);
         StatusMessage = riga >= 0
             ? $"Errore di esecuzione alla riga {riga + 1}: {err.Msg}"
             : $"Errore di esecuzione: {err.Msg}";
@@ -1201,12 +1201,13 @@ public partial class MainViewModel : ObservableObject
 
     // ── Debug views ───────────────────────────────────────────────────────────
 
-    private void RefreshDebugViews()
+    // evidenzia: dopo un passo o un'esecuzione, i valori cambiati hanno uno sfondo diverso
+    private void RefreshDebugViews(bool evidenzia = false)
     {
         var regs = Cpu.DumpRegs();
-        if (_factory.Registers is { } rv)
-            rv.Dump = string.Join("\n", regs) +
-                      $"\nC={(Cpu.FlagCarry ? 1 : 0)}  Z={(Cpu.FlagZero ? 1 : 0)}  S={(Cpu.FlagSegno ? 1 : 0)}  O={(Cpu.FlagOverflow ? 1 : 0)}  D={(Cpu.FlagDirezione ? 1 : 0)}";
+        _factory.Registers?.Aggiorna(
+            [.. regs, $"C={(Cpu.FlagCarry ? 1 : 0)}  Z={(Cpu.FlagZero ? 1 : 0)}  S={(Cpu.FlagSegno ? 1 : 0)}  O={(Cpu.FlagOverflow ? 1 : 0)}  D={(Cpu.FlagDirezione ? 1 : 0)}"],
+            evidenzia);
 
         // memoria a byte: 16 byte per riga; memoria a parole: 8 celle per riga
         var mem = Cpu.Modello == ModelloMemoria.Byte
@@ -1214,12 +1215,10 @@ public partial class MainViewModel : ObservableObject
             : Cpu.DumpMemoria(0, Cpu.Modello.InizioStack, 8);
         if (mem is not null && Compiler.Simboli.Count > 0)
             mem.AddRange(["", "Simboli:", .. Cpu.DumpSimboli(Compiler.Simboli)]);
-        if (_factory.Memory is { } mv)
-            mv.Dump = mem is null ? "" : string.Join("\n", mem);
+        _factory.Memory?.Aggiorna(mem ?? [], evidenzia);
 
         var stack = Cpu.DumpMemoria(Cpu.Modello.InizioStack, Cpu.Modello.Dimensione, Ambiente.ColonneStack);
-        if (_factory.Stack is { } sv)
-            sv.Dump = stack is null ? "" : string.Join("\n", stack);
+        _factory.Stack?.Aggiorna(stack ?? [], evidenzia);
     }
 
     public void NavigateToError(CompilerError err)

@@ -11,6 +11,7 @@ public partial class RegistersView : UserControl
         InitializeComponent();
         var tb = this.FindControl<TextBlock>("DumpText");
         if (tb is null) return;
+        PannelloDump.Collega(this, tb);
 
         var s = SettingsViewModel.Instance;
         ApplyFontSize(tb, s.FontPanelliSize);

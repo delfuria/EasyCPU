@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Valori cambiati evidenziati durante il passo passo",
+    "//",
+    "// Cosa illustra:",
+    "//   Dopo ogni passo (Step Into, Step Over, Step Out) o esecuzione fino a",
+    "//   un breakpoint, nei pannelli Registri, Memoria (con i Simboli) e Stack",
+    "//   i valori modificati dall'ultima esecuzione hanno uno sfondo colorato.",
+    "//   Compilazione, Stop e cambio di formato (Dec/Hex/Car) non evidenziano.",
+    "//",
+    "// Utilizzo:",
+    "//   Eseguire con Step Into e osservare, a ogni riga, cosa si colora:",
+    "//   1. mov ax, conta   AX (e AL), IP",
+    "//   2. sub ax, 10      AX, AL, IP, flag Z",
+    "//   3. mov ax, 7       AX, AL, IP",
+    "//   4. add ax, conta   AX, AL, IP, flag Z",
+    "//   5. mov totale, ax  cella 1 della Memoria, simbolo totale, IP",
+    "//   6. push ax         SP, IP, cella 255 dello Stack",
+    "//   7. inc conta       cella 0 della Memoria, simbolo conta, IP",
+    "//   8. pop bx          BX (e BL), SP, IP",
+    "//",
+    "// Risultato atteso:",
+    "//   AX = 17, BX = 17, SP = 256",
+    "//   Memoria: conta (indirizzo 0) = 11, totale (indirizzo 1) = 17",
+    "// ======================================================================",
+    "",
+    "        mov ax, conta",
+    "        sub ax, 10          // risultato 0: Z = 1",
+    "        mov ax, 7",
+    "        add ax, conta       // 17: Z = 0",
+    "        mov totale, ax",
+    "        push ax",
+    "        inc conta",
+    "        pop bx",
+    "        stop"
+  ],
+  "data": [
+    "conta   DW 10           // indirizzo 0",
+    "totale  DW ?            // indirizzo 1"
+  ]
+}

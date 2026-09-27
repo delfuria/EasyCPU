@@ -12,10 +12,26 @@
     <Application.DataTemplates>
         <local:ViewLocator />
     </Application.DataTemplates>
+    <Application.Resources>
+        <ResourceDictionary>
+            <!-- sfondo dei valori cambiati nei pannelli Registri, Memoria e Stack -->
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="SfondoValoreCambiato" Color="#FFE680" />
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="SfondoValoreCambiato" Color="#7A5C00" />
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
     <Application.Styles>
         <FluentTheme />
         <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
         <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.v2.xaml" />
         <dockTheme:DockFluentTheme />
+        <Style Selector="Run.cambiato">
+            <Setter Property="Background" Value="{DynamicResource SfondoValoreCambiato}" />
+        </Style>
     </Application.Styles>
 </Application>

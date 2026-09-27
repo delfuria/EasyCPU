@@ -4,7 +4,7 @@
              x:Class="EasyCPU.Views.MemoryView"
              x:DataType="vm:MemoryViewModel">
     <ScrollViewer>
-        <TextBlock x:Name="DumpText" Text="{Binding Dump}" FontFamily="Courier New,Monospace"
+        <TextBlock x:Name="DumpText" FontFamily="Courier New,Monospace"
                    Margin="4" TextWrapping="NoWrap" />
     </ScrollViewer>
 </UserControl>

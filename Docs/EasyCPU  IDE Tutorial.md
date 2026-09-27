@@ -208,6 +208,12 @@ Figura 3 Esempio di esecuzione “passo passo” di un programma; comando «Eseg
 
 Questa funzionalità consente di velocizzare il debug del programma, eseguendo normalmente parti più o meno consistenti di codice e sospendendo l’esecuzione soltanto sulle istruzioni che si desidera indagare.
 
+Valori cambiati evidenziati
+
+Dopo ogni comando di esecuzione (esecuzione di un’istruzione, «Esegui fino a», esecuzione fino a un breakpoint o a un errore), nei pannelli Registri, Memoria (compresa la sezione Simboli) e Stack i valori modificati hanno uno sfondo colorato: giallo con il tema chiaro, ambra con il tema scuro. Si colora soltanto il valore cambiato: ad esempio, dopo mov al, 5 si colorano il valore di AX e quello di AL, ma non AH; dopo push ax si colorano SP e la cella dello stack appena scritta. L’evidenziazione resta visibile fino al comando successivo, e mostra quindi l’effetto dell’ultima istruzione eseguita (o dell’ultimo tratto di programma eseguito).
+
+La compilazione, il comando Stop e il cambio di formato di visualizzazione (Dec, Hex, Car) non evidenziano nulla. L’esempio Docs/samples/13-debug-passo-passo/evidenzia-valori-cambiati.asj elenca, istruzione per istruzione, cosa si colora.
+
 ### Continuare o arrestare l’esecuzione di un programma in modalità debug
 
 Durante il debug del programma è sempre possibile riprendere la normale esecuzione mediante il comando «Esegui | Esegui», oppure arrestarla mediante:

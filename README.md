@@ -30,7 +30,7 @@ EasyCPU is an educational tool designed to make learning assembly language and C
 
 ### Core Capabilities
 - **Interactive Assembly Editor** – Write assembly code with syntax support for EasyCPU's instruction set
-- **Step-by-Step Debugging** – Execute programs one instruction at a time to understand control flow and side effects
+- **Step-by-Step Debugging** – Execute programs one instruction at a time to understand control flow and side effects; after each step the register, memory, symbol and stack values that changed are highlighted
 - **Real-Time CPU State Visualization** – Monitor registers, memory, stack, and flags as code executes
 - **Integrated Compiler** – Parse and compile assembly code with detailed syntax error reporting; runtime errors (division by zero, stack overflow, invalid IP…) are reported with the offending line
 - **Multiple Data Format Viewers** – Display memory, stack, and register values in decimal, hexadecimal, or ASCII
@@ -168,7 +168,7 @@ Complete documentation is available in the `Docs/` folder:
 - **[EasyCPU IDE Tutorial](./Docs/EasyCPU%20%20IDE%20Tutorial.md)** – Step-by-step guide to using the IDE, debugging, and managing programs
 - **[Toolbar Icons Reference](./ICONE-TOOLBAR.md)** – Visual guide to IDE toolbar buttons
 
-Ready-to-run example programs (`.asj`) are available in [`Docs/samples/`](./Docs/samples), organized by topic (data transfer, arithmetic and flags, logic and shifts, stack and subroutines, data section, `int 21h` console, complete programs, jumps and loops, string instructions, errors, indirect jumps, byte memory); each one starts with a comment describing what it shows and the expected result. The original examples in the legacy `.as` format are in `Docs/Subroutines/`.
+Ready-to-run example programs (`.asj`) are available in [`Docs/samples/`](./Docs/samples), organized by topic (data transfer, arithmetic and flags, logic and shifts, stack and subroutines, data section, `int 21h` console, complete programs, jumps and loops, string instructions, errors, indirect jumps, byte memory, step-by-step debugging); each one starts with a comment describing what it shows and the expected result. The original examples in the legacy `.as` format are in `Docs/Subroutines/`.
 
 Design documents for the x86 extensions (roadmap, open proposals and their designs) are in [`Proposte/`](./Proposte).
 

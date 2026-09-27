@@ -1,9 +1,5 @@
-using CommunityToolkit.Mvvm.ComponentModel;
-using Dock.Model.Mvvm.Controls;
-
 namespace EasyCPU.ViewModels;
 
-public partial class MemoryViewModel : Tool
+public partial class MemoryViewModel : PannelloDumpViewModel
 {
-    [ObservableProperty] private string _dump = "";
 }
