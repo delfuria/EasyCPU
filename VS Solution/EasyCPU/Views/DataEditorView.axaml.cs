@@ -69,6 +69,7 @@ public partial class DataEditorView : UserControl
         {
             _suppressDirty = true;
             _editor.Document.Text = text;
+            _editor.Document.UndoStack.ClearAll();     // Annulla non riporta al programma precedente
             _editor.TextArea.Caret.Line = 1;
             _editor.TextArea.Caret.Column = 1;
             _suppressDirty = false;

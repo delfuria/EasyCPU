@@ -285,20 +285,29 @@ public partial class MainViewModel : ObservableObject
     // Il programma compilato non vale più: CPU e pannelli ripartono vuoti con la nuova memoria
     partial void OnIsMemoriaAByteChanged(bool value)
     {
-        Cpu.Stop();
-        AzzeraCpu();
+        AzzeraProgramma();
         if (_factory.Memory is { } mv) mv.Title = value ? "Memoria (byte)" : "Memoria";
     }
 
-    // Azzera registri (se da opzione), memoria, stack e simboli, e aggiorna subito i pannelli
-    private void AzzeraCpu()
+    // Programma aperto, nuovo o con un'altra memoria: non resta nulla del precedente.
+    // Ferma l'esecuzione, dimentica il programma compilato, azzera registri (se da opzione),
+    // memoria e stack, svuota i pannelli Errori e Console e aggiorna subito i pannelli.
+    private void AzzeraProgramma()
     {
-        Compiler.AzzeraSimboli();
+        Cpu.Stop();
+        Compiler.Azzera();
         Cpu.Init(new List<Instruction>(), new int[ModelloProgramma.Dimensione].ToList(),
             Ambiente.InizializzaRegistri, Ambiente.LoopInfinito, ModelloProgramma);
+        Cpu.Stop();                 // pronta ma non in esecuzione: stato rosso
         _atBreakpoint = false;
         _pendingFirstStep = true;
         CurrentSourceLine = -1;
+        _factory.Errors?.Errors.Clear();
+        if (_factory.Console is { } cv)
+        {
+            cv.Output = "";
+            cv.IsInAttesaInput = false;
+        }
         RefreshDebugViews();
         NotifyCpuStatusChanged();
     }
@@ -377,7 +386,7 @@ public partial class MainViewModel : ObservableObject
             : $"Aperto: {Path.GetFileName(path)}";
 
         // il file appena aperto non è ancora stato compilato/eseguito
-        AzzeraCpu();
+        AzzeraProgramma();
     }
 
     private async void OpenFileFromPath(string path)
@@ -486,6 +495,7 @@ public partial class MainViewModel : ObservableObject
         _currentFile = null;
         _isLegacyFile = false;
         IsMemoriaAByte = false;
+        AzzeraProgramma();
         CurrentFileName = "Nuovo file";
         IsDirty = false;
         StatusMessage = "Nuovo file";
