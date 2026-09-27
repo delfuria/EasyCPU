@@ -8,7 +8,7 @@
        dotnet msbuild -getProperty:Version). -->
   <PropertyGroup>
     <!-- Formato major.minor: il pacchetto MSIX aggiunge ".0.0" -->
-    <EasyCpuVersion>2.0</EasyCpuVersion>
+    <EasyCpuVersion>2.1</EasyCpuVersion>
     <!-- Numero di build (versionCode Android, CFBundleVersion iOS/macOS):
          intero da aumentare a ogni pubblicazione sugli store -->
     <EasyCpuBuild>1</EasyCpuBuild>
