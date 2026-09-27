@@ -155,7 +155,7 @@ In ogni caso, l’esecuzione procede fino al termine del programma, a meno che n
 
 L’esecuzione di un programma viene preceduta dalla sua traduzione in un formato interno specifico dell’applicazione, operazione che comprende la verifica sintattica del codice. Gli eventuali errori sintattici vengono mostrati nell’area «errori di compilazione», la quale nasconde automaticamente l’area «memoria».
 
-La figura seguente mostra un frammento di programma contenente due errori; per ogni errore viene riportato se è relativo al codice o ai dati, il numero di riga e un messaggio informativo . Cliccando sul report di un errore, il caret viene automaticamente portato sulla posizione corrispondente nel codice sorgente.
+La figura seguente mostra un frammento di programma contenente due errori; per ogni errore viene riportato se è relativo al codice o ai dati, il numero di riga e un messaggio informativo . Cliccando sul report di un errore, il caret viene automaticamente portato sulla posizione corrispondente nel codice sorgente: l’editor scorre fino alla riga, se non è visibile, e la fa lampeggiare brevemente (due impulsi rosso/arancio) per renderla subito riconoscibile. L’esempio Docs/samples/10-errori/lampeggio-riga-errore.asj contiene un errore nel codice, in fondo a un programma lungo, e uno nei dati.
 
 ![](data:image/png;base64...)
 

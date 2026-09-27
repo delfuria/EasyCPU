@@ -11,6 +11,7 @@ using Avalonia.VisualTree;
 using AvaloniaEdit.Highlighting;
 using EasyCpu.Common;
 using EasyCPU.ViewModels;
+using EasyCPU.Views.Editor;
 
 namespace EasyCPU.Views;
 
@@ -18,6 +19,7 @@ public partial class DataEditorView : UserControl
 {
     private TextEditor? _editor;
     private bool _suppressDirty;
+    private LampeggioRigaRenderer? _lampeggio;
 
     public DataEditorView()
     {
@@ -65,6 +67,10 @@ public partial class DataEditorView : UserControl
 
         _editor.TextArea.TextEntering += OnTextEntering;
 
+        // Lampeggio della riga raggiunta con il doppio click su un errore
+        _lampeggio = new LampeggioRigaRenderer(_editor.TextArea.TextView);
+        _editor.TextArea.TextView.BackgroundRenderers.Add(_lampeggio);
+
         vm.SetSourceTextAction = text =>
         {
             _suppressDirty = true;
@@ -111,6 +117,7 @@ public partial class DataEditorView : UserControl
         int leading = text.Length - text.TrimStart().Length;
         _editor.TextArea.Caret.Line   = n;
         _editor.TextArea.Caret.Column = leading < text.Length ? leading + 1 : 1;
+        _lampeggio?.Avvia(n);
         _editor.TextArea.Focus();
         Dispatcher.UIThread.Post(() => _editor.TextArea.Focus(), DispatcherPriority.Background);
         // Su iOS il gesture recognizer nativo del doppio tap sulla DataGridCell degli

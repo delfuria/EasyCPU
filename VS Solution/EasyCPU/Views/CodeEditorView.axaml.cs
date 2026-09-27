@@ -23,6 +23,7 @@ public partial class CodeEditorView : UserControl
 {
     private TextEditor? _editor;
     private bool _suppressDirty;
+    private LampeggioRigaRenderer? _lampeggio;
 
     public CodeEditorView()
     {
@@ -67,6 +68,10 @@ public partial class CodeEditorView : UserControl
         // Renderer che evidenzia la riga corrente dell'IP
         var lineRenderer = new DebugCurrentLineRenderer(vm.MainVm);
         _editor.TextArea.TextView.BackgroundRenderers.Add(lineRenderer);
+
+        // Lampeggio della riga raggiunta con il doppio click su un errore
+        _lampeggio = new LampeggioRigaRenderer(_editor.TextArea.TextView);
+        _editor.TextArea.TextView.BackgroundRenderers.Add(_lampeggio);
 
         // Invalidare il layer di sfondo quando CurrentSourceLine cambia
         vm.MainVm.PropertyChanged += (_, args) =>
@@ -149,6 +154,7 @@ public partial class CodeEditorView : UserControl
         int leading = text.Length - text.TrimStart().Length;
         _editor.TextArea.Caret.Line   = n;
         _editor.TextArea.Caret.Column = leading < text.Length ? leading + 1 : 1;
+        _lampeggio?.Avvia(n);
         _editor.TextArea.Focus();
         Dispatcher.UIThread.Post(() => _editor.TextArea.Focus(), DispatcherPriority.Background);
         // Su iOS il gesture recognizer nativo del doppio tap sulla DataGridCell degli
