@@ -23,6 +23,9 @@ public partial class CodeEditorViewModel : Document
     internal Action? FindAction;
     internal Action<string>? SetSourceTextAction;
     internal Action<int>? NavigateToLineAction;
+    // Riga richiesta mentre la view non era nell'albero visivo: al cambio di tab Dock
+    // crea una nuova view, che la raggiunge quando si collega (0 = nessuna)
+    internal int PendingNavigateLine;
 
     public CodeEditorViewModel(MainViewModel mainVm)
     {

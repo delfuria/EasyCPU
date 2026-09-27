@@ -24,6 +24,7 @@ public partial class CodeEditorView : UserControl
     private TextEditor? _editor;
     private bool _suppressDirty;
     private LampeggioRigaRenderer? _lampeggio;
+    private CodeEditorViewModel? _vm;     // anche dopo che Dock ha staccato la view e azzerato il DataContext
 
     public CodeEditorView()
     {
@@ -47,6 +48,7 @@ public partial class CodeEditorView : UserControl
     private void SetupEditor(CodeEditorViewModel vm)
     {
         if (_editor == null) return;
+        _vm = vm;
 
         _editor.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("EasyCPU");
 
@@ -119,6 +121,8 @@ public partial class CodeEditorView : UserControl
         };
 
         vm.NavigateToLineAction = lineNumber => NavigateToLineWhenReady(lineNumber);
+        if (vm.PendingNavigateLine > 0)
+            NavigateToLineWhenReady(vm.PendingNavigateLine);
     }
 
     // Su Android/iOS il cambio di tab del docking (SetActiveDockable) può completare
@@ -136,6 +140,8 @@ public partial class CodeEditorView : UserControl
             return;
         }
 
+        if (_vm is not null) _vm.PendingNavigateLine = lineNumber;
+
         void OnAttached(object? s, Avalonia.VisualTreeAttachmentEventArgs e)
         {
             _editor.AttachedToVisualTree -= OnAttached;
@@ -148,6 +154,7 @@ public partial class CodeEditorView : UserControl
     {
         if (_editor is null || _editor.Document.LineCount == 0) return;
         int n = Math.Clamp(lineNumber, 1, _editor.Document.LineCount);
+        if (_vm is not null) _vm.PendingNavigateLine = 0;
         _editor.ScrollTo(n, 1);
         var docLine = _editor.Document.GetLineByNumber(n);
         var text    = _editor.Document.GetText(docLine.Offset, docLine.Length);
