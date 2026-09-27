@@ -113,6 +113,9 @@ namespace EasyCpu.Assembler.Parsing
 		static readonly HashSet<string> Riservate = ["db", "dw", "equ", "org", "dup", "offset"];
 
 		public const char FINE = '\0';
+
+		// limiti della memoria del programma (indirizzi, area dello stack, unità occupate da DW)
+		public ModelloMemoria Modello { get; set; } = ModelloMemoria.Parole;
 		string _riga;
 		int _indcar;
 		bool _inDati;       // true durante la compilazione della sezione dati: le etichette valgono senza offset
@@ -485,7 +488,7 @@ namespace EasyCpu.Assembler.Parsing
 			return OperandoMemoria(espr);
 		}
 
-		static Operando OperandoMemoria(Espressione espr)
+		Operando OperandoMemoria(Espressione espr)
 		{
 			Operando op;
 			if (espr.HaRegistro)
@@ -504,9 +507,9 @@ namespace EasyCpu.Assembler.Parsing
 			return op;
 		}
 
-		static bool IndirizzoOk(int indirizzo)
+		bool IndirizzoOk(int indirizzo)
 		{
-			return !(indirizzo < 0 || indirizzo > Ram.MASSIMO_INDIRIZZO);
+			return !(indirizzo < 0 || indirizzo >= Modello.Dimensione);
 		}
 
 		static void VerificaIntervalloCostante(int valore)
@@ -568,7 +571,7 @@ namespace EasyCpu.Assembler.Parsing
 						throw new CodiceException(CodiceErrore.Sintassi);
 					int nuovo = LeggiEspressione(inParentesi: false).Valore;
 					VerificaFineRiga();
-					if (nuovo < 0 || nuovo >= Ram.INDIRIZZO_STACK)
+					if (nuovo < 0 || nuovo >= Modello.InizioStack)
 						throw new CodiceException(CodiceErrore.DatiInAreaStack);
 					contatore = nuovo;
 					return new List<int>();
@@ -586,13 +589,14 @@ namespace EasyCpu.Assembler.Parsing
 				case "dw":
 					TipoSimbolo tipo = direttiva == "db" ? TipoSimbolo.Db : TipoSimbolo.Dw;
 					List<int> valori = LeggiElementiDati(tipo);
-					if (contatore + valori.Count > Ram.INDIRIZZO_STACK)
+					List<int> unita = InUnitaDiMemoria(tipo, valori);
+					if (contatore + unita.Count > Modello.InizioStack)
 						throw new CodiceException(CodiceErrore.DatiInAreaStack);
 					if (nome != null)
 						DefinisciSimbolo(new Simbolo(nome, tipo, contatore, valori.Count) { Grafia = grafia });
 					indirizzo = contatore;
-					contatore += valori.Count;
-					return valori;
+					contatore += unita.Count;
+					return unita;
 
 				default:
 					throw new CodiceException(CodiceErrore.Sintassi);
@@ -605,7 +609,7 @@ namespace EasyCpu.Assembler.Parsing
 			if (EstraiToken() != ":")
 				throw new CodiceException(CodiceErrore.AttesoDuePunti);
 
-			if (indirizzo < 0 || indirizzo > Ram.MASSIMO_INDIRIZZO)
+			if (indirizzo < 0 || indirizzo >= Modello.Dimensione)
 				throw new CodiceException(CodiceErrore.IntervalloIndirizzoDati);
 
 			return LeggiValori();
@@ -672,10 +676,25 @@ namespace EasyCpu.Assembler.Parsing
 			LeggiElementoDati(tipo, ripetuti);
 			if (EstraiToken() != ")")
 				throw new CodiceException(CodiceErrore.Sintassi);
-			if (valore <= 0 || valore * ripetuti.Count > Ram.INDIRIZZO_STACK)
+			if (valore <= 0 || valore * ripetuti.Count > Modello.InizioStack)
 				throw new CodiceException(CodiceErrore.DatiInAreaStack);
 			for (int i = 0; i < valore; i++)
 				valori.AddRange(ripetuti);
+		}
+
+		// Valori di una riga DB/DW come contenuto delle unità di memoria: una cella per valore nella
+		// modalità a parole; con PassoParola 2 una parola DW occupa due byte, prima il basso (little-endian)
+		List<int> InUnitaDiMemoria(TipoSimbolo tipo, List<int> valori)
+		{
+			if (tipo != TipoSimbolo.Dw || Modello.PassoParola == 1)
+				return valori;
+			var unita = new List<int>(valori.Count * 2);
+			foreach (int v in valori)
+			{
+				unita.Add(v & 0xFF);
+				unita.Add((v >> 8) & 0xFF);
+			}
+			return unita;
 		}
 
 		static int ValoreDato(TipoSimbolo tipo, int valore)

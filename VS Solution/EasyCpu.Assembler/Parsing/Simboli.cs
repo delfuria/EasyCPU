@@ -15,7 +15,7 @@ namespace EasyCpu.Assembler.Parsing
         public string Grafia;   // come scritto nella dichiarazione, per la visualizzazione
         public TipoSimbolo Tipo;
         public int Valore;      // EQU: valore della costante; DB/DW: indirizzo della prima cella; etichetta: numero dell'istruzione
-        public int Celle;       // DB/DW: numero di celle allocate
+        public int Celle;       // DB/DW: numero di elementi (celle nella modalità a parole)
 
         public Simbolo(string nome, TipoSimbolo tipo, int valore, int celle)
         {

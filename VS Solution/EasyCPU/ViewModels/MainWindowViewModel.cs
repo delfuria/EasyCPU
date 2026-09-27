@@ -331,7 +331,7 @@ public partial class MainViewModel : ObservableObject
 
         // Azzera registri (se da opzione), memoria e stack, e aggiorna subito i pannelli:
         // il file appena aperto non è ancora stato compilato/eseguito.
-        Cpu.Init(new List<Instruction>(), new int[Ram.MASSIMO_INDIRIZZO + 1].ToList(),
+        Cpu.Init(new List<Instruction>(), new int[Cpu.Modello.Dimensione].ToList(),
             Ambiente.InizializzaRegistri, Ambiente.LoopInfinito);
         _atBreakpoint = false;
         _pendingFirstStep = true;
@@ -1156,13 +1156,13 @@ public partial class MainViewModel : ObservableObject
             rv.Dump = string.Join("\n", regs) +
                       $"\nC={(Cpu.FlagCarry ? 1 : 0)}  Z={(Cpu.FlagZero ? 1 : 0)}  S={(Cpu.FlagSegno ? 1 : 0)}  O={(Cpu.FlagOverflow ? 1 : 0)}  D={(Cpu.FlagDirezione ? 1 : 0)}";
 
-        var mem = Cpu.DumpMemoria(0, Ram.INDIRIZZO_STACK, 8);
+        var mem = Cpu.DumpMemoria(0, Cpu.Modello.InizioStack, 8);
         if (mem is not null && Compiler.Simboli.Count > 0)
             mem.AddRange(["", "Simboli:", .. Cpu.DumpSimboli(Compiler.Simboli)]);
         if (_factory.Memory is { } mv)
             mv.Dump = mem is null ? "" : string.Join("\n", mem);
 
-        var stack = Cpu.DumpMemoria(Ram.INDIRIZZO_STACK, Ram.MASSIMO_INDIRIZZO + 1, Ambiente.ColonneStack);
+        var stack = Cpu.DumpMemoria(Cpu.Modello.InizioStack, Cpu.Modello.Dimensione, Ambiente.ColonneStack);
         if (_factory.Stack is { } sv)
             sv.Dump = stack is null ? "" : string.Join("\n", stack);
     }

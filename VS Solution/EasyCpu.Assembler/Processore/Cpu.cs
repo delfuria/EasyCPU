@@ -52,7 +52,7 @@ namespace EasyCpu.Assembler.Processore
         int loopInfinito;
         public StatoCpu Stato = StatoCpu.Ferma;
 
-        Ram memoria = new Ram();
+        MemoriaCpu memoria = MemoriaCpu.Crea(ModelloMemoria.Parole);
         List<Instruction> Code;
         Instruction curIstruzione;
 
@@ -73,7 +73,9 @@ namespace EasyCpu.Assembler.Processore
         public short DI => di;
         public short BP => bp;
 
-        public short LeggiMemoria(int indirizzo) => memoria[indirizzo];
+        public short LeggiMemoria(int indirizzo) => memoria.LeggiParola(indirizzo);
+
+        public ModelloMemoria Modello => memoria.Modello;
 
         public bool FlagSegno => TestFlag(SF);
         public bool FlagZero => TestFlag(ZF);
@@ -225,7 +227,7 @@ namespace EasyCpu.Assembler.Processore
             Code = codice;
             ip = 0;
             flags = 0;
-            sp = (short)(Ram.MASSIMO_INDIRIZZO + 1);
+            sp = (short)memoria.Modello.Dimensione;
             loopInfinito = AloopInfinito;
             Stato = StatoCpu.Pronta;
             if (initRegs)
@@ -377,20 +379,21 @@ namespace EasyCpu.Assembler.Processore
             StoreOp(LoadOp(2), 1);
         }
 
-        // Istruzioni stringa: SI e DI avanzano di una cella (DF = 0) o arretrano (DF = 1).
-        // Le forme ...b usano il byte basso delle celle e AL, le forme ...w la cella intera e AX.
-        short Passo => (short)(TestFlag(DF) ? -1 : 1);
+        // Istruzioni stringa: SI e DI avanzano (DF = 0) o arretrano (DF = 1) di un elemento:
+        // un byte per le forme ...b (AL), una parola per le forme ...w (AX).
+        // Nella modalità a parole un elemento è sempre una cella; le forme ...b usano il suo byte basso.
+        short Passo => (short)((TestFlag(DF) ? -1 : 1) * (Larghezza == 8 ? 1 : memoria.Modello.PassoParola));
 
         void Movs()
         {
-            ScriviMemoria(di, Adatta(memoria[si]));
+            ScriviMemoria(di, LeggiMemoriaOp(si));
             si += Passo;
             di += Passo;
         }
 
         void Lods()
         {
-            ax = Larghezza == 8 ? ConBasso(ax, memoria[si]) : memoria[si];
+            ax = Larghezza == 8 ? ConBasso(ax, LeggiMemoriaOp(si)) : LeggiMemoriaOp(si);
             si += Passo;
         }
 
@@ -403,7 +406,7 @@ namespace EasyCpu.Assembler.Processore
         // CMPS: confronta [SI] con [DI] come CMP [SI], [DI]
         void Cmps()
         {
-            ImpostaFlagDifferenza(Adatta(memoria[si]), Adatta(memoria[di]), 0);
+            ImpostaFlagDifferenza(LeggiMemoriaOp(si), LeggiMemoriaOp(di), 0);
             si += Passo;
             di += Passo;
         }
@@ -411,7 +414,7 @@ namespace EasyCpu.Assembler.Processore
         // SCAS: confronta AL/AX con [DI] come CMP AL, [DI]
         void Scas()
         {
-            ImpostaFlagDifferenza(Adatta(ax), Adatta(memoria[di]), 0);
+            ImpostaFlagDifferenza(Adatta(ax), LeggiMemoriaOp(di), 0);
             di += Passo;
         }
 
@@ -657,17 +660,19 @@ namespace EasyCpu.Assembler.Processore
 
         void PushCode(short valore)
         {
-            sp--;
-            if (sp < Ram.INDIRIZZO_STACK)
+            sp -= (short)memoria.Modello.PassoParola;
+            if (sp < memoria.Modello.InizioStack)
                 throw new CpuException(CodiceErrore.StackOverflow);
-            memoria[sp] = valore;
+            memoria.ScriviParola(sp, valore);
         }
 
         short PopCode()
         {
-            if (sp == Ram.MASSIMO_INDIRIZZO + 1)
+            if (sp == memoria.Modello.Dimensione)
                 throw new CpuException(CodiceErrore.StackUnderflow);
-            return memoria[sp++];
+            short valore = memoria.LeggiParola(sp);
+            sp += (short)memoria.Modello.PassoParola;
+            return valore;
         }
 
         void Push()
@@ -703,7 +708,7 @@ namespace EasyCpu.Assembler.Processore
             if (curIstruzione.Op1.Tipo != TipoOperando.Costante)
                 return;
             int nuovoSp = sp + curIstruzione.Op1.Scostamento;
-            if (nuovoSp > Ram.MASSIMO_INDIRIZZO + 1)
+            if (nuovoSp > memoria.Modello.Dimensione)
                 throw new CpuException(CodiceErrore.StackUnderflow);
             sp = (short)nuovoSp;
         }
@@ -851,8 +856,8 @@ namespace EasyCpu.Assembler.Processore
                     ax = ConBasso(ax, await LeggiCarattereBloccante());
                     break;
                 case 0x09:
-                    for (int i = dx; (memoria[i] & 0xFF) != '$'; i++)
-                        ScriviCarattere(memoria[i] & 0xFF);
+                    for (int i = dx; (memoria.LeggiByte(i) & 0xFF) != '$'; i++)
+                        ScriviCarattere(memoria.LeggiByte(i) & 0xFF);
                     break;
                 case 0x0A:
                     await LeggiRiga(dx);
@@ -867,7 +872,7 @@ namespace EasyCpu.Assembler.Processore
 
         async Task LeggiRiga(int buffer)
         {
-            int massimo = memoria[buffer] & 0xFF;
+            int massimo = memoria.LeggiByte(buffer) & 0xFF;
             if (massimo == 0)
                 return;
             int letti = 0;
@@ -888,13 +893,13 @@ namespace EasyCpu.Assembler.Processore
                 }
                 else if (letti < massimo - 1)    // a buffer pieno i caratteri vengono ignorati fino all'Invio
                 {
-                    memoria[buffer + 2 + letti] = (short)(c & 0xFF);
+                    memoria.ScriviByte(buffer + 2 + letti, c);
                     letti++;
                     ScriviCarattere(c);
                 }
             }
-            memoria[buffer + 2 + letti] = 13;
-            memoria[buffer + 1] = (short)letti;
+            memoria.ScriviByte(buffer + 2 + letti, 13);
+            memoria.ScriviByte(buffer + 1, (short)letti);
             ScriviCarattere(13);
         }
 
@@ -970,9 +975,9 @@ namespace EasyCpu.Assembler.Processore
             switch (op.Tipo)
             {
                 case TipoOperando.Registro: return LeggiRegistro(op.Base);
-                case TipoOperando.Indiretto: return Adatta(memoria[IndirizzoEffettivo(op)]);
+                case TipoOperando.Indiretto: return LeggiMemoriaOp(IndirizzoEffettivo(op));
                 case TipoOperando.Costante: return Adatta(op.Scostamento);
-                case TipoOperando.Memoria: return Adatta(memoria[op.Scostamento]);
+                case TipoOperando.Memoria: return LeggiMemoriaOp(op.Scostamento);
                 case TipoOperando.Etichetta: return (short)op.Scostamento;
             }
             return -1;
@@ -996,10 +1001,16 @@ namespace EasyCpu.Assembler.Processore
             return LeggiRegistro(op.Base) + (op.HaIndice ? LeggiRegistro(op.Indice) : 0) + op.Scostamento;
         }
 
-        // Memoria a celle da 16 bit: un accesso a 8 bit scrive solo il byte basso della cella
+        // Accesso alla memoria con la dimensione dell'istruzione corrente (byte con estensione del segno, o parola)
+        short LeggiMemoriaOp(int indirizzo) =>
+            Larghezza == 8 ? memoria.LeggiByte(indirizzo) : memoria.LeggiParola(indirizzo);
+
         void ScriviMemoria(int indirizzo, short valore)
         {
-            memoria[indirizzo] = Larghezza == 8 ? ConBasso(memoria[indirizzo], valore) : valore;
+            if (Larghezza == 8)
+                memoria.ScriviByte(indirizzo, valore);
+            else
+                memoria.ScriviParola(indirizzo, valore);
         }
 
         // byte basso/alto di una parola, con estensione del segno
@@ -1186,7 +1197,7 @@ namespace EasyCpu.Assembler.Processore
                         sim.Tipo == TipoSimbolo.Equ ? "EQU" : "ETICHETTA", sim.Valore));
                     continue;
                 }
-                short valore = memoria[sim.Valore];
+                short valore = memoria.LeggiParola(sim.Valore);
                 if (sim.Tipo == TipoSimbolo.Db)
                     valore = (short)(valore & 0xFF);
                 string testo = Ambiente.FormatoDati == FormatoValore.Car
@@ -1211,9 +1222,9 @@ namespace EasyCpu.Assembler.Processore
             for (int i = da; i < a;)
             {
                 if (Ambiente.FormatoDati == FormatoValore.Car)
-                    s = s + string.Format(formatoDato, IntToChar(memoria[i]));
+                    s = s + string.Format(formatoDato, IntToChar(memoria.LeggiParola(i)));
                 else
-                    s = s + string.Format(formatoDato, memoria[i]);
+                    s = s + string.Format(formatoDato, memoria.LeggiParola(i));
 
                 if ((++i - da) % colonne == 0)
                 {

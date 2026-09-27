@@ -17,6 +17,13 @@ namespace EasyCpu.Assembler.Parsing
         List<CompilerError> _erroriEtichette;       // errori della pre-scansione, riportati da CompilaCodice
         List<(string nome, int indRiga)> _righeEtichette;   // etichette lette, con la riga che le definisce
 
+        // modello di memoria del programma: da impostare prima di CompilaDati
+        public ModelloMemoria Modello
+        {
+            get => _parser.Modello;
+            set => _parser.Modello = value;
+        }
+
         public List<int> InstrToLineMap { get; private set; }  // indice istruzione → riga sorgente (0-based)
         public int[] LineToInstrMap { get; private set; }      // riga sorgente (0-based) → indice istruzione (-1 se non eseguibile)
 
@@ -31,7 +38,7 @@ namespace EasyCpu.Assembler.Parsing
         // codice: se fornito, le sue etichette sono lette per prime e i dati possono usarle (tab DW caso0, caso1)
         public List<int> CompilaDati(List<string> data, ref List<CompilerError> errori, List<string> codice = null)
         {
-            List<int> memoria = new int[Ram.MASSIMO_INDIRIZZO + 1].ToList();
+            List<int> memoria = new int[Modello.Dimensione].ToList();
             _parser.AzzeraSimboli();
             _etichetteLette = false;
             if (codice != null)
@@ -47,7 +54,7 @@ namespace EasyCpu.Assembler.Parsing
                     // stessa riga senza conversione in minuscolo: fornisce la grafia originale dei nomi
                     string originale = PreparaRiga(data[indRiga], minuscole: false);
                     List<int> rigaDati = _parser.CompilaDati(s, originale, ref contatore, out indirizzo);
-                    if (rigaDati.Count + indirizzo > Ram.MASSIMO_INDIRIZZO)
+                    if (rigaDati.Count + indirizzo > Modello.Dimensione - 1)
                         throw new CodiceException(CodiceErrore.IntervalloIndirizzoDati);
 
                     for (int i = 0; i < rigaDati.Count; i++)
