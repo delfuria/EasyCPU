@@ -2,13 +2,11 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <!-- App Sandbox: obbligatorio per Mac App Store, opzionale ma consigliato per Developer ID -->
-    <key>com.apple.security.app-sandbox</key>
-    <true/>
-
-    <!-- Dialoghi Apri/Salva: necessario in sandbox per leggere/scrivere i file scelti dall'utente -->
-    <key>com.apple.security.files.user-selected.read-write</key>
-    <true/>
+    <!-- App Sandbox:
+         NON utilizzato per la distribuzione diretta tramite Developer ID + DMG.
+         È richiesto per le app distribuite tramite Mac App Store.
+         L'abilitazione del Sandbox con Avalonia può interferire con
+         NSApplication/LaunchServices durante l'avvio. -->
 
     <!-- Connessioni di rete in uscita (EasyCpu.Backend) -->
     <key>com.apple.security.network.client</key>

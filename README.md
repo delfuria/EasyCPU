@@ -235,7 +235,7 @@ EasyCPU is implemented for multiple platforms with a shared core:
 | Platform | Status | Features |
 |----------|--------|----------|
 | **Desktop** (Windows/macOS/Linux) | ✅ Implemented | Full IDE with all features |
-| **Browser** (WebAssembly) | ✅ Implemented | Complete IDE running in browser via WASM |
+| **Browser** (WebAssembly) | ✅ Implemented | Complete IDE running in browser via WASM; options, layout, recent programs and breakpoints are kept in the browser's `localStorage` (clear the site data to reset them) |
 | **iOS** | ✅ Implemented | Touch-optimized interface for iPad/iPhone |
 | **Android** | ✅ Implemented | Native Android app interface |
 

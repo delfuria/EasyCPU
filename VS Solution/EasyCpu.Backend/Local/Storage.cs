@@ -13,6 +13,10 @@ namespace EasyCpu.Backend.Local
     {
         static string PREF_DATA = ".DATA";
 
+        // Archivio delle impostazioni: file sul Desktop (predefinito), localStorage nel browser
+        // (impostato da EasyCPU.Browser prima dell'avvio dell'app).
+        public static IArchivioImpostazioni Archivio { get; set; } = new ArchivioFile();
+
         public static void Salva(string nome, string[] codice, string[] dati)
         {
             StreamWriter sw = new StreamWriter(nome);
@@ -64,10 +68,6 @@ namespace EasyCpu.Backend.Local
 
         public static void SalvaOpzioni()
         {
-            if (!Directory.Exists(Ambiente.EasyCPUPath))
-            {
-                Directory.CreateDirectory(Ambiente.EasyCPUPath);
-            }
             Ambiente.VersioneAssembly = "";
             var dto = new OpzioniDto(
                 Ambiente.FormatoDati,
@@ -86,14 +86,14 @@ namespace EasyCpu.Backend.Local
                 Ambiente.FontPanelliSize,
                 Ambiente.MargineSinistro);
             var json = JsonSerializer.Serialize(dto, SettingsJsonContext.Default.OpzioniDto);
-            File.WriteAllText(Ambiente.OpzioniNomeFile, json);
+            Archivio.Scrivi("opzioni", json);
         }
 
         public static void LeggiOpzioni()
         {
-            if (!File.Exists(Ambiente.OpzioniNomeFile))
+            var json = Archivio.Leggi("opzioni");
+            if (json == null)
                 return;
-            var json = File.ReadAllText(Ambiente.OpzioniNomeFile);
             var dto = JsonSerializer.Deserialize(json, SettingsJsonContext.Default.OpzioniDto);
             if (dto == null)
                 return;
@@ -121,13 +121,13 @@ namespace EasyCpu.Backend.Local
         {
             var dto = new RecentiDto(1, Ambiente.FileRecenti.Take(Ambiente.MAXFILERECENTI).ToArray());
             var json = JsonSerializer.Serialize(dto, SettingsJsonContext.Default.RecentiDto);
-            File.WriteAllText(Ambiente.RecentiNomeFile, json);
+            Archivio.Scrivi("recenti", json);
         }
 
         public static void ApriFileRecenti()
         {
-            if (!File.Exists(Ambiente.RecentiNomeFile)) return;
-            var json = File.ReadAllText(Ambiente.RecentiNomeFile);
+            var json = Archivio.Leggi("recenti");
+            if (json == null) return;
             var dto = JsonSerializer.Deserialize(json, SettingsJsonContext.Default.RecentiDto);
             Ambiente.FileRecenti = (dto?.files ?? [])
                 .Where(path => !string.IsNullOrWhiteSpace(path))

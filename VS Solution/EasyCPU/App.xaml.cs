@@ -46,8 +46,12 @@ public class App : Application
 
     private void OnDesktopExit(object? sender, ControlledApplicationLifetimeExitEventArgs e)
     {
-        _mainViewModel?.SaveAll();
+        SalvaTutto();
     }
+
+    // Salva layout, breakpoint e file recenti. Sul Desktop all'uscita; nel browser quando
+    // la pagina viene nascosta o chiusa (chiamato da EasyCPU.Browser).
+    public void SalvaTutto() => _mainViewModel?.SaveAll();
 
     private void OnAboutClick(object? sender, EventArgs e)
     {

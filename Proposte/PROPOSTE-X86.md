@@ -8,7 +8,7 @@ Documenti di progetto collegati, nella stessa cartella:
 |---|---|---|
 | [`SALTI-INDIRETTI.md`](SALTI-INDIRETTI.md) | `jmp`/`call` con registro o memoria, tabelle di salto | progetto |
 | [`MODALITA-X86-FEDELE.md`](MODALITA-X86-FEDELE.md) | fase 5: memoria a byte, `byte ptr`/`word ptr` | progetto |
-| [`PERSISTENZA-BROWSER.md`](PERSISTENZA-BROWSER.md) | opzioni, layout, recenti e breakpoint conservati nel browser | progetto |
+| [`PERSISTENZA-BROWSER.md`](PERSISTENZA-BROWSER.md) | opzioni, layout, recenti e breakpoint conservati nel browser | implementato |
 | [`INTERRUPT-CONSOLE.md`](INTERRUPT-CONSOLE.md) | specifica originale di `int 21h` e del pannello Console | implementato (servizi poi estesi in fase 2) |
 
 ---
@@ -120,7 +120,7 @@ Memoria a byte, parole little-endian, stack a passi di 2, `byte ptr`/`word ptr`,
 - Il progetto prevede prima un refactoring a comportamento invariato, verificato da tutti i test e gli esempi.
 - Progetto completo: [`MODALITA-X86-FEDELE.md`](MODALITA-X86-FEDELE.md).
 
-### D — Persistenza delle impostazioni nel browser · V1 · S2 (utilità alta)
+### D — Persistenza delle impostazioni nel browser · V1 · S2 (utilità alta) · ✅ implementata
 
 Nella versione Browser opzioni, layout, file recenti e breakpoint si perdono a ogni ricaricamento della pagina. Si propone un archivio chiave-valore con due implementazioni: file sul Desktop (comportamento attuale, invariato) e `localStorage` nel browser.
 

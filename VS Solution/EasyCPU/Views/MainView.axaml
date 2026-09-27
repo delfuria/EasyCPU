@@ -62,6 +62,17 @@
                         <TextBlock Text="Salva come..." VerticalAlignment="Center"/>
                     </StackPanel>
                 </Button>
+                <TextBlock Classes="drawer-header" Text="RECENTI" IsVisible="{Binding HasRecentFiles}"/>
+                <ItemsControl ItemsSource="{Binding RecentFileItems}" IsVisible="{Binding HasRecentFiles}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:RecentFileItem">
+                            <Button Classes="drawer-item" Command="{Binding Command}">
+                                <TextBlock Text="{Binding Header}" VerticalAlignment="Center"
+                                           TextTrimming="CharacterEllipsis"/>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
                 <Separator/>
                 <Button Classes="drawer-item" Command="{Binding PrintCommand}">
                     <StackPanel Orientation="Horizontal" Spacing="12">

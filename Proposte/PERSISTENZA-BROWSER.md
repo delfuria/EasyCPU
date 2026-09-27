@@ -1,6 +1,12 @@
 # Persistenza delle impostazioni nel browser (localStorage)
 
-Stato: **progetto**, niente ancora implementato. Il documento descrive le operazioni da eseguire per far sì che la versione Browser di EasyCPU ricordi opzioni, layout, file recenti e breakpoint tra una sessione e l'altra, come già fa la versione Desktop.
+Stato: **implementato** (27 settembre 2026), con l'opzione A per i file recenti (contenuto dei programmi conservato in `localStorage`). Il documento descrive il progetto seguito per far sì che la versione Browser di EasyCPU ricordi opzioni, layout, file recenti e breakpoint tra una sessione e l'altra, come già fa la versione Desktop.
+
+Differenze rispetto al progetto emerse durante l'implementazione:
+
+- La versione Browser (`MainView`) non aveva un menu dei file recenti: è stata aggiunta la sezione **RECENTI** nel menu laterale, visibile quando l'elenco non è vuoto.
+- Il layout era serializzato con la reflection, disattivata nella build WebAssembly: ora usa un contesto generato in compilazione (`LayoutJsonContext`), con lo stesso formato JSON (i `layout.json` esistenti restano validi).
+- I breakpoint si salvano a ogni modifica; mentre l'elenco viene svuotato o ricaricato (apertura di un file, Nuovo) il salvataggio è sospeso, per non cancellare quelli già salvati.
 
 ---
 

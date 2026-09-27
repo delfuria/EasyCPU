@@ -1,4 +1,5 @@
-﻿using System.Runtime.Versioning;
+﻿using System.Runtime.InteropServices.JavaScript;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Browser;
@@ -6,13 +7,23 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using EasyCPU;
+using EasyCpu.Backend.Local;
 
 internal sealed partial class Program
 {
-    private static Task Main(string[] args) => BuildAvaloniaApp()
-        .WithInterFont()
-        .AfterSetup(_ => InputElement.KeyDownEvent.AddClassHandler<TopLevel>(TranslateCommandKey, RoutingStrategies.Tunnel))
-        .StartBrowserAppAsync("out");
+    private static async Task Main(string[] args)
+    {
+        // Impostazioni conservate nel localStorage: il modulo va caricato prima che l'app
+        // legga opzioni, recenti e layout (App.OnFrameworkInitializationCompleted).
+        await JSHost.ImportAsync(ArchivioLocalStorage.Modulo, "../persistenza.js");
+        Storage.Archivio = new ArchivioLocalStorage();
+        ArchivioLocalStorage.RegistraSalvataggioAllUscita(() => (Application.Current as App)?.SalvaTutto());
+
+        await BuildAvaloniaApp()
+            .WithInterFont()
+            .AfterSetup(_ => InputElement.KeyDownEvent.AddClassHandler<TopLevel>(TranslateCommandKey, RoutingStrategies.Tunnel))
+            .StartBrowserAppAsync("out");
+    }
 
     public static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<App>();

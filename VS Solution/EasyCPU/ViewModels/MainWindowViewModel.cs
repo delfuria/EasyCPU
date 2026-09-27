@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -105,7 +106,12 @@ public partial class MainViewModel : ObservableObject
                 Storage.SalvaOpzioni();
             }
         };
-        Breakpoints.CollectionChanged += (_, _) => SyncBreakpointsToCpu();
+        Breakpoints.CollectionChanged += (_, _) =>
+        {
+            SyncBreakpointsToCpu();
+            // salvati a ogni modifica: nel browser non esiste un evento di uscita affidabile
+            if (!_caricamentoBreakpoint) SaveCurrentBreakpoints();
+        };
 
         // Wiring CPU -> pannello Console: invocato dal thread di esecuzione CPU (Task.Run),
         // quindi il post sulla proprietà bindata va marshalled sul thread UI.
@@ -258,14 +264,6 @@ public partial class MainViewModel : ObservableObject
 
     // ── File ─────────────────────────────────────────────────────────────────
 
-    private static readonly string LayoutFilePath =
-        Path.Combine(Ambiente.EasyCPUPath, "layout.json");
-
-    private static readonly JsonSerializerOptions LayoutJsonOpts = new()
-    {
-        NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowNamedFloatingPointLiterals
-    };
-
     private static Window? GetOwnerWindow() =>
         (Avalonia.Application.Current?.ApplicationLifetime
             as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
@@ -308,9 +306,9 @@ public partial class MainViewModel : ObservableObject
         vm.SetSourceTextAction?.Invoke(text);
     }
 
-    private async Task LoadFromStreamAsync(string path, Stream stream)
+    private async Task LoadFromStreamAsync(string path, Stream stream, ISourceSerializer? ser = null)
     {
-        var ser = ISourceSerializer.ForPath(path);
+        ser ??= ISourceSerializer.ForPath(path);
         var (code, data) = await ser.LoadAsync(stream);
         if (_currentFilePath is not null) SaveBreakpoints(_currentFilePath);
         SetEditorText(_factory.CodeEditor, string.Join("\n", code));
@@ -318,9 +316,8 @@ public partial class MainViewModel : ObservableObject
         _currentFilePath = path;
         CurrentFileName = Path.GetFileName(path);
         _isLegacyFile = !path.EndsWith(".asj", StringComparison.OrdinalIgnoreCase);
-        Breakpoints.Clear();
-        LoadBreakpoints(path);
-        AddToRecentFiles(path);
+        RicaricaBreakpoints(path);
+        await AddToRecentFilesAsync(path);
         IsDirty = false;
         StatusMessage = $"Aperto: {Path.GetFileName(path)}";
 
@@ -340,6 +337,20 @@ public partial class MainViewModel : ObservableObject
         _currentFile = null;
         try
         {
+            if (OperatingSystem.IsBrowser())
+            {
+                // nel browser il file non è riapribile dal percorso: si usa la copia conservata
+                var json = Storage.Archivio.Leggi(ArchivioFile.PrefissoProgramma + path);
+                if (json is null)
+                {
+                    StatusMessage = $"File non trovato: {Path.GetFileName(path)}";
+                    RimuoviRecente(path);
+                    return;
+                }
+                using var copia = new MemoryStream(Encoding.UTF8.GetBytes(json));
+                await LoadFromStreamAsync(path, copia, new EasyFileSerializer());
+                return;
+            }
             using var stream = File.OpenRead(path);
             await LoadFromStreamAsync(path, stream);
         }
@@ -420,7 +431,9 @@ public partial class MainViewModel : ObservableObject
         if (_currentFilePath is not null) SaveBreakpoints(_currentFilePath);
         SetEditorText(_factory.CodeEditor, "");
         SetEditorText(_factory.DataEditor, "");
-        Breakpoints.Clear();
+        _caricamentoBreakpoint = true;
+        try { Breakpoints.Clear(); }
+        finally { _caricamentoBreakpoint = false; }
         _currentFilePath = null;
         _currentFile = null;
         _isLegacyFile = false;
@@ -465,7 +478,8 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanSave))]
     private async Task Save()
     {
-        if (_currentFilePath is null || _isLegacyFile)
+        // nel browser un programma riaperto dai recenti non ha un file associato: si chiede dove salvarlo
+        if (_currentFilePath is null || _isLegacyFile || (OperatingSystem.IsBrowser() && _currentFile is null))
             await SaveToPickedPath();
         else
             await SaveToPath(_currentFilePath);
@@ -506,10 +520,8 @@ public partial class MainViewModel : ObservableObject
     {
         try
         {
-            var code = (_factory.CodeEditor?.SourceText ?? "")
-                .Replace("\r\n", "\n").Replace("\r", "\n").Split('\n');
-            var data = (_factory.DataEditor?.SourceText ?? "")
-                .Replace("\r\n", "\n").Replace("\r", "\n").Split('\n');
+            var code = Righe(_factory.CodeEditor?.SourceText);
+            var data = Righe(_factory.DataEditor?.SourceText);
 
             await using (var stream = _currentFile is not null
                 ? await _currentFile.OpenWriteAsync()
@@ -520,7 +532,7 @@ public partial class MainViewModel : ObservableObject
             }
 
             SaveBreakpoints(path);
-            AddToRecentFiles(path);
+            await AddToRecentFilesAsync(path);
             IsDirty = false;
             StatusMessage = $"Salvato: {Path.GetFileName(path)}";
         }
@@ -543,10 +555,50 @@ public partial class MainViewModel : ObservableObject
 
     public ObservableCollection<RecentFileItem> RecentFileItems { get; } = new();
 
-    private void AddToRecentFiles(string path)
+    public bool HasRecentFiles => RecentFileItems.Count > 0;
+
+    private static string[] Righe(string? testo) =>
+        (testo ?? "").Replace("\r\n", "\n").Replace("\r", "\n").Split('\n');
+
+    private async Task AddToRecentFilesAsync(string path)
     {
+        var precedenti = Ambiente.FileRecenti.ToList();
         Ambiente.AggiungiRecenti(path);
+        if (OperatingSystem.IsBrowser())
+            await ConservaProgrammaAsync(path, precedenti);
+        SalvaRecenti();
         RefreshRecentFileItems();
+    }
+
+    // Nel browser conserva una copia del programma per poterlo riaprire dai recenti,
+    // ed elimina le copie dei programmi usciti dall'elenco.
+    private async Task ConservaProgrammaAsync(string path, List<string> precedenti)
+    {
+        try
+        {
+            using var copia = new MemoryStream();
+            await new EasyFileSerializer().SaveAsync(copia, Righe(_factory.CodeEditor?.SourceText),
+                Righe(_factory.DataEditor?.SourceText));
+            Storage.Archivio.Scrivi(ArchivioFile.PrefissoProgramma + path, Encoding.UTF8.GetString(copia.ToArray()));
+            foreach (var uscito in precedenti.Except(Ambiente.FileRecenti))
+                Storage.Archivio.Elimina(ArchivioFile.PrefissoProgramma + uscito);
+        }
+        catch { }
+    }
+
+    private void RimuoviRecente(string path)
+    {
+        Ambiente.FileRecenti.Remove(path);
+        if (OperatingSystem.IsBrowser())
+            Storage.Archivio.Elimina(ArchivioFile.PrefissoProgramma + path);
+        SalvaRecenti();
+        RefreshRecentFileItems();
+    }
+
+    private static void SalvaRecenti()
+    {
+        try { Storage.SalvaFileRecenti(); }
+        catch { }
     }
 
     public void RefreshRecentFileItems()
@@ -554,6 +606,7 @@ public partial class MainViewModel : ObservableObject
         RecentFileItems.Clear();
         foreach (var path in Ambiente.FileRecenti)
             RecentFileItems.Add(new RecentFileItem(path, OpenFileFromPath));
+        OnPropertyChanged(nameof(HasRecentFiles));
     }
 
     [RelayCommand]
@@ -562,8 +615,7 @@ public partial class MainViewModel : ObservableObject
         if (!File.Exists(path))
         {
             StatusMessage = $"File non trovato: {Path.GetFileName(path)}";
-            Ambiente.FileRecenti.Remove(path);
-            RefreshRecentFileItems();
+            RimuoviRecente(path);
             return;
         }
         OpenFileFromPath(path);
@@ -576,9 +628,8 @@ public partial class MainViewModel : ObservableObject
         try
         {
             if (Layout is null) return;
-            Directory.CreateDirectory(Ambiente.EasyCPUPath);
             var node = _factory.ToDockNode(Layout);
-            File.WriteAllText(LayoutFilePath, JsonSerializer.Serialize(node, LayoutJsonOpts));
+            Storage.Archivio.Scrivi("layout", JsonSerializer.Serialize(node, LayoutJsonContext.Default.DockNode));
         }
         catch { }
     }
@@ -587,8 +638,9 @@ public partial class MainViewModel : ObservableObject
     {
         try
         {
-            if (!File.Exists(LayoutFilePath)) return;
-            var node = JsonSerializer.Deserialize<DockNode>(File.ReadAllText(LayoutFilePath), LayoutJsonOpts);
+            var json = Storage.Archivio.Leggi("layout");
+            if (json is null) return;
+            var node = JsonSerializer.Deserialize(json, LayoutJsonContext.Default.DockNode);
             if (node is null) return;
 
             var all = new Dictionary<string, IDockable?>
@@ -613,34 +665,36 @@ public partial class MainViewModel : ObservableObject
 
     // ── Breakpoint persistence ────────────────────────────────────────────────
 
+    // true mentre l'elenco dei breakpoint viene svuotato o ricaricato: non va salvato
+    private bool _caricamentoBreakpoint;
+
     private void SaveBreakpoints(string filePath)
     {
         try
         {
-            var bkptFile = filePath + ".bkpt";
+            var chiave = ArchivioFile.PrefissoBreakpoint + filePath;
             if (Breakpoints.Count == 0)
-            {
-                if (File.Exists(bkptFile)) File.Delete(bkptFile);
-            }
+                Storage.Archivio.Elimina(chiave);
             else
-            {
-                File.WriteAllLines(bkptFile, Breakpoints.Select(l => l.ToString()));
-            }
+                Storage.Archivio.Scrivi(chiave, string.Join("\n", Breakpoints.Select(l => l.ToString())));
         }
         catch { }
     }
 
-    private void LoadBreakpoints(string filePath)
+    private void RicaricaBreakpoints(string filePath)
     {
+        _caricamentoBreakpoint = true;
         try
         {
-            var bkptFile = filePath + ".bkpt";
-            if (!File.Exists(bkptFile)) return;
-            foreach (var line in File.ReadAllLines(bkptFile))
+            Breakpoints.Clear();
+            var testo = Storage.Archivio.Leggi(ArchivioFile.PrefissoBreakpoint + filePath);
+            if (testo is null) return;
+            foreach (var line in testo.Split('\n'))
                 if (int.TryParse(line.Trim(), out int lineNum) && lineNum > 0)
                     Breakpoints.Add(lineNum);
         }
         catch { }
+        finally { _caricamentoBreakpoint = false; }
     }
 
     internal void SaveCurrentBreakpoints()
