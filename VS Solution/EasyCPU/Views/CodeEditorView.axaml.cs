@@ -30,6 +30,11 @@ public partial class CodeEditorView : UserControl
     {
         InitializeComponent();
         DataContextChanged += OnDataContextChanged;
+        // Cambio tema chiaro/scuro: passa alla palette di evidenziazione corrispondente
+        ActualThemeVariantChanged += (_, _) =>
+        {
+            if (_editor != null) _editor.SyntaxHighlighting = App.EasyCpuHighlighting(ActualThemeVariant);
+        };
     }
 
     private void InitializeComponent()
@@ -50,7 +55,7 @@ public partial class CodeEditorView : UserControl
         if (_editor == null) return;
         _vm = vm;
 
-        _editor.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("EasyCPU");
+        _editor.SyntaxHighlighting = App.EasyCpuHighlighting(ActualThemeVariant);
 
         // Font: applica subito e aggiorna quando l'utente cambia le opzioni
         var settings = SettingsViewModel.Instance;

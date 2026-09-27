@@ -26,6 +26,11 @@ public partial class DataEditorView : UserControl
     {
         InitializeComponent();
         DataContextChanged += OnDataContextChanged;
+        // Cambio tema chiaro/scuro: passa alla palette di evidenziazione corrispondente
+        ActualThemeVariantChanged += (_, _) =>
+        {
+            if (_editor != null) _editor.SyntaxHighlighting = App.EasyCpuHighlighting(ActualThemeVariant);
+        };
     }
 
     private void InitializeComponent()
@@ -46,7 +51,7 @@ public partial class DataEditorView : UserControl
         if (_editor == null) return;
         _vm = vm;
 
-        _editor.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("EasyCPU");
+        _editor.SyntaxHighlighting = App.EasyCpuHighlighting(ActualThemeVariant);
 
         var settings = SettingsViewModel.Instance;
         ApplyFont(_editor, settings);

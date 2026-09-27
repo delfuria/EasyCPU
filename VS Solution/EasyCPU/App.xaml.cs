@@ -1,9 +1,12 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Xml;
 using EasyCpu.Backend.Local;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media;
 using Avalonia.Styling;
 using AvaloniaEdit.Highlighting;
 using AvaloniaEdit.Highlighting.Xshd;
@@ -63,15 +66,54 @@ public class App : Application
             about.Show();
     }
 
+    // Palette per il tema scuro: stessi nomi dei <Color> di EasyCPU.xshd (che contiene quella chiara)
+    private static readonly Dictionary<string, string> ColoriTemaScuro = new()
+    {
+        ["Comment"]         = "#C5E1A5",
+        ["Register"]        = "#4EC9B0",
+        ["Indirect"]        = "#9CDCFE",
+        ["Directive"]       = "#C586C0",
+        ["Number"]          = "#B5CEA8",
+        ["CharConst"]       = "#CE9178",
+        ["Label"]           = "#DCDCAA",
+        ["OpcodeMove"]      = "#64B5F6",   // blu chiaro
+        ["OpcodeArith"]     = "#FFB74D",   // arancio
+        ["OpcodeLogic"]     = "#4DD0E1",   // ciano
+        ["OpcodeCmp"]       = "#F48FB1",   // rosa
+        ["OpcodeStack"]     = "#B39DDB",   // lavanda
+        ["OpcodeJump"]      = "#FF6E6E",   // rosso chiaro
+        ["OpcodeMisc"]      = "#B0BEC5",   // grigio-blu chiaro
+        ["OpcodeInterrupt"] = "#C5E1A5",   // verde chiaro
+    };
+
     private static void RegisterEasyCpuHighlighting()
+    {
+        var chiaro = CaricaXshd();
+        var scuro = CaricaXshd();
+        if (chiaro is null || scuro is null) return;
+
+        scuro.Name = "EasyCPU-Dark";
+        foreach (var colore in scuro.Elements.OfType<XshdColor>())
+            if (colore.Name is not null && ColoriTemaScuro.TryGetValue(colore.Name, out var hex))
+                colore.Foreground = new SimpleHighlightingBrush(Color.Parse(hex));
+
+        var manager = HighlightingManager.Instance;
+        manager.RegisterHighlighting("EasyCPU", [".as", ".asj"], HighlightingLoader.Load(chiaro, manager));
+        manager.RegisterHighlighting("EasyCPU-Dark", [], HighlightingLoader.Load(scuro, manager));
+    }
+
+    private static XshdSyntaxDefinition? CaricaXshd()
     {
         using var stream = typeof(App).Assembly
             .GetManifestResourceStream("EasyCPU.Resources.EasyCPU.xshd");
-        if (stream is null) return;
+        if (stream is null) return null;
         using var reader = new XmlTextReader(stream);
-        var def = HighlightingLoader.Load(reader, HighlightingManager.Instance);
-        HighlightingManager.Instance.RegisterHighlighting("EasyCPU", [".as", ".asj"], def);
+        return HighlightingLoader.LoadXshd(reader);
     }
+
+    // Definizione di evidenziazione adatta al tema effettivo del controllo
+    public static IHighlightingDefinition? EasyCpuHighlighting(ThemeVariant tema) =>
+        HighlightingManager.Instance.GetDefinition(tema == ThemeVariant.Dark ? "EasyCPU-Dark" : "EasyCPU");
 
     public static void ApplyTheme(AppTheme theme)
     {
