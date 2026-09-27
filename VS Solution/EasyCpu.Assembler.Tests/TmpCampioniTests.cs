@@ -20,9 +20,9 @@ public class TmpCampioniTests
         {
             Ambiente.Inizializza();
             using var fs = File.OpenRead(f);
-            var (c0, d0) = await ISourceSerializer.ForPath(f).LoadAsync(fs);
+            var (c0, d0, m0) = await ISourceSerializer.ForPath(f).LoadAsync(fs);
             var codice = c0.ToList(); var dati = d0.ToList();
-            var compiler = new Compiler();
+            var compiler = new Compiler { Modello = EasyCpu.Assembler.Memoria.ModelloMemoria.DaNomeFile(m0) };
             List<CompilerError>? errori = null;
             var memoria = compiler.CompilaDati(dati, ref errori, codice);
             var istr = compiler.CompilaCodice(codice, ref errori);
@@ -30,7 +30,7 @@ public class TmpCampioniTests
             if (errori == null)
             {
                 var cpu = new Cpu();
-                cpu.Init(istr, memoria, true, 1000);
+                cpu.Init(istr, memoria, true, 1000, compiler.Modello);
                 string console = "";
                 cpu.ScriviSuConsole += ch => console += ch;
                 foreach (char k in "1x\r") cpu.InviaCarattereTastiera((short)k);
@@ -38,7 +38,7 @@ public class TmpCampioniTests
                 catch (CpuException e) { stato += " RUNERR " + e.err; }
                 catch (Exception e) { stato += " EXC " + e.GetType().Name; }
                 stato += $" AX={cpu.AX} BX={cpu.BX} CX={cpu.CX} DX={cpu.DX} SI={cpu.SI} DI={cpu.DI} SP={cpu.SP} IP={cpu.IP}";
-                stato += " MEM=" + string.Join(",", cpu.DumpMemoria(0, 256, 16) ?? []);
+                stato += " MEM=" + string.Join(",", cpu.DumpMemoria(0, cpu.Modello.Dimensione == 256 ? 256 : 512, 16) ?? []);
                 stato += " SIM=" + string.Join(";", cpu.DumpSimboli(compiler.Simboli));
                 stato += " CON=" + console.Replace("\n", "\\n");
             }

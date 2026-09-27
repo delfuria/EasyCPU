@@ -584,7 +584,11 @@ namespace EasyCpu.Assembler.Parsing
 			_inDati = true;
 			string primo = TestToken();
 			if (primo != null && Char.IsDigit(primo[0]))
+			{
+				if (Modello == ModelloMemoria.Byte)     // senza tipo: nella memoria a byte servono DB o DW
+					throw new CodiceException(CodiceErrore.IndirizzoValoriInModalitaByte);
 				return CompilaDatiIndirizzo(out indirizzo);
+			}
 
 			string nome = null;
 			string grafia = null;
@@ -810,6 +814,14 @@ namespace EasyCpu.Assembler.Parsing
 		}
 
 		public Instruction Compila(string s, out string etichetta)
+		{
+			Instruction istr = CompilaIstruzione(s, out etichetta);
+			if (istr != null && Modello == ModelloMemoria.Byte)
+				istr.VerificaMemoriaAByte();
+			return istr;
+		}
+
+		Instruction CompilaIstruzione(string s, out string etichetta)
 		{
 			int numOp = -1;
 			TipoOp tipo;

@@ -16,6 +16,7 @@ namespace EasyCpu.Assembler.Memoria
         // dati iniziali prodotti dalla compilazione, un valore per unità di memoria
         public abstract void Imposta(IReadOnlyList<int> contenuto);
 
-        public static MemoriaCpu Crea(ModelloMemoria modello) => new MemoriaAParole();
+        public static MemoriaCpu Crea(ModelloMemoria modello) =>
+            modello == ModelloMemoria.Byte ? new MemoriaAByte() : new MemoriaAParole();
     }
 }

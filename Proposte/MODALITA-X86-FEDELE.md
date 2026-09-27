@@ -1,6 +1,6 @@
 # Fase 5 – Modalità «x86 fedele»: memoria a byte (P1, opzione B)
 
-Stato: **in corso**. Decisioni prese il 27 settembre 2026 (sezione 10). Fatti i passi 1–2 della sezione 7 (refactoring a comportamento invariato): `ModelloMemoria`, classe astratta `MemoriaCpu` (non `Memoria`, per non coincidere con il namespace `EasyCpu.Assembler.Memoria`) e `MemoriaAParole` al posto di `Ram`; allocazione di DB/DW per unità di memoria. `Simbolo.Celle` resta il numero di elementi. Fatto il passo 3: `byte ptr`/`word ptr` in entrambe le modalità (esempio `01-trasferimento-memoria/byte-ptr-word-ptr.asj`). È la proposta C (fase 5) di `PROPOSTE-X86.md`: la più invasiva, da affrontare solo dopo le altre. Il documento descrive il modello, le scelte, l'impatto sul codice e le operazioni da eseguire.
+Stato: **in corso**. Decisioni prese il 27 settembre 2026 (sezione 10). Fatti i passi 1–2 della sezione 7 (refactoring a comportamento invariato): `ModelloMemoria`, classe astratta `MemoriaCpu` (non `Memoria`, per non coincidere con il namespace `EasyCpu.Assembler.Memoria`) e `MemoriaAParole` al posto di `Ram`; allocazione di DB/DW per unità di memoria. `Simbolo.Celle` resta il numero di elementi. Fatto il passo 3: `byte ptr`/`word ptr` in entrambe le modalità (esempio `01-trasferimento-memoria/byte-ptr-word-ptr.asj`). Fatto il passo 4: `ModelloMemoria.Byte` e `MemoriaAByte` (512 byte), campo `memoria` del file `.asj`, `Compiler.Modello` e `Cpu.Init(..., modello)`, errori `DimensioneNonSpecificata`, `OperandiMemoriaMemoria`, `IndirizzoValoriInModalitaByte`. L'IDE non usa ancora il campo (passo 6). È la proposta C (fase 5) di `PROPOSTE-X86.md`: la più invasiva, da affrontare solo dopo le altre. Il documento descrive il modello, le scelte, l'impatto sul codice e le operazioni da eseguire.
 
 ---
 
@@ -34,11 +34,11 @@ La memoria del codice resta separata: IP è il numero d'ordine dell'istruzione, 
 | Aspetto | Modalità a parole (attuale) | Modalità x86 fedele |
 |---|---|---|
 | Unità di indirizzamento | cella da 16 bit | byte |
-| Dimensione della memoria | 256 celle | **1024 byte** (proposta, vedi *Decisioni aperte*) |
+| Dimensione della memoria | 256 celle | **512 byte** |
 | Parola all'indirizzo *a* | cella *a* | byte *a* (basso) e *a*+1 (alto), little-endian |
 | Accesso a 8 bit | byte basso della cella | il byte all'indirizzo |
-| Area dello stack | celle 240..255 (16 parole) | byte 896..1023 (**128 byte = 64 parole**, proposta) |
-| SP iniziale | 256 | 1024 |
+| Area dello stack | celle 240..255 (16 parole) | byte 448..511 (**64 byte = 32 parole**) |
+| SP iniziale | 256 | 512 |
 | `push`/`pop`, `call`/`ret` | SP ∓ 1 | SP ∓ 2 |
 | `ret n` | SP + n | SP + n (n in byte, come su x86: `ret 4` rimuove due parole) |
 | Istruzioni stringa | SI/DI ± 1 | ±1 per le forme B, ±2 per le forme W |
@@ -47,7 +47,7 @@ La memoria del codice resta separata: IP è il numero d'ordine dell'istruzione, 
 | Stringa `'Ciao'` in DB | 4 celle | 4 byte |
 | Dimensione di un operando in memoria senza registro né variabile (`inc [si]`) | 16 bit | **errore**: serve `byte ptr` o `word ptr` |
 
-Un accesso a parola che esce dalla memoria (per esempio all'indirizzo 1023) produce l'errore «Violazione dei limiti della memoria», come oggi.
+Un accesso a parola che esce dalla memoria (per esempio all'indirizzo 511) produce l'errore «Violazione dei limiti della memoria», come oggi.
 
 ---
 
@@ -120,8 +120,8 @@ Si introduce un'astrazione con due implementazioni:
 ```csharp
 public abstract class Memoria
 {
-    public abstract int Dimensione { get; }         // 256 celle oppure 1024 byte
-    public abstract int InizioStack { get; }        // 240 oppure 896
+    public abstract int Dimensione { get; }         // 256 celle oppure 512 byte
+    public abstract int InizioStack { get; }        // 240 oppure 448
     public abstract int PassoParola { get; }        // 1 oppure 2: stack, istruzioni stringa W
 
     public abstract short LeggiParola(int indirizzo);
@@ -183,8 +183,8 @@ I flag, i registri e le istruzioni aritmetiche e logiche non cambiano: dipendono
 
 ### 5.5 Pannelli Memoria e Stack
 
-- **Memoria, modalità a byte**: 16 byte per riga, indirizzi a 3 cifre esadecimali (000–3FF); in Hex ogni byte con 2 cifre, in Dec da 0 a 255, in Car il carattere. 1024 byte sono 64 righe, meno di quelle attuali: il pannello resta leggibile.
-- **Stack, modalità a byte**: una **parola** per riga (lo stack lavora a parole), con l'indirizzo del byte basso: `03FE: 0005`. La colonna evidenzia la cima (SP).
+- **Memoria, modalità a byte**: 16 byte per riga, indirizzi a 3 cifre esadecimali (000–1FF); in Hex ogni byte con 2 cifre, in Dec da 0 a 255, in Car il carattere. 512 byte sono 32 righe, meno di quelle attuali: il pannello resta leggibile.
+- **Stack, modalità a byte**: una **parola** per riga (lo stack lavora a parole), con l'indirizzo del byte basso: `01FE: 0005`. La colonna evidenzia la cima (SP).
 - **Simboli**: dimensione in byte e valore letto con il tipo della variabile (`vet [0010] DW x5 = 0003`, dove `x5` indica 5 parole cioè 10 byte).
 - La modalità a parole mantiene i pannelli attuali.
 
@@ -281,7 +281,7 @@ Ogni passo lascia il progetto compilabile e i test verdi. I passi 1–2 sono ref
 **Modalità a byte:**
 - `mov [10], 1234h` → byte 10 = 34h, byte 11 = 12h; `mov ax, [10]` → 1234h; `mov al, [11]` → 12h.
 - Allocazione: `a DB 1, 2` + `b DW 3` → `b` all'indirizzo 2, occupa i byte 2 e 3; stringhe e `DUP`; `ORG`; dati nell'area dello stack → errore.
-- Stack: `push`/`pop` con SP da 1024 a 1022; `call`/`ret`; `ret 4`; overflow dopo 64 parole; underflow.
+- Stack: `push`/`pop` con SP da 512 a 510; `call`/`ret`; `ret 4`; overflow dopo 32 parole; underflow.
 - Istruzioni stringa: `movsb` avanza di 1, `movsw` di 2, anche con DF = 1 e REP.
 - `int 21h` 09h su una stringa DB; 0Ah con il buffer a byte.
 - `byte ptr`/`word ptr`; `inc [si]` → `DimensioneNonSpecificata`; `inc conta` ammesso.
@@ -307,7 +307,7 @@ Ogni passo lascia il progetto compilabile e i test verdi. I passi 1–2 sono ref
 Prese il 27 settembre 2026:
 
 1. **Scelta della modalità**: campo `memoria` nel file `.asj`, impostato dalla voce «Memoria a byte (x86)» del menu Esegui (sezione 3); nessuna direttiva nel sorgente.
-2. **Dimensioni**: memoria di 1024 byte, stack di 128 byte (byte 896..1023, 64 parole), SP iniziale 1024.
+2. **Dimensioni**: memoria di 512 byte, stack di 64 byte (byte 448..511, 32 parole), SP iniziale 512. Rivista durante il passo 4 (prima: 1024 byte con 128 byte di stack).
 3. **Forma `indirizzo: valori`**: vietata nella modalità a byte.
 4. **Divieto delle operazioni memoria-memoria**: attivo automaticamente nella modalità a byte (4.4).
 5. **Ordine rispetto ai salti indiretti**: i salti indiretti sono stati implementati prima.

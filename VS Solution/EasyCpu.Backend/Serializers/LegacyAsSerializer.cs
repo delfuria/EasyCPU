@@ -10,12 +10,13 @@ public class LegacyAsSerializer : ISourceSerializer
 {
     public bool CanWrite => false;
 
-    public Task<(string[] code, string[] data)> LoadAsync(Stream stream)
+    // il formato storico non ha il modello di memoria: sempre modalità a parole
+    public Task<(string[] code, string[] data, string? memoria)> LoadAsync(Stream stream)
     {
         Storage.Apri(stream, out var code, out var data);
-        return Task.FromResult((code.ToArray(), data.ToArray()));
+        return Task.FromResult<(string[], string[], string?)>((code.ToArray(), data.ToArray(), null));
     }
 
-    public Task SaveAsync(Stream stream, string[] code, string[] data)
+    public Task SaveAsync(Stream stream, string[] code, string[] data, string? memoria = null)
         => throw new InvalidOperationException("Il formato legacy (.as) è di sola lettura.");
 }

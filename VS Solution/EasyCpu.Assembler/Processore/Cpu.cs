@@ -74,6 +74,7 @@ namespace EasyCpu.Assembler.Processore
         public short BP => bp;
 
         public short LeggiMemoria(int indirizzo) => memoria.LeggiParola(indirizzo);
+        public short LeggiByte(int indirizzo) => memoria.LeggiByte(indirizzo);
 
         public ModelloMemoria Modello => memoria.Modello;
 
@@ -217,8 +218,11 @@ namespace EasyCpu.Assembler.Processore
             }
         }
 
-        public void Init(List<Instruction> codice, List<int> memoriaDati, bool initRegs, int AloopInfinito)
+        // modello: memoria del programma (Compiler.Modello); se omesso, modalità a parole
+        public void Init(List<Instruction> codice, List<int> memoriaDati, bool initRegs, int AloopInfinito,
+            ModelloMemoria modello = null)
         {
+            memoria = MemoriaCpu.Crea(modello ?? ModelloMemoria.Parole);
             stop = false;
             ultimoCR = false;
             ripetizioneInCorso = false;

@@ -189,6 +189,6 @@ Raccolte dai documenti di progetto; la scelta consigliata è indicata tra parent
 
 **Modalità x86 fedele (C, B)**
 8. ~~Scelta della modalità~~ — **deciso**: campo `memoria` nel file `.asj`, con una voce a spunta nel menu Esegui.
-9. ~~Dimensioni~~ — **deciso**: 1 KB di memoria, 128 byte di stack.
+9. ~~Dimensioni~~ — **deciso**: 512 byte di memoria, 64 byte di stack (32 parole).
 10. ~~Forma `indirizzo: valori` nella memoria a byte~~ — **deciso**: vietata.
 11. ~~Divieto memoria-memoria nella modalità fedele~~ — **deciso**: attivo automaticamente.

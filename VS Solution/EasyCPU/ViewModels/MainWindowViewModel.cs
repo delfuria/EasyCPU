@@ -317,7 +317,7 @@ public partial class MainViewModel : ObservableObject
     private async Task LoadFromStreamAsync(string path, Stream stream, ISourceSerializer? ser = null)
     {
         ser ??= ISourceSerializer.ForPath(path);
-        var (code, data) = await ser.LoadAsync(stream);
+        var (code, data, _) = await ser.LoadAsync(stream);
         if (_currentFilePath is not null) SaveBreakpoints(_currentFilePath);
         SetEditorText(_factory.CodeEditor, string.Join("\n", code));
         SetEditorText(_factory.DataEditor, string.Join("\n", data));

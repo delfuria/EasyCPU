@@ -74,6 +74,21 @@ namespace EasyCpu.Assembler.Parsing
 
         static bool InMemoria(Operando op) => op.Tipo is TipoOperando.Memoria or TipoOperando.Indiretto;
 
+        // Modalità x86 fedele: niente operazioni memoria-memoria (le istruzioni stringa non hanno
+        // operandi) e la dimensione di un operando in memoria dev'essere determinata da un registro,
+        // dal tipo della variabile o da byte ptr / word ptr. Stack e salti indiretti lavorano a parole.
+        public void VerificaMemoriaAByte()
+        {
+            if (InMemoria(Op1) && InMemoria(Op2))
+                throw new CodiceException(CodiceErrore.OperandiMemoriaMemoria);
+            if (Code is "push" or "pop" or "jmp" or "call" or "lea")
+                return;
+            bool shift = Code is "shl" or "shr" or "sar" or "rol" or "ror" or "rcl" or "rcr";
+            int larg2 = shift ? 0 : Op2.Larghezza;
+            if ((InMemoria(Op1) || InMemoria(Op2)) && Op1.Larghezza == 0 && larg2 == 0)
+                throw new CodiceException(CodiceErrore.DimensioneNonSpecificata);
+        }
+
         void VerificaIstruzione()
         {
             if (Op1.Tipo == TipoOperando.Costante && Op2.Tipo != TipoOperando.Nessuno)   // destinazione costante
