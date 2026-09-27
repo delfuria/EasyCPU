@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Guida contestuale con F1",
+    "//",
+    "// Cosa illustra:",
+    "//   F1 apre l'Assembly Reference nel browser. Con il cursore su un'istruzione",
+    "//   dell'editor Codice la guida si apre sulla sua descrizione; i sinonimi",
+    "//   (JZ, LOOPNZ...) portano all'istruzione principale (JE, LOOPNE...).",
+    "//   Dall'editor Dati si apre la sezione «La sezione dati»; altrove l'inizio.",
+    "//   Sul desktop la guida funziona anche senza connessione.",
+    "//",
+    "// Utilizzo:",
+    "//   Mettere il cursore su loop, jz o stop e premere F1 (anche dal menu",
+    "//   Guida). Provare poi F1 nell'editor Dati e su un nome come ciclo.",
+    "//",
+    "// Risultato atteso:",
+    "//   Guida aperta su LOOP, JE (sinonimo JZ), STOP; dati: «La sezione dati»;",
+    "//   ciclo: inizio della guida. Il programma termina con AX = 55, totale = 55",
+    "// ======================================================================",
+    "",
+    "        mov cx, conta",
+    "        mov ax, 0",
+    "ciclo:  add ax, cx",
+    "        loop ciclo          // AX = 10+9+...+1 = 55",
+    "        mov totale, ax",
+    "        cmp ax, 55",
+    "        jz  fine            // JZ è sinonimo di JE",
+    "        mov ax, 0",
+    "fine:   stop"
+  ],
+  "data": [
+    "conta   DW 10           // indirizzo 0",
+    "totale  DW ?            // indirizzo 1"
+  ]
+}

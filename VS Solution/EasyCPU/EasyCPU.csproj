@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Resources\EasyCPU.xshd" />
+    <EmbeddedResource Include="..\..\Docs\html\reference.html" LogicalName="reference.html" />
   </ItemGroup>
 
   <ItemGroup>

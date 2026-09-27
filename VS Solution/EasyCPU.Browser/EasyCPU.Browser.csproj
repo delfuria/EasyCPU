@@ -17,6 +17,11 @@
     </ItemGroup>
 
     <ItemGroup>
+        <!-- Guida (F1): pubblicata accanto all'app, aperta in una nuova scheda -->
+        <Content Include="..\..\Docs\html\reference.html" Link="wwwroot\help\reference.html" />
+    </ItemGroup>
+
+    <ItemGroup>
         <!-- ViewLocator resolves views via reflection: keep the app assembly untrimmed -->
         <TrimmerRootAssembly Include="EasyCPU" />
     </ItemGroup>

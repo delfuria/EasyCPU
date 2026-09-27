@@ -21,6 +21,7 @@ public partial class CodeEditorViewModel : Document
     internal Action? PasteAction;
     internal Action? SelectAllAction;
     internal Action? FindAction;
+    internal Func<string>? WordAtCaretFunc;
     internal Action<string>? SetSourceTextAction;
     internal Action<int>? NavigateToLineAction;
     // Riga richiesta mentre la view non era nell'albero visivo: al cambio di tab Dock

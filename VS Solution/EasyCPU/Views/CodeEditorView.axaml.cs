@@ -110,6 +110,7 @@ public partial class CodeEditorView : UserControl
         vm.SelectAllAction = () => _editor.TextArea.Selection =
             Selection.Create(_editor.TextArea, 0, _editor.Document.TextLength);
         vm.FindAction      = () => SearchPanel.Install(_editor).Open();
+        vm.WordAtCaretFunc = WordAtCaret;
         vm.SetSourceTextAction = text =>
         {
             _suppressDirty = true;
@@ -123,6 +124,16 @@ public partial class CodeEditorView : UserControl
         vm.NavigateToLineAction = lineNumber => NavigateToLineWhenReady(lineNumber);
         if (vm.PendingNavigateLine > 0)
             NavigateToLineWhenReady(vm.PendingNavigateLine);
+    }
+
+    // Parola (solo lettere) che contiene il caret o lo tocca: per F1 contestuale.
+    private string WordAtCaret()
+    {
+        var doc = _editor!.Document;
+        int inizio = _editor.CaretOffset, fine = inizio;
+        while (inizio > 0 && char.IsLetter(doc.GetCharAt(inizio - 1))) inizio--;
+        while (fine < doc.TextLength && char.IsLetter(doc.GetCharAt(fine))) fine++;
+        return doc.GetText(inizio, fine - inizio);
     }
 
     // Su Android/iOS il cambio di tab del docking (SetActiveDockable) può completare

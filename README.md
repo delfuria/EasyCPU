@@ -45,6 +45,7 @@ EasyCPU is an educational tool designed to make learning assembly language and C
 - **Run-to-Instruction** – Execute all instructions up to a selected line for faster iteration
 - **Execution State Indicators** – Visual feedback on whether program is running, paused, or stopped
 - **Error Highlighting** – Clicking compilation errors jumps directly to problematic code
+- **Contextual Help (F1)** – Opens the Assembly Reference in the browser at the instruction under the cursor (offline on desktop, online on iOS/Android)
 
 ---
 
@@ -168,7 +169,7 @@ Complete documentation is available in the `Docs/` folder:
 - **[EasyCPU IDE Tutorial](./Docs/EasyCPU%20%20IDE%20Tutorial.md)** – Step-by-step guide to using the IDE, debugging, and managing programs
 - **[Toolbar Icons Reference](./ICONE-TOOLBAR.md)** – Visual guide to IDE toolbar buttons
 
-Ready-to-run example programs (`.asj`) are available in [`Docs/samples/`](./Docs/samples), organized by topic (data transfer, arithmetic and flags, logic and shifts, stack and subroutines, data section, `int 21h` console, complete programs, jumps and loops, string instructions, errors, indirect jumps, byte memory, step-by-step debugging); each one starts with a comment describing what it shows and the expected result. The original examples in the legacy `.as` format are in `Docs/Subroutines/`.
+Ready-to-run example programs (`.asj`) are available in [`Docs/samples/`](./Docs/samples), organized by topic (data transfer, arithmetic and flags, logic and shifts, stack and subroutines, data section, `int 21h` console, complete programs, jumps and loops, string instructions, errors, indirect jumps, byte memory, step-by-step debugging, F1 help); each one starts with a comment describing what it shows and the expected result. The original examples in the legacy `.as` format are in `Docs/Subroutines/`.
 
 Design documents for the x86 extensions (roadmap, open proposals and their designs) are in [`Proposte/`](./Proposte).
 
@@ -190,9 +191,11 @@ EasyCPU/
 ├── EasyCPU.iOS/                # iOS platform
 ├── EasyCPU.Android/            # Android platform
 ├── EasyCpu.Assembler.Tests/    # Unit tests for assembler
+├── EasyCpu.DocGen/             # Generates Docs/html/reference.html (F1 help) from the Assembly Reference
 ├── Docs/                       # Documentation
 │   ├── Easy CPU Assembly Reference.md
 │   ├── EasyCPU IDE Tutorial.md
+│   ├── html/reference.html     # Generated F1 help page (EasyCpu.DocGen)
 │   ├── samples/                # Example programs (.asj) by topic
 │   └── Subroutines/            # Original examples (.as)
 └── Proposte/                   # x86 extension roadmap and design documents

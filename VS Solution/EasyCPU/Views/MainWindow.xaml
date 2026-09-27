@@ -10,6 +10,10 @@
         Width="1400" Height="900"
         MinWidth="800" MinHeight="600">
 
+    <Window.KeyBindings>
+        <KeyBinding Gesture="F1" Command="{Binding ShowGuidaCommand}"/>
+    </Window.KeyBindings>
+
     <NativeMenu.Menu>
         <NativeMenu>
             <NativeMenuItem Header="File">
@@ -84,6 +88,13 @@
                         <NativeMenuItemSeparator />
                         <NativeMenuItem Header="Chiaro"         Command="{Binding SetThemeLightCommand}"/>
                         <NativeMenuItem Header="Scuro"          Command="{Binding SetThemeDarkCommand}"/>
+                    </NativeMenu>
+                </NativeMenuItem.Menu>
+            </NativeMenuItem>
+            <NativeMenuItem Header="Aiuto">
+                <NativeMenuItem.Menu>
+                    <NativeMenu>
+                        <NativeMenuItem Header="Guida"          Command="{Binding ShowGuidaCommand}" Gesture="F1"/>
                     </NativeMenu>
                 </NativeMenuItem.Menu>
             </NativeMenuItem>
@@ -222,6 +233,7 @@
                     </MenuItem>
                 </MenuItem>
             </MenuItem>
+            <MenuItem Header="_Guida" Command="{Binding ShowGuidaCommand}" InputGesture="F1"/>
             <MenuItem Header="_Informazioni..." Command="{Binding ShowAboutCommand}"/>
         </Menu>
 

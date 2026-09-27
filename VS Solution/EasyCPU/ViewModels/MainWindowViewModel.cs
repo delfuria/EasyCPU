@@ -12,6 +12,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Dock.Model.Controls;
@@ -1195,6 +1196,24 @@ public partial class MainViewModel : ObservableObject
 
     [RelayCommand]
     private void CloseAbout() => IsAboutOpen = false;
+
+    // F1: guida aperta sull'istruzione sotto il caret dell'editor codice, sulla sezione
+    // dati dall'editor dati, altrimenti dall'inizio. Parole senza ancora aprono l'inizio.
+    [RelayCommand]
+    private async Task ShowGuida()
+    {
+        var top = GetTopLevel();
+        string? ancora = null;
+        if (top?.FocusManager?.GetFocusedElement() is Avalonia.Visual focus)
+        {
+            if (focus.FindAncestorOfType<CodeEditorView>(includeSelf: true) is not null)
+                ancora = _factory.CodeEditor?.WordAtCaretFunc?.Invoke().ToLowerInvariant();
+            else if (focus.FindAncestorOfType<DataEditorView>(includeSelf: true) is not null)
+                ancora = "la-sezione-dati";
+        }
+        if (!await Guida.ApriAsync(top, GetOwnerWindow() is not null, ancora))
+            StatusMessage = "Impossibile aprire la guida";
+    }
 
     [RelayCommand] private void SetThemeLight() => Settings.Theme = AppTheme.Light;
     [RelayCommand] private void SetThemeDark()  => Settings.Theme = AppTheme.Dark;

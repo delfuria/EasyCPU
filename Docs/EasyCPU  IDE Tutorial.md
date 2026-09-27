@@ -141,6 +141,12 @@ Pur essendo memorizzati nello stesso file, le sezioni «codice» e «dati» di u
 
 L’editor di codice consente inoltre di stabilire il numero di spazi da inserire automaticamente dal margine sinistro.
 
+### Guida in linea (F1)
+
+Il tasto F1, o la voce «Guida» del menu (nella versione Browser e mobile si trova nel menu laterale ☰), apre l’Assembly Reference nel browser. La guida è contestuale: con il cursore su un’istruzione dell’editor di codice si apre direttamente sulla sua descrizione, anche per i sinonimi (JZ porta a JE, LOOPNZ a LOOPNE); dall’editor dei dati si apre sulla sezione «La sezione dati»; negli altri casi, o su una parola che non è un’istruzione, si apre dall’inizio.
+
+Nella versione desktop la guida è contenuta nell’applicazione e funziona anche senza connessione a Internet; nella versione Browser si apre in una nuova scheda; su iOS e Android si apre la versione online.
+
 ### Compilazione ed esecuzione di un programma
 
 Un programma può essere eseguito in tre modi:

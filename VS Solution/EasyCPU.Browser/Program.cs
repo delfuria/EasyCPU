@@ -18,6 +18,8 @@ internal sealed partial class Program
         await JSHost.ImportAsync(ArchivioLocalStorage.Modulo, "../persistenza.js");
         Storage.Archivio = new ArchivioLocalStorage();
         ArchivioLocalStorage.RegistraSalvataggioAllUscita(() => (Application.Current as App)?.SalvaTutto());
+        Guida.IndirizzoWeb = new System.Uri(new System.Uri(
+            JSHost.GlobalThis.GetPropertyAsJSObject("document")!.GetPropertyAsString("baseURI")!), "help/reference.html");
 
         await BuildAvaloniaApp()
             .WithInterFont()

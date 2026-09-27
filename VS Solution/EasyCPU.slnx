@@ -67,4 +67,7 @@
   <Folder Name="/Backend/">
     <Project Path="EasyCpu.Backend/EasyCpu.Backend.csproj" />
   </Folder>
+  <Folder Name="/Tools/">
+    <Project Path="EasyCpu.DocGen/EasyCpu.DocGen.csproj" />
+  </Folder>
 </Solution>

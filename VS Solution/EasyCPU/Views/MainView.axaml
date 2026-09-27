@@ -27,6 +27,9 @@
       <Setter Property="Margin" Value="16,12,16,4"/>
     </Style>
   </UserControl.Styles>
+  <UserControl.KeyBindings>
+    <KeyBinding Gesture="F1" Command="{Binding ShowGuidaCommand}"/>
+  </UserControl.KeyBindings>
   <Grid>
     <SplitView IsPaneOpen="False"
                PaneClosed="OnDrawerClosed"
@@ -275,6 +278,12 @@
                     </StackPanel>
                 </RadioButton>
                 <Separator/>
+                <Button Classes="drawer-item" Command="{Binding ShowGuidaCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <TextBlock Text="?" FontWeight="Bold" Width="20" TextAlignment="Center" VerticalAlignment="Center"/>
+                        <TextBlock Text="Guida" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
                 <Button Classes="drawer-item" Command="{Binding ShowAboutCommand}">
                     <StackPanel Orientation="Horizontal" Spacing="12">
                         <Image Source="avares://EasyCPU/images/app-icon/icon.png" Width="20" Height="20"/>

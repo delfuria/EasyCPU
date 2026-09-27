@@ -1,0 +1,1479 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EasyCPU – Assembly Reference</title>
+<style>
+:root { --bg:#ffffff; --fg:#1f2328; --muted:#59636e; --bordo:#d1d9e0; --nav:#f6f8fa; --link:#0969da; --codice:#eff1f3; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg:#0d1117; --fg:#e6edf3; --muted:#9198a1; --bordo:#3d444d; --nav:#151b23; --link:#4493f8; --codice:#262c36; }
+}
+* { box-sizing: border-box; }
+html { scroll-padding-top: 16px; }
+body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.6 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+a { color:var(--link); text-decoration:none; }
+a:hover { text-decoration:underline; }
+nav { background:var(--nav); border-bottom:1px solid var(--bordo); padding:12px 16px; font-size:14px; }
+nav summary { cursor:pointer; font-weight:600; }
+nav ul { list-style:none; margin:0; padding-left:0; }
+nav ul ul { padding-left:14px; }
+nav li { margin:2px 0; }
+main { max-width:860px; padding:16px; margin:0 auto; }
+h2 { border-bottom:1px solid var(--bordo); padding-bottom:6px; margin-top:40px; }
+h3 { margin-top:32px; }
+table { border-collapse:collapse; margin:12px 0; display:block; overflow-x:auto; }
+th, td { border:1px solid var(--bordo); padding:4px 10px; text-align:left; }
+code, pre { background:var(--codice); border-radius:4px; font-family:ui-monospace, Menlo, Consolas, monospace; font-size:0.9em; }
+code { padding:1px 4px; }
+pre { padding:10px; overflow-x:auto; }
+:target { background:color-mix(in srgb, var(--link) 15%, transparent); }
+@media (min-width: 1000px) {
+  nav { position:fixed; top:0; bottom:0; left:0; width:300px; overflow-y:auto; border-bottom:none; border-right:1px solid var(--bordo); }
+  main { margin-left:300px; padding:16px 40px; }
+}
+</style>
+</head>
+<body>
+<nav><details><summary>Indice</summary>
+<ul>
+<li><a href="#premessa">Premessa</a></li>
+<li><a href="#struttura-della-cpu">Struttura della CPU</a>
+<ul>
+<li><a href="#aritmetica">Aritmetica</a></li>
+<li><a href="#memoria-dati">Memoria dati</a></li>
+<li><a href="#registri">Registri</a></li>
+<li><a href="#modelli-di-indirizzamento">Modelli di indirizzamento</a></li>
+<li><a href="#gestione-dello-stack">Gestione dello stack</a></li>
+<li><a href="#flags">Flags</a></li>
+</ul></li>
+<li><a href="#set-di-istruzioni">Set di istruzioni</a>
+<ul>
+<li><a href="#descrizione-generale-delle-istruzioni">Descrizione generale delle istruzioni</a></li>
+<li><a href="#modalita-di-descrizione-delle-istruzioni">Modalit&#224; di descrizione delle istruzioni</a></li>
+<li><a href="#adc">ADC – Addizione con riporto</a></li>
+<li><a href="#add">ADD – Addizione</a></li>
+<li><a href="#and">AND – Moltiplicazione logica</a></li>
+<li><a href="#call">CALL – Chiamata di una procedura</a></li>
+<li><a href="#cbw">CBW – Estensione del segno da byte a parola</a></li>
+<li><a href="#clc">CLC – Azzeramento del carry</a></li>
+<li><a href="#cld">CLD – Azzeramento del flag di direzione</a></li>
+<li><a href="#cmc">CMC – Inversione del carry</a></li>
+<li><a href="#cmp">CMP – Confronto</a></li>
+<li><a href="#cmpsb">CMPSB, CMPSW – Confronto di elementi di due sequenze</a></li>
+<li><a href="#cwd">CWD – Estensione del segno da parola a doppia parola</a></li>
+<li><a href="#dec">DEC – Decremento</a></li>
+<li><a href="#div">DIV – Divisione senza segno</a></li>
+<li><a href="#idiv">IDIV – Divisione con segno</a></li>
+<li><a href="#imul">IMUL – Moltiplicazione con segno</a></li>
+<li><a href="#inc">INC – Incremento</a></li>
+<li><a href="#int">INT – Chiamata di un servizio di sistema</a></li>
+<li><a href="#ja">JA – Salto se superiore (senza segno)</a></li>
+<li><a href="#jae">JAE – Salto se superiore o uguale (senza segno)</a></li>
+<li><a href="#jb">JB – Salto se inferiore (senza segno)</a></li>
+<li><a href="#jbe">JBE – Salto se inferiore o uguale (senza segno)</a></li>
+<li><a href="#jcxz">JCXZ – Salto se CX &#232; zero</a></li>
+<li><a href="#je">JE – Salto se uguale</a></li>
+<li><a href="#jg">JG – Salto se maggiore</a></li>
+<li><a href="#jge">JGE – Salto se maggiore o uguale</a></li>
+<li><a href="#jl">JL – Salto se minore</a></li>
+<li><a href="#jle">JLE – Salto se minore o uguale</a></li>
+<li><a href="#jmp">JMP – Salto incondizionato</a></li>
+<li><a href="#jne">JNE – Salto se diverso</a></li>
+<li><a href="#jno">JNO – Salto se non overflow</a></li>
+<li><a href="#jns">JNS – Salto se il flag di segno &#232; 0</a></li>
+<li><a href="#jo">JO – Salto se overflow</a></li>
+<li><a href="#js">JS – Salto se il flag di segno &#232; 1</a></li>
+<li><a href="#lea">LEA – Caricamento dell’indirizzo effettivo</a></li>
+<li><a href="#lodsb">LODSB, LODSW – Lettura di un elemento di una sequenza</a></li>
+<li><a href="#loop">LOOP, LOOPE, LOOPNE – Cicli con contatore</a></li>
+<li><a href="#mov">MOV – Trasferimento</a></li>
+<li><a href="#movs">MOVS, MOVSB, MOVSW – Copia di un elemento di una sequenza</a></li>
+<li><a href="#mul">MUL – Moltiplicazione senza segno</a></li>
+<li><a href="#neg">NEG – Negazione (formazione del complemento a 2)</a></li>
+<li><a href="#nop">NOP – Nessuna operazione</a></li>
+<li><a href="#not">NOT – Negazione logica (formazione del complemento a 1)</a></li>
+<li><a href="#or">OR – Somma logica</a></li>
+<li><a href="#pop">POP – Prelevamento dallo stack</a></li>
+<li><a href="#popf">POPF – Prelevamento del registro dei flags dallo stack</a></li>
+<li><a href="#push">PUSH – Deposito di un valore nello stack</a></li>
+<li><a href="#pushf">PUSHF – Deposito del registro dei flags nello stack</a></li>
+<li><a href="#rcl">RCL, RCR – Rotazione attraverso il carry</a></li>
+<li><a href="#rep">REP, REPE, REPNE – Prefissi di ripetizione</a></li>
+<li><a href="#ret">RET – Ritorno da una procedura</a></li>
+<li><a href="#rol">ROL, ROR – Rotazione</a></li>
+<li><a href="#sar">SAR – Shift aritmetico a destra</a></li>
+<li><a href="#scasb">SCASB, SCASW – Ricerca in una sequenza</a></li>
+<li><a href="#sbb">SBB – Sottrazione con prestito</a></li>
+<li><a href="#shl">SHL – Shift logico a sinistra</a></li>
+<li><a href="#shr">SHR – Shift logico a destra</a></li>
+<li><a href="#stc">STC – Impostazione del carry</a></li>
+<li><a href="#std">STD – Impostazione del flag di direzione</a></li>
+<li><a href="#stop">STOP – Arresta la CPU</a></li>
+<li><a href="#stosb">STOSB, STOSW – Scrittura di un elemento di una sequenza</a></li>
+<li><a href="#sub">SUB – Sottrazione</a></li>
+<li><a href="#test">TEST – Test logico</a></li>
+<li><a href="#xchg">XCHG – Scambio</a></li>
+<li><a href="#xor">XOR – Or esclusivo</a></li>
+</ul></li>
+<li><a href="#struttura-di-un-programma-assembly">Struttura di un programma assembly</a></li>
+<li><a href="#la-sezione-dati">La sezione dati</a>
+<ul>
+<li><a href="#uso-dei-nomi-nel-codice">Uso dei nomi nel codice</a></li>
+<li><a href="#esempio-hello-world">Esempio: Hello world</a></li>
+</ul></li>
+<li><a href="#modalita-x86-fedele-memoria-a-byte">Modalit&#224; x86 fedele: memoria a byte</a>
+<ul>
+<li><a href="#come-si-sceglie">Come si sceglie</a></li>
+<li><a href="#il-modello-di-memoria">Il modello di memoria</a></li>
+<li><a href="#regole-in-piu-rispetto-alla-memoria-a-parole">Regole in pi&#249; rispetto alla memoria a parole</a></li>
+<li><a href="#differenze-nei-programmi">Differenze nei programmi</a></li>
+<li><a href="#pannelli">Pannelli</a></li>
+</ul></li>
+</ul>
+</details></nav>
+<script>if (matchMedia('(min-width: 1000px)').matches) document.querySelector('nav details').open = true;</script>
+<main>
+<p>EasyCPU</p>
+<p>Assembly reference</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td><strong>Paolo Meozzi</strong>  <strong>Stefano Del Furia</strong></td>
+</tr>
+</tbody>
+</table>
+<h2 id="premessa">Premessa</h2>
+<p>EasyCPU è simulatore di un CPU che consente di scrivere programmi in linguaggio assembly e di testarne il funzionamento all’interno di una ambiente di programmazione dotato di interfaccia grafica.</p>
+<p>EasyCPU simula l’architettura dei microprocessori X86 di INTEL, anche se implementa un set di istruzioni una gestione della memoria estremamente semplificati rispetto a quelli supportati dai microprocessore reali. Per questo motivo, EasyCPU non può ritenersi un modello completo per l’apprendimento della programmazione assembly e della struttura delle CPU X86; il suo scopo è semplicemente quello di fornire uno strumento facile da apprendere e da utilizzare per l’acquisizione dei principi generali relativi alla programmazione in linguaggio assembly e al funzionamento e alla struttura di un microprocessore.</p>
+<h2 id="struttura-della-cpu">Struttura della CPU</h2>
+<h3 id="aritmetica">Aritmetica</h3>
+<p>EasyCPU supporta l’aritmetica a 16 bit e a 8 bit. Ogni valore, sia esso immediato (costante) che memorizzato in un registro o in memoria, è rappresentato mediante il tipo intero a 16 bit, con un intervallo di variazione da –32768 e + 32767.</p>
+<p>Le istruzioni che usano un registro a 8 bit (vedi «Registri») operano a 8 bit, con un intervallo di variazione da –128 a +127.</p>
+<p>Gli stessi bit possono rappresentare un numero con segno o senza segno: FFFFh vale –1 con segno e 65535 senza segno (a 8 bit, FFh vale –1 oppure 255). ADD, SUB, INC, DEC e CMP producono lo stesso risultato nei due casi; cambia l’interpretazione dei flag (OF e SF per i numeri con segno, CF per quelli senza segno) e quindi il salto condizionato da usare dopo un confronto. Per la moltiplicazione e la divisione ci sono istruzioni distinte: MUL e DIV senza segno, IMUL e IDIV con segno.</p>
+<h3 id="memoria-dati">Memoria dati</h3>
+<p>EasyCPU supporta una memoria non segmentata di 256 celle da 16 bit (memoria «a parole», la modalità predefinita). Di queste, le ultime 16 sono riservate allo «stack». Nella modalità x86 fedele la memoria è invece di 512 byte, con le parole di due byte come su x86: vedi «Modalità x86 fedele: memoria a byte».</p>
+<p>Diversamente da quanto accade in un sistema reale, nella memoria vengono memorizzati soltanto i dati. Le istruzioni sono collocate in un vettore a se stante, del quale il registro IP funge da indice. Di conseguenza l’indirizzo di un’etichetta è il numero d’ordine della sua istruzione (0, 1, 2…) e non un indirizzo di memoria in byte come su x86: è il valore che contengono le tabelle di salto usate da JMP e CALL indiretti.</p>
+<h3 id="registri">Registri</h3>
+<p>EasyCPU supporta un set di registri analogo a quello delle microprocessori X86:</p>
+<p>Registri a 8 bit</p>
+<p>Come nei microprocessori X86, i registri AX, BX, CX e DX sono divisi in due metà da 8 bit, utilizzabili come registri autonomi: AH e AL (byte alto e byte basso di AX), BH e BL, CH e CL, DH e DL. Non sono registri separati: modificare AL o AH modifica anche AX, e viceversa.</p>
+<p>mov ax, 0 // AX = 0000h</p>
+<p>mov ah, 1 // AX = 0100h</p>
+<p>mov al, 'A' // AX = 0141h</p>
+<p>In un’istruzione con due operandi, i registri devono avere la stessa dimensione: mov al, bx produce l’errore «Dimensione degli operandi non valida o non coerente». Una costante usata con un registro a 8 bit deve essere compresa tra –128 e 255 (da 0 a FFh in esadecimale).</p>
+<p>Quando un registro a 8 bit viene usato con un operando in memoria (mov al, [10], mov [si], dl), nella memoria a parole l’istruzione legge o scrive soltanto il byte basso della cella: il byte alto della cella non viene modificato. Le celle di memoria restano infatti di 16 bit, e due celle consecutive non si sovrappongono come accade nei microprocessori X86 (e nella memoria a byte, vedi «Modalità x86 fedele: memoria a byte»).</p>
+<p>Le istruzioni PUSH e POP operano soltanto a 16 bit: push al produce un errore.</p>
+<p>Il pannello Registri mostra, accanto ad AX, BX, CX e DX, il valore dei rispettivi byte alto e basso (ad esempio AX = 0141 [AH=01 AL=41]).</p>
+<h3 id="modelli-di-indirizzamento">Modelli di indirizzamento</h3>
+<p>EasyCPU supporta 6 modelli di indirizzamento: immediato, a registro, diretto, indiretto a registro, indiretto a registro con scostamento, indiretto con base e indice.</p>
+<p>Indirizzamento immediato</p>
+<p>E’ rappresentato da un valore costante, espresso in forma decimale, esadecimale o carattere. Ad esempio, nelle istruzioni:</p>
+<p>mov ax, <strong>1</strong> // memorizza 1 nel registro AX</p>
+<p>mov ax, <strong>0Ah</strong> // memorizza 10 nel registro AX</p>
+<p>mov ax, 'A' // memorizza 65 nel registro AX</p>
+<p>i valori 1, 0Ah, ’A’ rappresentano delle costanti espresse in forma decimale, esadecimale e carattere. La forma esadecimale richiede come suffisso la lettera “h”; il primo carattere dev’essere una cifra. Un valore espresso in formato decimale può variare da –32768 a +32767, mentre un valore espresso in formato esadecimale non può essere preceduto dal segno meno e può variare da 0 a FFFF (che equivale a 65535). Una costante in formato carattere è rappresentata mediante un solo carattere delimitato da apici singoli, ed equivale al corrispondente valore ASCII.</p>
+<p>Nel caso in cui un’istruzione richieda due operandi, soltanto il secondo può essere un valore immediato.</p>
+<p>Nota: diversamente dai microprocessori X86, nella memoria a parole EasyCPU accetta istruzioni con entrambi gli operandi in memoria, come mov [1], [2] o add a, b. Su un processore X86 sono errori: un dato va prima copiato in un registro, oppure si usano le istruzioni stringa (MOVSB, MOVSW). Nella memoria a byte (modalità x86 fedele) il divieto è attivo e produce l’errore «Un'istruzione non può avere due operandi in memoria: usare un registro».</p>
+<p>Indirizzamento a registro</p>
+<p>In questo tipo di indirizzamento, l’operando è rappresentato da un registro. Un registro può comparire sia come primo che come secondo operando, oppure in entrambi:</p>
+<p>mov <strong>ax</strong>, 1 // memorizza 1 nel registro AX</p>
+<p>add <strong>bx</strong>, <strong>ax</strong> // somma il contenuto di AX a BX e mette il risultato in BX</p>
+<p>Il registro IP non può apparire come operando di una istruzione.</p>
+<p>Indirizzamento diretto</p>
+<p>Nell’indirizzamento diretto l’operando è rappresentato dall’indirizzo di una locazione di memoria, che può variare da 0 a 255 (da 0 a 511 nella memoria a byte). Un riferimento a un indirizzo della memoria dati è caratterizzato dalla sintassi “[indirizzo]”. Ad esempio:</p>
+<p>mov ax, <strong>[1]</strong> // memorizza in AX il contenuto della cella di memoria 1</p>
+<p>mov bx, <strong>[0Ah]</strong> // memorizza in BX il contenuto della cella di memoria 10</p>
+<p>Come si vede, l’indirizzo di memoria può essere espresso sia in forma decimale che esadecimale.</p>
+<p>In realtà un indirizzo di memoria può essere espresso anche mediante una costante di tipo carattere, ma ciò non rappresenta di norma una buona pratica di programmazione.</p>
+<p>Indirizzamento indiretto a registro semplice</p>
+<p>Nell’indirizzamento indiretto, l’operando è ancora una volta rappresentato da una locazione della memoria, il cui indirizzo è designato dal contenuto di un registro. A questo scopo possono essere usati i registri SI, DI, BX, BP:</p>
+<p>mov ax, <strong>[si]</strong> // memorizza in AX il contenuto della cella di memoria il</p>
+<p>// cui indirizzo è memorizzato in SI</p>
+<p>mov <strong>[di]</strong>, ax // memorizza il contenuto di AX nella cella di memoria il</p>
+<p>// cui indirizzo è memorizzato in DI</p>
+<p>add cx, <strong>[bp]</strong> // somma CX al contenuto della cella di memoria il</p>
+<p>// cui indirizzo è memorizzato in BP e mette il risultato in CX</p>
+<p>Indirizzamento indiretto a registro con scostamento</p>
+<p>In questa forma d’indirizzamento, al registro usato come indice viene sommata o sottratta una costante per ottenere uno scostamento dalla cella indirizzata:</p>
+<p>mov ax, <strong>[bp+2]</strong> // memorizza in AX il contenuto della cella di memoria</p>
+<p>// che si trova all’indirizzo memorizzato in BP più 2</p>
+<p>mov <strong>[di-02h]</strong>, ax // memorizza AX nella cella di memoria che si trova</p>
+<p>// all’indirizzo memorizzato in DI meno 2</p>
+<p>La costante può essere espressa in forma decimale, esadecimale o carattere.</p>
+<p>Indirizzamento indiretto con base e indice</p>
+<p>L’indirizzo è la somma di un registro base (BX o BP), di un registro indice (SI o DI) e, facoltativamente, di uno scostamento costante. Come nei microprocessori X86 sono ammesse solo queste combinazioni; l’ordine dei termini è libero. Si usa ad esempio per le matrici: la base indica l’inizio della riga, l’indice la colonna.</p>
+<p>mov ax, <strong>[bx+si]</strong> // cella di indirizzo BX + SI</p>
+<p>mov <strong>[bp+di+2]</strong>, ax // cella di indirizzo BP + DI + 2</p>
+<p>mov dx, <strong>[mat+bx+si]</strong> // con il nome di una variabile come scostamento</p>
+<p>Combinazioni come [si+di] o [bx+bp] producono l’errore «Combinazione di registri non valida»; un registro non può essere sottratto.</p>
+<p>Dimensione dell’operando: byte ptr e word ptr</p>
+<p>La dimensione di un accesso alla memoria è determinata dal registro usato (mov al, [si] a 8 bit, mov ax, [si] a 16 bit) o dal tipo della variabile (DB o DW). Quando nessuno dei due la determina, come in inc [si] o mov [di], 5, nella memoria a parole l’accesso è a 16 bit, mentre nella memoria a byte l’istruzione produce l’errore «Dimensione dell'operando non specificata: usare byte ptr o word ptr». Scrivendo <strong>byte ptr</strong> o <strong>word ptr</strong> davanti all’operando in memoria se ne fissa la dimensione, anche in contrasto con il tipo della variabile:</p>
+<p>inc <strong>byte ptr</strong> [si] // incrementa un byte (il byte basso della cella, nella memoria a parole)</p>
+<p>mov <strong>word ptr</strong> [di], 5 // scrive una parola</p>
+<p>mov al, <strong>byte ptr</strong> conta // byte basso della variabile DW conta</p>
+<p>Nella memoria a parole byte ptr, come gli altri accessi a 8 bit, legge o scrive il byte basso della cella; nella memoria a byte accede al byte all’indirizzo indicato. Le regole di coerenza restano valide: mov al, word ptr [si] produce l’errore «Dimensione degli operandi non valida o non coerente»; byte ptr e word ptr non si possono usare con un registro o una costante.</p>
+<h3 id="gestione-dello-stack">Gestione dello stack</h3>
+<p>In EasyCPU lo stack viene gestito in modo analogo a quanto avviene nei microprocessori della serie X86, ma in forma semplificata. La parte di memoria riservata allo stack inizia a un indirizzo di base immutabile, che è 240; essa occupa esattamente 16 celle, cioè 16 parole.</p>
+<p>Nella fase di inizializzazione della CPU, il registro SP (puntatore allo stack) viene impostato al valore 256 (indirizzo massimo dello stack più 1).</p>
+<p>Nella memoria a byte lo stack occupa i byte da 448 a 511 (64 byte, cioè 32 parole), SP parte da 512 e ogni PUSH o POP lo sposta di 2, come su x86.</p>
+<p>Lo stack è una struttura dati di tipo LIFO (<em>Last In, First Out</em>: l’ultimo che entra è il primo ad uscire), che viene gestita mediante le istruzioni PUSH e POP. Mediante l’istruzione PUSH viene immesso un valore nello stack; tale operazione determina un decremento del registro SP. Mediante l’istruzione POP l’ultimo valore allocato viene estratto; essa determina un incremento del registro SP.</p>
+<p>Il tentativo di allocare un numero di valori superiore alla dimensione dello stack produce un errore di «stack overflow»; un POP a stack vuoto produce l’errore «stack underflow».</p>
+<h3 id="flags">Flags</h3>
+<p>EasyCPU supporta i flag di carry (CF), segno (SF), zero (ZF) e overflow (OF), i quali vengono prevalentemente impiegati per l’esecuzione dei salti condizionati e sono influenzati dalle operazioni aritmetico logiche (escluse DIV e IDIV).</p>
+<p>Il flag CF è settato se un’addizione produce un riporto oltre il bit più significativo, o se una sottrazione (o un confronto) richiede un prestito, cioè se il primo operando, letto come numero senza segno, è minore del secondo. Indica quindi un risultato fuori dall’intervallo dei numeri senza segno (da 0 a 65535, o da 0 a 255 a 8 bit). Negli shift e nelle rotazioni CF riceve l’ultimo bit uscito. INC e DEC non modificano CF. CF può essere impostato direttamente con STC, CLC e CMC.</p>
+<p>Il flag SF è settato se il risultato di un’operazione aritmetico-logica produce un risultato negativo, e dunque riflette il valore del bit di ordine superiore del risultato.</p>
+<p>Il flag ZF è settato se il risultato di un’operazione aritmetico-logica è zero.</p>
+<p>Il flag OF è settato se il risultato di un’operazione aritmetico-logica eccede la capacità di memorizzazione dell’operando e dunque l’intervallo di memorizzazione da –32768 a +32767.</p>
+<p>Nelle operazioni a 8 bit i flag si riferiscono al byte: SF riflette il bit 7 del risultato e OF indica un risultato fuori dall’intervallo da –128 a +127.</p>
+<p>Un test classico sui flag prevede un confronto tra due operandi tramite l’istruzione CMP, la quale sottrae il secondo operando dal primo senza però memorizzare il risultato, ma influenzando egualmente lo stato dei flag.</p>
+<p>I flag sono memorizzati nei bit di un registro a 16 bit, nelle stesse posizioni dei microprocessori X86; è il valore che PUSHF deposita nello stack e POPF preleva:</p>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Bit</th>
+<th>Valore</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CF</td>
+<td>0</td>
+<td>0001h</td>
+</tr>
+<tr>
+<td>ZF</td>
+<td>6</td>
+<td>0040h</td>
+</tr>
+<tr>
+<td>SF</td>
+<td>7</td>
+<td>0080h</td>
+</tr>
+<tr>
+<td>DF</td>
+<td>10</td>
+<td>0400h</td>
+</tr>
+<tr>
+<td>OF</td>
+<td>11</td>
+<td>0800h</td>
+</tr>
+</tbody>
+</table>
+<p>Il flag di direzione DF non dipende dai risultati delle operazioni: si imposta con STD e si azzera con CLD, e stabilisce se le istruzioni stringa fanno avanzare (DF = 0) o arretrare (DF = 1) i registri SI e DI.</p>
+<p>Il pannello Registri mostra i flag come C, Z, S, O, D.</p>
+<h2 id="set-di-istruzioni">Set di istruzioni</h2>
+<h3 id="descrizione-generale-delle-istruzioni">Descrizione generale delle istruzioni</h3>
+<p>EasyCPU supporta istruzioni con zero, uno e due operandi; ogni istruzione ha un numero di operandi predefinito (fa eccezione RET, che ammette la forma RET n). Le istruzioni rispecchiano la seguente sintassi:</p>
+<p>&lt;<em>codice mnemonico</em>&gt; &lt;<em>operando1</em>&gt;opz, &lt;<em>operando2</em>&gt;opz</p>
+<p>In relazione all’operazione svolta da un’istruzione, l’operando o gli operandi possono assumere il ruolo di «sorgente» e/o di «destinazione». Nel primo caso, l’operando partecipa all’operazione ma non viene modificato da essa. Nel secondo caso, l’operando viene modificato dall’istruzione.</p>
+<p>In alcuni casi l’operando «sorgente» o quello «destinazione» sono impliciti, cioè non compaiono nel testo dell’istruzione.</p>
+<h3 id="modalita-di-descrizione-delle-istruzioni">Modalità di descrizione delle istruzioni</h3>
+<p>Di seguito, per ogni istruzione saranno presentati:</p>
+<ul>
+<li>il codice mnemonico;</li>
+<li>la sintassi;</li>
+<li>una breve spiegazione sul suo funzionamento, seguita da uno o più esempi d’uso.</li>
+<li>i flag influenzati.</li>
+</ul>
+<p>Nota sui flag definiti dalle istruzioni</p>
+<p>Nei microprocessori X86, alcune istruzioni pur non settando direttamente i flag li lasciano in uno stato indefinito. In relazione a un determinato flag, ogni istruzione può dunque produrre tre situazioni:</p>
+<ul>
+<li>il flag viene lasciato inalterato;</li>
+<li>in flag viene settato o resettato</li>
+<li>il flag resta in uno stato indefinito (può assumere casualmente 0 o 1);</li>
+</ul>
+<p>EasyCPU si comporta in modo diverso. Un flag può essere impostato oppure lasciato inalterato; in sostanza non esiste lo stato indefinito.</p>
+<h3 id="adc">ADC – Addizione con riporto</h3>
+<p>Sintassi:</p>
+<p><strong>ADC <em>destinazione</em>, <em>sorgente</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>destinazione = destinazione + sorgente + CF</strong></p>
+<p>Flag definiti:</p>
+<p><strong>SF, ZF, OF, CF</strong></p>
+<p>Descrizione:</p>
+<p>ADC somma all’operando destinazione l’operando sorgente e il valore del flag CF (0 o 1). Si usa per sommare numeri più grandi di un registro: si sommano prima le parti basse con ADD, poi le parti alte con ADC, che aggiunge il riporto della prima somma.</p>
+<p>Esempi:</p>
+<p>add ax, bx // parti basse</p>
+<p>adc dx, cx // parti alte più il riporto: DX:AX = DX:AX + CX:BX</p>
+<h3 id="add">ADD – Addizione</h3>
+<p>Sintassi:</p>
+<p><strong>ADD <em>destinazione</em>, <em>sorgente</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>destinazione = destinazione + sorgente</strong></p>
+<p>Flag definiti:</p>
+<p><strong>SF, ZF, OF, CF</strong></p>
+<p>Descrizione:</p>
+<p>L’operando destinazione viene sommato all’operando sorgente; il risultato viene memorizzato nell’operando destinazione.</p>
+<p>Esempi:</p>
+<p>add ax, bx // equivale a: ax = ax + bx</p>
+<p>add [10], 2 // equivale a: [10] = [10] + 2</p>
+<h3 id="and">AND – Moltiplicazione logica</h3>
+<p>Sintassi:</p>
+<p><strong>AND <em>destinazione</em>, <em>sorgente</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>destinazione = destinazione &amp; sorgente</strong></p>
+<p>Flag definiti:</p>
+<p><strong>SF, ZF; OF = 0, CF = 0</strong></p>
+<p>Descrizione:</p>
+<p>AND imposta a 1 i bit del risultato se entrambi i bit corrispondenti dei due operandi sono 1; altrimenti li imposta a 0. Il risultato è memorizzato nell’operando destinazione.</p>
+<p>Esempio:</p>
+<p>mov ax, 2</p>
+<p>and ax, 4 // produce come risultato: 0</p>
+<h3 id="call">CALL – Chiamata di una procedura</h3>
+<p>Sintassi:</p>
+<p><strong>CALL <em>etichetta</em></strong></p>
+<p><strong>CALL <em>sorgente</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>SP = SP – 1 (SP – 2 nella memoria a byte)</strong></p>
+<p><strong>MEMORIA[SP] = IP</strong></p>
+<p><strong>IP = indirizzo designato dall’etichetta, oppure valore di sorgente</strong></p>
+<p>Flag definiti:</p>
+<p><strong>Nessuno</strong></p>
+<p>Descrizione:</p>
+<p>CALL modifica il flusso di esecuzione delle istruzioni, assegnando al registro IP un nuovo indirizzo nella memoria delle istruzioni, dopo averlo precedentemente salvato sullo stack. Mediante l’istruzione RET è possibile recuperare il valore di IP per riprendere l’esecuzione dell’istruzione successiva a CALL.</p>
+<p>Esempio:</p>
+<p>call ciclo // IP viene punta alla istruzione designata da &quot;ciclo&quot;</p>
+<p>...</p>
+<p>ciclo: <em><inizio della procedura></em></p>
+<p>Nella forma indiretta l’indirizzo della procedura viene letto durante l’esecuzione da un registro a 16 bit o da una cella di memoria (vedi JMP). Una tabella di procedure consente di scegliere la procedura da chiamare in base a un indice:</p>
+<p>proc DW somma, prodotto // sezione dati: indirizzi di due procedure</p>
+<p>call [proc+si] // chiama la procedura il cui indirizzo è nella cella proc + SI</p>
+<p>Nella memoria a byte ogni indirizzo della tabella occupa due byte: l’indice va moltiplicato per 2 (vedi JMP).</p>
+<h3 id="cbw">CBW – Estensione del segno da byte a parola</h3>
+<p>Sintassi:</p>
+<p><strong>CBW</strong></p>
+<p>Operazione svolta:</p>
+<p><strong>AX = AL esteso con segno</strong></p>
+<p>Flag definiti:</p>
+<p><strong>Nessuno</strong></p>
+<p>Descrizione:</p>
+<p>CBW copia in tutti i bit di AH il bit di segno di AL, così che AX contenga lo stesso numero con segno di AL. Si usa prima di IDIV con operando a 8 bit, che divide AX.</p>
+<p>Esempi:</p>
+<p>mov al, -5 // AL = FBh</p>
+<p>cbw // AX = FFFBh = -5</p>
+<h3 id="clc">CLC – Azzeramento del carry</h3>
+<p>Sintassi:</p>
+<p><strong>CLC</strong></p>
+<p>Operazione svolta:</p>
+<p><strong>CF = 0</strong></p>
+<p>Flag definiti:</p>
+<p><strong>CF</strong></p>
+<p>Descrizione:</p>
+<p>CLC imposta a 0 il flag CF.</p>
+<p>Esempi:</p>
+<p>clc</p>
+<h3 id="cld">CLD – Azzeramento del flag di direzione</h3>
+<p>Sintassi:</p>
+<p><strong>CLD</strong></p>
+<p>Operazione svolta:</p>
+<p><strong>DF = 0</strong></p>
+<p>Flag definiti:</p>
+<p><strong>DF</strong></p>
+<p>Descrizione:</p>
+<p>CLD azzera il flag DF: le istruzioni stringa faranno avanzare SI e DI.</p>
+<p>Esempi:</p>
+<p>cld</p>
+<h3 id="cmc">CMC – Inversione del carry</h3>
+<p>Sintassi:</p>
+<p><strong>CMC</strong></p>
+<p>Operazione svolta:</p>
+<p><strong>CF = not CF</strong></p>
+<p>Flag definiti:</p>
+<p><strong>CF</strong></p>
+<p>Descrizione:</p>
+<p>CMC inverte il valore del flag CF.</p>
+<p>Esempi:</p>
+<p>cmc</p>
+<h3 id="cmp">CMP – Confronto</h3>
+<p>Sintassi:</p>
+<p><strong>CMP <em>sorgente1, sorgente2</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>sorgente1 – sorgente2</strong></p>
+<p>Flag definiti:</p>
+<p><strong>ZF, SF, OF, CF</strong></p>
+<p>Descrizione:</p>
+<p>CMP sottrae il secondo operando al primo senza però memorizzare il risultato. L’effetto è quello di aggiornare i valori dei flags che potranno poi essere testati mediante un’istruzione di salto condizionato.</p>
+<p>Esempio:</p>
+<p>cmp ax, bx // confronta ax con bx</p>
+<p>je salto // salta se ax è uguale a bx (e dunque il flag zero è 1)</p>
+<div id="cmpsw"></div>
+<h3 id="cmpsb">CMPSB, CMPSW – Confronto di elementi di due sequenze</h3>
+<p>Sintassi:</p>
+<p><strong>CMPSB</strong></p>
+<p><strong>CMPSW</strong></p>
+<p>Operazione svolta:</p>
+<p><strong>[SI] - [DI], senza memorizzare il risultato</strong></p>
+<p><strong>SI = SI ± passo, DI = DI ± passo</strong></p>
+<p>Flag definiti:</p>
+<p><strong>SF, ZF, OF, CF</strong></p>
+<p>Descrizione:</p>
+<p>CMPSB e CMPSW confrontano l’elemento puntato da SI con quello puntato da DI come farebbe CMP, poi aggiornano SI e DI. Con REPE confrontano due sequenze finché gli elementi sono uguali.</p>
+<p>SI e DI avanzano se DF = 0 (dopo CLD) o arretrano se DF = 1 (dopo STD) di un elemento: è il «passo» indicato nell’operazione svolta. Nella memoria a parole l’elemento è sempre una cella: la forma con suffisso B usa il byte basso delle celle e il registro AL, la forma con suffisso W la cella intera e il registro AX. Nella memoria a byte, come su x86, la forma B avanza di 1 byte e la forma W di 2. Con il prefisso REP l’istruzione viene ripetuta (vedi «REP, REPE, REPNE»).</p>
+<p>Esempi:</p>
+<p>mov si, offset a</p>
+<p>mov di, offset b</p>
+<p>mov cx, 4</p>
+<p>repe cmpsb // si ferma al primo carattere diverso</p>
+<p>jne diverse</p>
+<h3 id="cwd">CWD – Estensione del segno da parola a doppia parola</h3>
+<p>Sintassi:</p>
+<p><strong>CWD</strong></p>
+<p>Operazione svolta:</p>
+<p><strong>DX:AX = AX esteso con segno</strong></p>
+<p>Flag definiti:</p>
+<p><strong>Nessuno</strong></p>
+<p>Descrizione:</p>
+<p>CWD copia in tutti i bit di DX il bit di segno di AX: DX diventa FFFFh se AX è negativo, 0 altrimenti. Si usa prima di IDIV con operando a 16 bit, che divide DX:AX.</p>
+<p>Esempi:</p>
+<p>mov ax, -7</p>
+<p>cwd // DX = FFFFh: DX:AX = -7</p>
+<p>mov bx, 2</p>
+<p>idiv bx // AX = -3, DX = -1</p>
+<h3 id="dec">DEC – Decremento</h3>
+<p>Sintassi:</p>
+<p><strong>DEC <em>destinazione</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>destinazione = destinazione – 1</strong></p>
+<p>Flag definiti:</p>
+<p><strong>ZF, SF, OF (CF non cambia)</strong></p>
+<p>Descrizione:</p>
+<p>DEC decrementa di uno l’operando</p>
+<p>Esempi:</p>
+<p>dec ax // decrementa di 1 ax</p>
+<p>dec [20] // decrementa di 1 il contenuto della locazione [20]</p>
+<p>dec [si] // decrementa di 1 il contenuto della locazione puntata da si</p>
+<h3 id="div">DIV – Divisione senza segno</h3>
+<p>Sintassi:</p>
+<p><strong>DIV <em>sorgente</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>AX = DX:AX / sorgente</strong></p>
+<p><strong>DX = DX:AX % sorgente</strong></p>
+<p><strong>Se sorgente è a 8 bit: AL = AX / sorgente, AH = AX % sorgente</strong></p>
+<p>Flag definiti:</p>
+<p><strong>Nessuno</strong></p>
+<p>Descrizione:</p>
+<p>DIV divide il numero a 32 bit memorizzato nella coppia di registri DX:AX (DX contiene la parte alta) per l’operando, considerando entrambi numeri senza segno; memorizza in AX il quoziente intero e in DX il resto. Prima di dividere un numero contenuto soltanto in AX occorre quindi azzerare DX.</p>
+<p>Se l’operando è a 8 bit, DIV divide AX per l’operando, memorizzando in AL il quoziente e in AH il resto.</p>
+<p>Se l’operando vale zero, l’esecuzione si interrompe con l’errore «Divisione per zero». Se il quoziente non sta nel registro destinazione (da 0 a 65535 in AX, da 0 a 255 in AL), l’esecuzione si interrompe con l’errore «Il quoziente della divisione non sta nel registro destinazione».</p>
+<p>Per dividere numeri con segno si usa IDIV.</p>
+<p>Esempi:</p>
+<p>mov dx, 0</p>
+<p>div 2 // divide dx:ax per 2</p>
+<p>div [20] // divide dx:ax per il contenuto della locazione [20]</p>
+<p>div [si] // divide dx:ax per il contenuto della locazione puntata da si</p>
+<p>div bl // divide ax per bl: quoziente in al, resto in ah</p>
+<h3 id="idiv">IDIV – Divisione con segno</h3>
+<p>Sintassi:</p>
+<p><strong>IDIV <em>sorgente</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>AX = DX:AX / sorgente</strong></p>
+<p><strong>DX = DX:AX % sorgente</strong></p>
+<p><strong>Se sorgente è a 8 bit: AL = AX / sorgente, AH = AX % sorgente</strong></p>
+<p>Flag definiti:</p>
+<p><strong>Nessuno</strong></p>
+<p>Descrizione:</p>
+<p>IDIV esegue la divisione come DIV, ma considera il dividendo e l’operando come numeri con segno. Il quoziente è arrotondato verso zero e il resto ha il segno del dividendo.</p>
+<p>Il dividendo deve essere esteso con segno: con operando a 16 bit si usa CWD per estendere AX in DX:AX, con operando a 8 bit CBW per estendere AL in AX.</p>
+<p>Gli errori sono quelli di DIV; il quoziente deve essere compreso tra –32768 e 32767 (tra –128 e 127 a 8 bit).</p>
+<p>Esempi:</p>
+<p>mov ax, -7</p>
+<p>cwd</p>
+<p>mov bx, 2</p>
+<p>idiv bx // AX = -3, DX = -1</p>
+<h3 id="imul">IMUL – Moltiplicazione con segno</h3>
+<p>Sintassi:</p>
+<p><strong>IMUL <em>sorgente</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>DX:AX = AX * sorgente</strong></p>
+<p><strong>Se sorgente è a 8 bit: AX = AL * sorgente</strong></p>
+<p>Flag definiti:</p>
+<p><strong>CF, OF</strong></p>
+<p>Descrizione:</p>
+<p>IMUL esegue la moltiplicazione come MUL, ma considera gli operandi come numeri con segno. CF e OF valgono 1 se il risultato non sta nella sola metà bassa (AX, o AL a 8 bit).</p>
+<p>Esempi:</p>
+<p>mov al, -3</p>
+<p>mov bl, 20</p>
+<p>imul bl // AX = -60</p>
+<h3 id="inc">INC – Incremento</h3>
+<p>Sintassi:</p>
+<p><strong>INC <em>destinazione</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>destinazione = destinazione + 1</strong></p>
+<p>Flag definiti:</p>
+<p><strong>ZF, SF, OF (CF non cambia)</strong></p>
+<p>Descrizione:</p>
+<p>INC incrementa di uno l’operando</p>
+<p>Esempi:</p>
+<p>inc ax // incrementa di 1 ax</p>
+<p>inc [20] // incrementa di 1 il contenuto della locazione [20]</p>
+<p>inc [si] // incrementa di 1 il contenuto della locazione puntata da si</p>
+<h3 id="int">INT – Chiamata di un servizio di sistema</h3>
+<p>Sintassi:</p>
+<p><strong>INT 21h</strong></p>
+<p>Operazione svolta:</p>
+<p><strong>esegue il servizio di sistema selezionato dal registro AH</strong></p>
+<p>Flag definiti:</p>
+<p><strong>Nessuno</strong></p>
+<p>Descrizione:</p>
+<p>INT 21h richiama un servizio di sistema, come nel sistema operativo DOS. Il servizio viene scelto in base al valore del registro AH; gli altri registri contengono i parametri e ricevono i risultati. L’unico numero di interrupt ammesso è 21h: un numero diverso produce l’errore «Numero di interrupt non valido», mentre un valore di AH non previsto produce l’errore «Servizio int 21h non valido (valore di AH)».</p>
+<p>I caratteri letti e scritti compaiono nel pannello Console, che si apre automaticamente. Durante una lettura il programma resta in attesa finché l’utente non preme un tasto nel pannello Console.</p>
+<table>
+<thead>
+<tr>
+<th>AH</th>
+<th>Servizio</th>
+<th>Parametri e risultati</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>01h</td>
+<td>Legge un carattere con eco</td>
+<td>Il carattere letto va in AL e viene mostrato in console</td>
+</tr>
+<tr>
+<td>02h</td>
+<td>Scrive un carattere</td>
+<td>Il carattere da scrivere è in DL</td>
+</tr>
+<tr>
+<td>07h</td>
+<td>Legge un carattere senza eco</td>
+<td>Il carattere letto va in AL e non viene mostrato</td>
+</tr>
+<tr>
+<td>09h</td>
+<td>Scrive una stringa</td>
+<td>DX contiene l’indirizzo della stringa, che termina con il carattere «$»</td>
+</tr>
+<tr>
+<td>0Ah</td>
+<td>Legge una riga</td>
+<td>DX contiene l’indirizzo del buffer (vedi sotto)</td>
+</tr>
+<tr>
+<td>4Ch</td>
+<td>Termina il programma</td>
+<td>Equivale all’istruzione STOP</td>
+</tr>
+</tbody>
+</table>
+<p>Il tasto Invio corrisponde al codice 13 (CR). In scrittura, sia il codice 13 sia il codice 10 (LF) vanno a capo; la coppia 13, 10 usata nei programmi DOS produce un solo ritorno a capo.</p>
+<p>Il buffer del servizio 0Ah ha questo formato: la prima cella contiene il numero massimo di caratteri, Invio compreso; nella seconda cella il servizio scrive il numero di caratteri letti, Invio escluso; dalla terza cella in poi vengono memorizzati i caratteri letti, seguiti dal codice 13. Raggiunto il massimo, gli altri caratteri vengono ignorati fino alla pressione di Invio. Il tasto Backspace cancella l’ultimo carattere digitato.</p>
+<p>buf DB 20, ?, 20 DUP(?) // buffer per una riga di al massimo 19 caratteri</p>
+<p>Come per le variabili DB, ogni carattere occupa il byte basso di una cella di memoria (un byte, nella memoria a byte).</p>
+<p>Esempi:</p>
+<p>mov ah, 2 // servizio: scrivi carattere</p>
+<p>mov dl, 'A'</p>
+<p>int 21h // scrive A in console</p>
+<p>mov ah, 9 // servizio: scrivi stringa</p>
+<p>mov dx, offset msg</p>
+<p>int 21h // scrive la stringa msg</p>
+<p>mov ah, 4Ch</p>
+<p>int 21h // termina il programma</p>
+<div id="jnbe"></div>
+<h3 id="ja">JA – Salto se superiore (senza segno)</h3>
+<p>Sintassi:</p>
+<p><strong>JA <em>etichetta</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>se CF == 0 e ZF == 0 esegue:</strong></p>
+<p><strong>IP = indirizzo designato dall’etichetta</strong></p>
+<p>Flag definiti:</p>
+<p><strong>Nessuno</strong></p>
+<p>Descrizione:</p>
+<p>JA salta se, dopo un confronto, il primo operando è maggiore del secondo considerando i numeri senza segno.</p>
+<p>Sinonimi: JNBE.</p>
+<p>Esempi:</p>
+<p>mov ax, 0FFFFh</p>
+<p>cmp ax, 1</p>
+<p>ja salto // salta: 65535 &gt; 1 (JG non salterebbe: -1 &lt; 1)</p>
+<div id="jnb"></div>
+<div id="jnc"></div>
+<h3 id="jae">JAE – Salto se superiore o uguale (senza segno)</h3>
+<p>Sintassi:</p>
+<p><strong>JAE <em>etichetta</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>se CF == 0 esegue:</strong></p>
+<p><strong>IP = indirizzo designato dall’etichetta</strong></p>
+<p>Flag definiti:</p>
+<p><strong>Nessuno</strong></p>
+<p>Descrizione:</p>
+<p>JAE salta se, dopo un confronto, il primo operando è maggiore o uguale al secondo considerando i numeri senza segno, cioè se non c’è stato prestito.</p>
+<p>Sinonimi: JNB, JNC.</p>
+<p>Esempi:</p>
+<p>cmp ax, bx</p>
+<p>jae salto</p>
+<div id="jnae"></div>
+<div id="jc"></div>
+<h3 id="jb">JB – Salto se inferiore (senza segno)</h3>
+<p>Sintassi:</p>
+<p><strong>JB <em>etichetta</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>se CF == 1 esegue:</strong></p>
+<p><strong>IP = indirizzo designato dall’etichetta</strong></p>
+<p>Flag definiti:</p>
+<p><strong>Nessuno</strong></p>
+<p>Descrizione:</p>
+<p>JB salta se, dopo un confronto, il primo operando è minore del secondo considerando i numeri senza segno. Come JC salta se c’è stato un riporto, ad esempio dopo ADD o uno shift.</p>
+<p>Sinonimi: JNAE, JC.</p>
+<p>Esempi:</p>
+<p>cmp ax, bx</p>
+<p>jb salto</p>
+<p>shr ax, 1</p>
+<p>jc dispari // il bit uscito era 1</p>
+<div id="jna"></div>
+<h3 id="jbe">JBE – Salto se inferiore o uguale (senza segno)</h3>
+<p>Sintassi:</p>
+<p><strong>JBE <em>etichetta</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>se CF == 1 oppure ZF == 1 esegue:</strong></p>
+<p><strong>IP = indirizzo designato dall’etichetta</strong></p>
+<p>Flag definiti:</p>
+<p><strong>Nessuno</strong></p>
+<p>Descrizione:</p>
+<p>JBE salta se, dopo un confronto, il primo operando è minore o uguale al secondo considerando i numeri senza segno.</p>
+<p>Sinonimi: JNA.</p>
+<p>Esempi:</p>
+<p>cmp ax, bx</p>
+<p>jbe salto</p>
+<h3 id="jcxz">JCXZ – Salto se CX è zero</h3>
+<p>Sintassi:</p>
+<p><strong>JCXZ <em>etichetta</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>se CX == 0 esegue:</strong></p>
+<p><strong>IP = indirizzo designato dall’etichetta</strong></p>
+<p>Flag definiti:</p>
+<p><strong>Nessuno</strong></p>
+<p>Descrizione:</p>
+<p>JCXZ modifica il flusso di esecuzione delle istruzioni, assegnando al registro IP un nuovo indirizzo nella memoria delle istruzioni.</p>
+<p>Esempi:</p>
+<p>jcxz salto // se &quot;cx = 0&quot; IP punta alla istruzione designata da &quot; salto &quot;</p>
+<p>...</p>
+<p>salto: ...</p>
+<div id="jz"></div>
+<h3 id="je">JE – Salto se uguale</h3>
+<p>Sintassi:</p>
+<p><strong>JE <em>etichetta</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>se ZF == 1 esegue:</strong></p>
+<p><strong>IP = indirizzo designato dall’etichetta</strong></p>
+<p>Flag definiti:</p>
+<p><strong>Nessuno</strong></p>
+<p>Descrizione:</p>
+<p>JE assegna al registro IP un nuovo indirizzo nella memoria delle istruzioni, ma soltanto se ZF è 1. JE è di norma impiegata dopo un’istruzione CMP, che confronta due operandi alterando lo stato dei flags.</p>
+<p>Sinonimo: JZ.</p>
+<p>Esempi:</p>
+<p>cmp ax, bx</p>
+<p>je salto // se &quot;ax = bx&quot; IP punta alla istruzione designata da &quot; salto &quot;</p>
+<div id="jnle"></div>
+<h3 id="jg">JG – Salto se maggiore</h3>
+<p>Sintassi:</p>
+<p><strong>JG <em>etichetta</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>se SF == OF e ZF = 0 esegue:</strong></p>
+<p><strong>IP = indirizzo designato dall’etichetta</strong></p>
+<p>Flag definiti:</p>
+<p><strong>Nessuno</strong></p>
+<p>Descrizione:</p>
+<p>JG assegna al registro IP un nuovo indirizzo nella memoria delle istruzioni in base al risultato dell’ultima operazione. Se impiegata dopo l’istruzione di confronto CMP, JG produce il salto se il primo operando è maggior del secondo.</p>
+<p>Sinonimo: JNLE. Confronta numeri con segno; per i numeri senza segno si usa JA.</p>
+<p>Esempi:</p>
+<p>cmp ax, bx</p>
+<p>jg salto // se &quot;ax &gt; bx&quot; IP punta alla istruzione designata da &quot; salto &quot;</p>
+<div id="jnl"></div>
+<h3 id="jge">JGE – Salto se maggiore o uguale</h3>
+<p>Sintassi:</p>
+<p><strong>JGE <em>etichetta</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>se SF == OF esegue:</strong></p>
+<p><strong>IP = indirizzo designato dall’etichetta</strong></p>
+<p>Flag definiti:</p>
+<p><strong>Nessuno</strong></p>
+<p>Descrizione:</p>
+<p>JGE assegna al registro IP un nuovo indirizzo nella memoria delle istruzioni in base al risultato dell’ultima operazione. Se impiegata dopo l’istruzione di confronto CMP, JGE produce il salto se il primo operando è maggiore o uguale al secondo.</p>
+<p>Sinonimo: JNL. Confronta numeri con segno; per i numeri senza segno si usa JAE.</p>
+<p>Esempi:</p>
+<p>cmp ax, bx</p>
+<p>jge salto // se &quot;ax &gt;= bx&quot; IP punta alla istruzione designata da &quot; salto &quot;</p>
+<div id="jnge"></div>
+<h3 id="jl">JL – Salto se minore</h3>
+<p>Sintassi:</p>
+<p><strong>JL <em>etichetta</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>se SF != OF esegue:</strong></p>
+<p><strong>IP = indirizzo designato dall’etichetta</strong></p>
+<p>Flag definiti:</p>
+<p><strong>Nessuno</strong></p>
+<p>Descrizione:</p>
+<p>JL assegna al registro IP un nuovo indirizzo nella memoria delle istruzioni in base al risultato dell’ultima operazione. Se impiegata dopo l’istruzione di confronto CMP, JL produce il salto se il primo operando è minore del secondo.</p>
+<p>Sinonimo: JNGE. Confronta numeri con segno; per i numeri senza segno si usa JB.</p>
+<p>Esempi:</p>
+<p>cmp ax, bx</p>
+<p>jl salto // se &quot;ax &lt; bx&quot; IP punta alla istruzione designata da &quot; salto &quot;</p>
+<div id="jng"></div>
+<h3 id="jle">JLE – Salto se minore o uguale</h3>
+<p>Sintassi:</p>
+<p><strong>JLE <em>etichetta</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>se SF != OF o ZF == 1 esegue:</strong></p>
+<p><strong>IP = indirizzo designato dall’etichetta</strong></p>
+<p>Flag definiti:</p>
+<p><strong>Nessuno</strong></p>
+<p>Descrizione:</p>
+<p>JLE assegna al registro IP un nuovo indirizzo nella memoria delle istruzioni in base al risultato dell’ultima operazione. Se impiegata dopo l’istruzione di confronto CMP, JLE produce il salto se il primo operando è minore o uguale al secondo.</p>
+<p>Sinonimo: JNG. Confronta numeri con segno; per i numeri senza segno si usa JBE.</p>
+<p>Esempi:</p>
+<p>cmp ax, bx</p>
+<p>jle salto // se &quot;ax &lt;= bx&quot; IP punta alla istruzione designata da &quot; salto &quot;</p>
+<h3 id="jmp">JMP – Salto incondizionato</h3>
+<p>Sintassi:</p>
+<p><strong>JMP <em>etichetta</em></strong></p>
+<p><strong>JMP <em>sorgente</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>IP = indirizzo designato dall’etichetta, oppure valore di sorgente</strong></p>
+<p>Flag definiti:</p>
+<p><strong>Nessuno</strong></p>
+<p>Descrizione:</p>
+<p>JMP modifica il flusso di esecuzione delle istruzioni, assegnando al registro IP un nuovo indirizzo nella memoria delle istruzioni.</p>
+<p>Esempio:</p>
+<p>jmp salto // IP punta alla istruzione designata da &quot; salto &quot;</p>
+<p>salto: ...</p>
+<p>Nella forma indiretta la destinazione viene letta durante l’esecuzione: <em>sorgente</em> può essere un registro a 16 bit o una cella di memoria, con qualsiasi modo di indirizzamento. Il valore è il numero dell’istruzione di destinazione, ottenuto con offset <em>etichetta</em> nel codice o con il nome dell’etichetta nella sezione dati:</p>
+<p>mov bx, offset fine</p>
+<p>jmp bx // salta a &quot;fine&quot;</p>
+<p>jmp [tab+bx] // salta all’indirizzo contenuto nella cella tab + BX</p>
+<p>jmp dest // dest variabile DW: come jmp [dest]</p>
+<p>Una tabella di salto (tab DW caso0, caso1, caso2) realizza una scelta multipla con un solo salto, al posto di una catena di CMP e JE. Solo JMP e CALL hanno la forma indiretta: i salti condizionati, LOOP e JCXZ accettano soltanto un’etichetta. Non sono ammessi una costante (per un salto diretto si scrive l’etichetta), un registro a 8 bit o una variabile DB. Una destinazione che non corrisponde a un’istruzione del programma produce l’errore di esecuzione «Registro IP non indirizza un'istruzione».</p>
+<p>Nella memoria a byte ogni elemento di una tabella DW occupa due byte: l’indice va moltiplicato per 2 prima del salto (shl bx, 1 seguito da jmp [tab+bx]).</p>
+<div id="jnz"></div>
+<h3 id="jne">JNE – Salto se diverso</h3>
+<p>Sintassi:</p>
+<p><strong>JNE <em>etichetta</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>se ZF == 0 esegue:</strong></p>
+<p><strong>IP = indirizzo designato dall’etichetta</strong></p>
+<p>Flag definiti:</p>
+<p><strong>Nessuno</strong></p>
+<p>Descrizione:</p>
+<p>JNE assegna al registro IP un nuovo indirizzo nella memoria delle istruzioni, ma soltanto se ZF è 0. Essa viene di norma impiegata dopo un’istruzione CMP, che confronta due operandi alterando lo stato dei flags.</p>
+<p>Sinonimo: JNZ.</p>
+<p>Esempi:</p>
+<p>cmp ax, bx</p>
+<p>jne salto // se &quot;ax != bx&quot; IP punta alla istruzione designata da &quot; salto &quot;</p>
+<h3 id="jno">JNO – Salto se non overflow</h3>
+<p>Sintassi:</p>
+<p><strong>JNO <em>etichetta</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>se OF == 0 esegue:</strong></p>
+<p><strong>IP = indirizzo designato dall’etichetta</strong></p>
+<p>Flag definiti:</p>
+<p><strong>Nessuno</strong></p>
+<p>Descrizione:</p>
+<p>JNO assegna al registro IP un nuovo indirizzo nella memoria delle istruzioni, ma soltanto se l’ultima operazione non ha prodotto un overflow.</p>
+<p>Esempi:</p>
+<p>add ax, bx</p>
+<p>jno salto // se &quot;non overflow &quot; IP punta alla istruzione designata da &quot;salto&quot;</p>
+<h3 id="jns">JNS – Salto se il flag di segno è 0</h3>
+<p>Sintassi:</p>
+<p><strong>JNS <em>etichetta</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>se SF == 0 esegue:</strong></p>
+<p><strong>IP = indirizzo designato dall’etichetta</strong></p>
+<p>Flag definiti:</p>
+<p><strong>Nessuno</strong></p>
+<p>Descrizione:</p>
+<p>JNS assegna al registro IP un nuovo indirizzo nella memoria delle istruzioni, ma soltanto se l’ultima operazione ha dato un risultato non negativo.</p>
+<p>Esempi:</p>
+<p>sub ax, bx</p>
+<p>jns salto // se &quot;ax &gt;= 0&quot; IP punta alla istruzione designata da &quot;salto&quot;</p>
+<h3 id="jo">JO – Salto se overflow</h3>
+<p>Sintassi:</p>
+<p><strong>JO <em>etichetta</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>se OF == 1 esegue:</strong></p>
+<p><strong>IP = indirizzo designato dall’etichetta</strong></p>
+<p>Flag definiti:</p>
+<p><strong>Nessuno</strong></p>
+<p>Descrizione:</p>
+<p>JO assegna al registro IP un nuovo indirizzo nella memoria delle istruzioni, ma soltanto se l’ultima operazione ha prodotto un overflow.</p>
+<p>Esempi:</p>
+<p>add ax, bx</p>
+<p>jo salto // se &quot;overflow &quot; IP punta alla istruzione designata da &quot;salto&quot;</p>
+<h3 id="js">JS – Salto se il flag di segno è 1</h3>
+<p>Sintassi:</p>
+<p><strong>JS <em>etichetta</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>se SF == 1 esegue:</strong></p>
+<p><strong>IP = indirizzo designato dall’etichetta</strong></p>
+<p>Flag definiti:</p>
+<p><strong>Nessuno</strong></p>
+<p>Descrizione:</p>
+<p>JS assegna al registro IP un nuovo indirizzo nella memoria delle istruzioni, ma soltanto se l’ultima operazione ha dato un risultato negativo.</p>
+<p>Esempi:</p>
+<p>sub ax, bx</p>
+<p>js salto // se &quot;ax &lt; 0&quot; IP punta alla istruzione designata da &quot;salto&quot;</p>
+<h3 id="lea">LEA – Caricamento dell’indirizzo effettivo</h3>
+<p>Sintassi:</p>
+<p><strong>LEA <em>registro</em>, <em>memoria</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>registro = indirizzo dell’operando in memoria</strong></p>
+<p>Flag definiti:</p>
+<p><strong>Nessuno</strong></p>
+<p>Descrizione:</p>
+<p>LEA calcola l’indirizzo dell’operando in memoria e lo memorizza nel registro, senza leggere la memoria. La destinazione deve essere un registro a 16 bit e la sorgente un operando in memoria (diretto, indiretto o una variabile): lea si, vet equivale a mov si, offset vet.</p>
+<p>Esempi:</p>
+<p>lea si, vet // SI = indirizzo di vet</p>
+<p>lea di, [si+3] // DI = SI + 3</p>
+<div id="lodsw"></div>
+<h3 id="lodsb">LODSB, LODSW – Lettura di un elemento di una sequenza</h3>
+<p>Sintassi:</p>
+<p><strong>LODSB</strong></p>
+<p><strong>LODSW</strong></p>
+<p>Operazione svolta:</p>
+<p><strong>AL (o AX) = [SI]</strong></p>
+<p><strong>SI = SI ± passo</strong></p>
+<p>Flag definiti:</p>
+<p><strong>Nessuno</strong></p>
+<p>Descrizione:</p>
+<p>LODSB copia in AL il byte puntato da SI (il byte basso della cella, nella memoria a parole), LODSW copia in AX la parola; poi aggiornano SI. Insieme a STOSB e STOSW servono a scorrere una sequenza elaborandone gli elementi.</p>
+<p>SI e DI avanzano se DF = 0 (dopo CLD) o arretrano se DF = 1 (dopo STD) di un elemento: è il «passo» indicato nell’operazione svolta. Nella memoria a parole l’elemento è sempre una cella: la forma con suffisso B usa il byte basso delle celle e il registro AL, la forma con suffisso W la cella intera e il registro AX. Nella memoria a byte, come su x86, la forma B avanza di 1 byte e la forma W di 2. Con il prefisso REP l’istruzione viene ripetuta (vedi «REP, REPE, REPNE»).</p>
+<p>Esempi:</p>
+<p>mov si, offset msg</p>
+<p>lodsb // AL = primo carattere di msg, SI avanza</p>
+<div id="loope"></div>
+<div id="loopne"></div>
+<div id="loopz"></div>
+<div id="loopnz"></div>
+<h3 id="loop">LOOP, LOOPE, LOOPNE – Cicli con contatore</h3>
+<p>Sintassi:</p>
+<p><strong>LOOP <em>etichetta</em></strong></p>
+<p><strong>LOOPE <em>etichetta</em></strong></p>
+<p><strong>LOOPNE <em>etichetta</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>CX = CX - 1</strong></p>
+<p><strong>LOOP: se CX != 0 esegue IP = indirizzo designato dall’etichetta</strong></p>
+<p><strong>LOOPE: se CX != 0 e ZF == 1 salta</strong></p>
+<p><strong>LOOPNE: se CX != 0 e ZF == 0 salta</strong></p>
+<p>Flag definiti:</p>
+<p><strong>Nessuno</strong></p>
+<p>Descrizione:</p>
+<p>LOOP decrementa CX e salta all’etichetta se CX non è diventato zero: ripete quindi un ciclo tante volte quanto il valore iniziale di CX. Il decremento non modifica i flag. Se CX vale 0 prima del LOOP, il decremento lo porta a 65535 e il ciclo viene ripetuto 65536 volte.</p>
+<p>LOOPE (sinonimo LOOPZ) salta solo se, oltre a CX diverso da zero, ZF vale 1; LOOPNE (sinonimo LOOPNZ) solo se ZF vale 0. Servono ad esempio per cercare un valore in un vettore, uscendo dal ciclo quando il confronto ha successo.</p>
+<p>Esempi:</p>
+<p>mov cx, 5</p>
+<p>ciclo: add ax, cx</p>
+<p>loop ciclo // ripete 5 volte</p>
+<p>cerca: inc si</p>
+<p>cmp [vet+si], 7</p>
+<p>loopne cerca // continua finché diverso da 7</p>
+<h3 id="mov">MOV – Trasferimento</h3>
+<p>Sintassi:</p>
+<p><strong>MOV <em>destinazione</em>, <em>sorgente</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>destinazione = sorgente</strong></p>
+<p>Flag definiti:</p>
+<p><strong>Nessuno</strong></p>
+<p>Descrizione:</p>
+<p>MOV copia il contenuto dell’operando sorgente nell’operando destinazione.</p>
+<p>Esempi:</p>
+<p>mov ax, bx // copia in ax il contenuto di bx</p>
+<p>mov [10], 2 // copia nella locazione 10 il valore 2</p>
+<div id="movsb"></div>
+<div id="movsw"></div>
+<h3 id="movs">MOVS, MOVSB, MOVSW – Copia di un elemento di una sequenza</h3>
+<p>Sintassi:</p>
+<p><strong>MOVSB</strong></p>
+<p><strong>MOVSW</strong></p>
+<p><strong>MOVS</strong></p>
+<p>Operazione svolta:</p>
+<p><strong>[DI] = [SI]</strong></p>
+<p><strong>SI = SI ± passo, DI = DI ± passo</strong></p>
+<p>Flag definiti:</p>
+<p><strong>Nessuno</strong></p>
+<p>Descrizione:</p>
+<p>MOVSB e MOVSW copiano l’elemento puntato da SI nella cella puntata da DI, poi aggiornano SI e DI. MOVS equivale a MOVSW. Come su x86 è l’istruzione per copiare da memoria a memoria (nella memoria a byte è l’unica ammessa, vedi la nota in «Modelli di indirizzamento»); con REP copia un intero vettore.</p>
+<p>SI e DI avanzano se DF = 0 (dopo CLD) o arretrano se DF = 1 (dopo STD) di un elemento: è il «passo» indicato nell’operazione svolta. Nella memoria a parole l’elemento è sempre una cella: la forma con suffisso B usa il byte basso delle celle e il registro AL, la forma con suffisso W la cella intera e il registro AX. Nella memoria a byte, come su x86, la forma B avanza di 1 byte e la forma W di 2. Con il prefisso REP l’istruzione viene ripetuta (vedi «REP, REPE, REPNE»).</p>
+<p>Esempi:</p>
+<p>mov si, 10</p>
+<p>mov di, 0</p>
+<p>movsw // memoria a parole: memoria[0] = memoria[10]; SI = 11, DI = 1</p>
+<p>mov cx, 5</p>
+<p>rep movsw // copia 5 parole</p>
+<h3 id="mul">MUL – Moltiplicazione senza segno</h3>
+<p>Sintassi:</p>
+<p><strong>MUL <em>sorgente</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>DX:AX = AX * sorgente</strong></p>
+<p><strong>Se sorgente è a 8 bit: AX = AL * sorgente</strong></p>
+<p>Flag definiti:</p>
+<p><strong>CF, OF</strong></p>
+<p>Descrizione:</p>
+<p>MUL moltiplica il registro AX per l’operando, considerando entrambi numeri senza segno (da 0 a 65535), e memorizza il risultato a 32 bit nella coppia di registri DX:AX. CF e OF valgono 1 se DX contiene cifre significative, cioè se il risultato non sta in AX.</p>
+<p>Se l’operando è a 8 bit (un registro a 8 bit, una variabile DB o un operando byte ptr), MUL moltiplica AL per l’operando (da 0 a 255) e memorizza il risultato in AX; CF e OF valgono 1 se il risultato non sta in AL.</p>
+<p>Per moltiplicare numeri con segno si usa IMUL.</p>
+<p>Esempi:</p>
+<p>mul 2 // moltiplica ax per 2</p>
+<p>mul [20] // moltiplica ax per il contenuto della locazione [20]</p>
+<p>mul [si] // moltiplica ax per il contenuto della locazione puntata da si</p>
+<p>mul bl // moltiplica al per bl, risultato in ax</p>
+<p>mov al, 0FFh</p>
+<p>mov bl, 2</p>
+<p>mul bl // AX = 255 * 2 = 510 (con IMUL: -1 * 2 = -2)</p>
+<h3 id="neg">NEG – Negazione (formazione del complemento a 2)</h3>
+<p>Sintassi:</p>
+<p><strong>NEG <em>destinazione</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>destinazione = 0 - destinazione</strong></p>
+<p>Flag definiti:</p>
+<p><strong>SF, ZF, OF, CF</strong></p>
+<p>Descrizione:</p>
+<p>NEG sottrae l’operando a 0, ottenendo così il suo complemento a 2. CF vale 1, tranne quando l’operando è 0.</p>
+<p>Esempi:</p>
+<p>mov ax, 2</p>
+<p>neg ax // equivale a ax = 0 – ax, che produce: -2 (FFFE in esadecim.)</p>
+<h3 id="nop">NOP – Nessuna operazione</h3>
+<p>Sintassi:</p>
+<p><strong>NOP</strong></p>
+<p>Operazione svolta:</p>
+<p><strong>Nessuna</strong></p>
+<p>Flag definiti:</p>
+<p><strong>Nessuno</strong></p>
+<p>Descrizione:</p>
+<p>NOP non fa compiere alla CPU nessuna azione. Il suo impiego è normalmente quello di garantire la correttezza formale del programma, laddove la modalità di implementazione dell’algoritmo richiede comunque una istruzione senza che però sia necessario che la CPU compia alcuna azione.</p>
+<h3 id="not">NOT – Negazione logica (formazione del complemento a 1)</h3>
+<p>Sintassi:</p>
+<p><strong>NOT <em>destinazione</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>destinazione = complemento a 1 di destinazione</strong></p>
+<p>Flag definiti:</p>
+<p><strong>Nessuno</strong></p>
+<p>Descrizione:</p>
+<p>NOT inverte ogni bit dell’operando, producendo così il complemento a 1 dello stesso.</p>
+<p>Esempi:</p>
+<p>mov ax, 2</p>
+<p>not ax // produce: -3 (FFFD in esadecim.)</p>
+<h3 id="or">OR – Somma logica</h3>
+<p>Sintassi:</p>
+<p><strong>OR <em>destinazione</em>, <em>sorgente</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>destinazione = destinazione | sorgente</strong></p>
+<p>Flag definiti:</p>
+<p><strong>SF, ZF; OF = 0, CF = 0</strong></p>
+<p>Descrizione:</p>
+<p>OR imposta a 1 i bit del risultato se almeno uno dei bit corrispondenti dei due operandi è 1; altrimenti li imposta a 0. Il risultato è memorizzato nell’operando destinazione.</p>
+<p>Esempio:</p>
+<p>mov ax, 2</p>
+<p>or ax, 4 // produce come risultato: 6</p>
+<h3 id="pop">POP – Prelevamento dallo stack</h3>
+<p>Sintassi:</p>
+<p><strong>POP <em>destinazione</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>destinazione = valore che si trova in testa allo stack</strong></p>
+<p><strong>SP = SP + 1 (SP + 2 nella memoria a byte)</strong></p>
+<p>Flag definiti:</p>
+<p><strong>Nessuno</strong></p>
+<p>Descrizione:</p>
+<p>POP copia in destinazione il contenuto della zona di memoria puntata da SP (testa dello stack). Dopodiché incrementa SP, in modo che punti al nuovo valore in testa allo stack.</p>
+<p>Esempi:</p>
+<p>pop ax // copia in ax il valore memorizzato in testa allo stack</p>
+<p>pop [10] // copia nella locazione [10] il valore situato in testa allo stack</p>
+<h3 id="popf">POPF – Prelevamento del registro dei flags dallo stack</h3>
+<p>Sintassi:</p>
+<p><strong>POPF</strong></p>
+<p>Operazione svolta:</p>
+<p><strong>flags = valore che si trova in testa allo stack</strong></p>
+<p><strong>SP = SP + 1 (SP + 2 nella memoria a byte)</strong></p>
+<p>Flag definiti:</p>
+<p><strong>CF, SF, ZF, OF</strong></p>
+<p>Descrizione:</p>
+<p>POPF copia nel registro dei flags il contenuto della zona di memoria puntata da SP (testa dello stack). Dopodiché incrementa SP, in modo che punti al nuovo valore in testa allo stack. Si presuppone che in precedenza il registro dei flags fosse stato copiato nello stack mediante l’istruzione PUSHF.</p>
+<p>Esempi:</p>
+<p>popf // copia nel registro dei flags il valore memorizzato in testa allo stack</p>
+<h3 id="push">PUSH – Deposito di un valore nello stack</h3>
+<p>Sintassi:</p>
+<p><strong>PUSH <em>sorgente</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>SP = SP - 1 (SP - 2 nella memoria a byte)</strong></p>
+<p><strong>sorgente viene memorizzato in testa allo stack</strong></p>
+<p>Flag definiti:</p>
+<p><strong>Nessuno</strong></p>
+<p>Descrizione:</p>
+<p>PUSH, prima decrementa SP quindi copia l’operando nella zona di memoria puntata da SP (testa dello stack).</p>
+<p>Esempi:</p>
+<p>push ax // copia ax in testa allo stack</p>
+<p>push [10] // copia il contenuto della locazione [10] in testa allo stack</p>
+<h3 id="pushf">PUSHF – Deposito del registro dei flags nello stack</h3>
+<p>Sintassi:</p>
+<p><strong>PUSHF</strong></p>
+<p>Operazione svolta:</p>
+<p><strong>SP = SP - 1 (SP - 2 nella memoria a byte)</strong></p>
+<p><strong>il registro dei flags viene memorizzato in testa allo stack</strong></p>
+<p>Flag definiti:</p>
+<p><strong>Nessuno</strong></p>
+<p>Descrizione:</p>
+<p>PUSHF, prima decrementa SP quindi copia il registro dei flags nella zona di memoria puntata da SP (testa dello stack). Si presuppone che il registro venga successivamente ripristinato mediante l’istruzione POPF.</p>
+<p>Esempi:</p>
+<p>pushf // copia il registro dei flags in testa allo stack</p>
+<div id="rcr"></div>
+<h3 id="rcl">RCL, RCR – Rotazione attraverso il carry</h3>
+<p>Sintassi:</p>
+<p><strong>RCL <em>destinazione</em>, <em>contatore</em></strong></p>
+<p><strong>RCR <em>destinazione</em>, <em>contatore</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>ruota i bit dell’operando insieme a CF, a sinistra (RCL) o a destra (RCR)</strong></p>
+<p>Flag definiti:</p>
+<p><strong>CF; OF se contatore = 1</strong></p>
+<p>Descrizione:</p>
+<p>RCL e RCR ruotano i bit dell’operando considerando CF come un bit in più: il bit che esce va in CF e il vecchio valore di CF entra dall’altra parte. Servono a spostare bit tra registri, ad esempio negli shift di numeri a 32 bit. Per il contatore valgono le regole di SHL.</p>
+<p>Esempi:</p>
+<p>clc</p>
+<p>mov al, 80h</p>
+<p>rcl al, 1 // AL = 00h, CF = 1</p>
+<p>rcl al, 1 // AL = 01h, CF = 0</p>
+<div id="repe"></div>
+<div id="repne"></div>
+<div id="repz"></div>
+<div id="repnz"></div>
+<h3 id="rep">REP, REPE, REPNE – Prefissi di ripetizione</h3>
+<p>Sintassi:</p>
+<p><strong>REP <em>istruzione stringa</em></strong></p>
+<p><strong>REPE <em>CMPSB, CMPSW, SCASB, SCASW</em></strong></p>
+<p><strong>REPNE <em>CMPSB, CMPSW, SCASB, SCASW</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>se CX == 0 l’istruzione non viene eseguita</strong></p>
+<p><strong>altrimenti: esegue l’istruzione, CX = CX - 1</strong></p>
+<p><strong>e la ripete finché CX != 0 (REPE: e ZF == 1; REPNE: e ZF == 0)</strong></p>
+<p>Flag definiti:</p>
+<p><strong>quelli dell’istruzione ripetuta</strong></p>
+<p>Descrizione:</p>
+<p>Un prefisso si scrive sulla stessa riga dell’istruzione stringa e la fa ripetere al massimo CX volte. REP si usa con tutte le istruzioni stringa; con CMPS e SCAS equivale a REPE. REPE (sinonimo REPZ) continua finché il confronto dà «uguale», REPNE (sinonimo REPNZ) finché dà «diverso». Alla fine CX contiene il numero di ripetizioni non eseguite.</p>
+<p>Durante l’esecuzione passo passo, ogni Step esegue una sola ripetizione e IP resta sulla riga del prefisso finché la ripetizione non termina: si possono così osservare SI, DI e CX cambiare. Un breakpoint sulla riga ferma l’esecuzione soltanto all’arrivo, non a ogni ripetizione.</p>
+<p>Usare REPE o REPNE con istruzioni diverse da CMPS e SCAS, o REP con un’istruzione non stringa, produce l’errore «Prefisso non valido».</p>
+<p>Esempi:</p>
+<p>mov cx, 10</p>
+<p>rep stosw // scrive AX in 10 parole</p>
+<p>mov cx, 100</p>
+<p>repne scasb // cerca AL nella stringa puntata da DI</p>
+<h3 id="ret">RET – Ritorno da una procedura</h3>
+<p>Sintassi:</p>
+<p><strong>RET</strong></p>
+<p><strong>RET <em>n</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>IP viene prelevato dallo stack</strong></p>
+<p><strong>SP = SP + 1 (SP + 2 nella memoria a byte)</strong></p>
+<p><strong>con RET n: SP = SP + n</strong></p>
+<p>Flag definiti:</p>
+<p><strong>Nessuno</strong></p>
+<p>Descrizione:</p>
+<p>RET modifica il flusso di esecuzione delle istruzioni, prelevando IP dallo stack e quindi assegnandogli un nuovo indirizzo nella memoria delle istruzioni. Si presuppone che RET termini una procedura che sia stata precedentemente avviata da un’istruzione CALL.</p>
+<p>La forma RET n, dove n è una costante, dopo il ritorno somma n a SP: la procedura elimina così i parametri che il chiamante vi aveva depositato, invece di lasciarlo fare al chiamante con ADD SP, n. Nella memoria a parole n è il numero di parole da rimuovere; nella memoria a byte, come su x86, è in byte (ret 4 rimuove due parametri). Se lo stack contiene meno di n unità si produce l’errore «Stack underflow».</p>
+<p>Esempi:</p>
+<p>call ciclo // IP punta alla istruzione designata da &quot;ciclo&quot;</p>
+<p>...</p>
+<p>ciclo: <em><inizio della procedura></em></p>
+<p><em>...</em></p>
+<p>ret // ritorno all’istruzione successiva a CALL</p>
+<p>ret 2 // ritorno e rimozione di due parametri dallo stack (memoria a parole)</p>
+<div id="ror"></div>
+<h3 id="rol">ROL, ROR – Rotazione</h3>
+<p>Sintassi:</p>
+<p><strong>ROL <em>destinazione</em>, <em>contatore</em></strong></p>
+<p><strong>ROR <em>destinazione</em>, <em>contatore</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>ruota i bit dell’operando a sinistra (ROL) o a destra (ROR)</strong></p>
+<p>Flag definiti:</p>
+<p><strong>CF; OF se contatore = 1</strong></p>
+<p>Descrizione:</p>
+<p>ROL e ROR ruotano i bit dell’operando: il bit che esce da una parte rientra dall’altra e viene copiato anche in CF. Nessun bit va perso. Per il contatore valgono le regole di SHL.</p>
+<p>Esempi:</p>
+<p>mov ax, 1234h</p>
+<p>rol ax, 4 // AX = 2341h</p>
+<p>ror ax, 4 // AX = 1234h</p>
+<h3 id="sar">SAR – Shift aritmetico a destra</h3>
+<p>Sintassi:</p>
+<p><strong>SAR <em>destinazione</em>, <em>contatore</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>sposta a destra i bit dell’operando, ripetendo il bit di segno</strong></p>
+<p>Flag definiti:</p>
+<p><strong>SF, ZF, CF; OF = 0 se contatore = 1</strong></p>
+<p>Descrizione:</p>
+<p>SAR sposta a destra i bit dell’operando come SHR, ma nel bit più a sinistra ripete il bit di segno: il numero conserva il segno. Ogni spostamento equivale a una divisione per 2 di un numero con segno, arrotondata verso il basso. Per il contatore valgono le regole di SHL.</p>
+<p>Esempi:</p>
+<p>mov ax, -8</p>
+<p>sar ax, 1 // AX = -4 (con SHR: 32764)</p>
+<div id="scasw"></div>
+<h3 id="scasb">SCASB, SCASW – Ricerca in una sequenza</h3>
+<p>Sintassi:</p>
+<p><strong>SCASB</strong></p>
+<p><strong>SCASW</strong></p>
+<p>Operazione svolta:</p>
+<p><strong>AL (o AX) - [DI], senza memorizzare il risultato</strong></p>
+<p><strong>DI = DI ± passo</strong></p>
+<p>Flag definiti:</p>
+<p><strong>SF, ZF, OF, CF</strong></p>
+<p>Descrizione:</p>
+<p>SCASB e SCASW confrontano AL (o AX) con l’elemento puntato da DI come farebbe CMP, poi aggiornano DI. Con REPNE cercano un valore in una sequenza: alla fine ZF vale 1 se il valore è stato trovato e DI punta all’elemento successivo.</p>
+<p>SI e DI avanzano se DF = 0 (dopo CLD) o arretrano se DF = 1 (dopo STD) di un elemento: è il «passo» indicato nell’operazione svolta. Nella memoria a parole l’elemento è sempre una cella: la forma con suffisso B usa il byte basso delle celle e il registro AL, la forma con suffisso W la cella intera e il registro AX. Nella memoria a byte, come su x86, la forma B avanza di 1 byte e la forma W di 2. Con il prefisso REP l’istruzione viene ripetuta (vedi «REP, REPE, REPNE»).</p>
+<p>Esempi:</p>
+<p>mov di, offset msg</p>
+<p>mov al, '$'</p>
+<p>mov cx, 100</p>
+<p>repne scasb // cerca il carattere $</p>
+<h3 id="sbb">SBB – Sottrazione con prestito</h3>
+<p>Sintassi:</p>
+<p><strong>SBB <em>destinazione</em>, <em>sorgente</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>destinazione = destinazione - sorgente - CF</strong></p>
+<p>Flag definiti:</p>
+<p><strong>SF, ZF, OF, CF</strong></p>
+<p>Descrizione:</p>
+<p>SBB sottrae dall’operando destinazione l’operando sorgente e il valore del flag CF. Si usa per sottrarre numeri più grandi di un registro: si sottraggono prima le parti basse con SUB, poi le parti alte con SBB, che tiene conto del prestito.</p>
+<p>Esempi:</p>
+<p>sub ax, bx // parti basse</p>
+<p>sbb dx, cx // parti alte meno il prestito: DX:AX = DX:AX - CX:BX</p>
+<h3 id="shl">SHL – Shift logico a sinistra</h3>
+<p>Sintassi:</p>
+<p><strong>SHL <em>destinazione</em>, <em>contatore</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>sposta a sinistra i bit dell’operando, impostando a zero il bit di ordine inferiore (bit più a destra)</strong></p>
+<p>Flag definiti:</p>
+<p><strong>SF, ZF, CF; OF se contatore = 1</strong></p>
+<p>Descrizione:</p>
+<p>SHL sposta a sinistra i bit dell’operando destinazione per un numero di posizioni pari all’operando contatore. A ogni spostamento, nel bit più a destra viene memorizzato il valore zero, mentre il bit più a sinistra esce e va in CF. Ogni spostamento equivale a una moltiplicazione per 2.</p>
+<p>Il contatore può essere una costante o un registro (tipicamente CL); come nei microprocessori X86 se ne usano soltanto i 5 bit bassi (da 0 a 31). Con contatore 0 i flag non cambiano. OF è definito solo per contatore 1: vale 1 se il bit di segno è cambiato.</p>
+<p>Esempi:</p>
+<p>mov ax, 2</p>
+<p>shl ax, 3 // produce: 16</p>
+<p>mov ax, 8000h</p>
+<p>shl ax, 1 // produce: 0, con CF = 1</p>
+<h3 id="shr">SHR – Shift logico a destra</h3>
+<p>Sintassi:</p>
+<p><strong>SHR <em>destinazione</em>, <em>contatore</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>sposta a destra i bit dell’operando, impostando a zero il bit di ordine superiore (bit più a sinistra)</strong></p>
+<p>Flag definiti:</p>
+<p><strong>SF, ZF, CF; OF se contatore = 1</strong></p>
+<p>Descrizione:</p>
+<p>SHR sposta a destra i bit dell’operando destinazione per un numero di posizioni pari all’operando contatore. A ogni spostamento, nel bit più a sinistra viene memorizzato il valore zero, mentre il bit più a destra esce e va in CF. Ogni spostamento equivale a una divisione per 2 di un numero senza segno; per i numeri con segno si usa SAR.</p>
+<p>Per il contatore valgono le regole di SHL. OF, per contatore 1, riceve il bit di segno originale.</p>
+<p>Esempi:</p>
+<p>mov ax, 4</p>
+<p>shr ax, 2 // produce: 1</p>
+<p>mov ax, -8</p>
+<p>shr ax, 1 // produce: 7FFCh (32764): entra uno zero</p>
+<h3 id="stc">STC – Impostazione del carry</h3>
+<p>Sintassi:</p>
+<p><strong>STC</strong></p>
+<p>Operazione svolta:</p>
+<p><strong>CF = 1</strong></p>
+<p>Flag definiti:</p>
+<p><strong>CF</strong></p>
+<p>Descrizione:</p>
+<p>STC imposta a 1 il flag CF.</p>
+<p>Esempi:</p>
+<p>stc</p>
+<h3 id="std">STD – Impostazione del flag di direzione</h3>
+<p>Sintassi:</p>
+<p><strong>STD</strong></p>
+<p>Operazione svolta:</p>
+<p><strong>DF = 1</strong></p>
+<p>Flag definiti:</p>
+<p><strong>DF</strong></p>
+<p>Descrizione:</p>
+<p>STD imposta a 1 il flag DF: le istruzioni stringa faranno arretrare SI e DI. Serve ad esempio per copiare un vettore su una zona sovrapposta partendo dal fondo.</p>
+<p>Esempi:</p>
+<p>std</p>
+<h3 id="stop">STOP – Arresta la CPU</h3>
+<p>Sintassi:</p>
+<p><strong>STOP</strong></p>
+<p>Operazione svolta:</p>
+<p><strong>Arresta la CPU, terminando l’esecuzione del programma</strong></p>
+<p>Flag definiti:</p>
+<p><strong>Nessuno</strong></p>
+<p>Descrizione:</p>
+<p>STOP determina l’immediato arresto dell’esecuzione del programma.</p>
+<div id="stosw"></div>
+<h3 id="stosb">STOSB, STOSW – Scrittura di un elemento di una sequenza</h3>
+<p>Sintassi:</p>
+<p><strong>STOSB</strong></p>
+<p><strong>STOSW</strong></p>
+<p>Operazione svolta:</p>
+<p><strong>[DI] = AL (o AX)</strong></p>
+<p><strong>DI = DI ± passo</strong></p>
+<p>Flag definiti:</p>
+<p><strong>Nessuno</strong></p>
+<p>Descrizione:</p>
+<p>STOSB scrive AL nel byte puntato da DI (il byte basso della cella, nella memoria a parole), STOSW scrive AX nella parola; poi aggiornano DI. Con REP riempiono una zona di memoria con lo stesso valore.</p>
+<p>SI e DI avanzano se DF = 0 (dopo CLD) o arretrano se DF = 1 (dopo STD) di un elemento: è il «passo» indicato nell’operazione svolta. Nella memoria a parole l’elemento è sempre una cella: la forma con suffisso B usa il byte basso delle celle e il registro AL, la forma con suffisso W la cella intera e il registro AX. Nella memoria a byte, come su x86, la forma B avanza di 1 byte e la forma W di 2. Con il prefisso REP l’istruzione viene ripetuta (vedi «REP, REPE, REPNE»).</p>
+<p>Esempi:</p>
+<p>mov ax, 0</p>
+<p>mov di, offset tab</p>
+<p>mov cx, 8</p>
+<p>rep stosw // azzera 8 parole</p>
+<h3 id="sub">SUB – Sottrazione</h3>
+<p>Sintassi:</p>
+<p><strong>SUB <em>destinazione</em>, <em>sorgente</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>destinazione = destinazione - sorgente</strong></p>
+<p>Flag definiti:</p>
+<p><strong>SF, ZF, OF, CF</strong></p>
+<p>Descrizione:</p>
+<p>L’operando sorgente viene sottratto all’operando destinazione; il risultato viene memorizzato nell’operando destinazione.</p>
+<p>Esempi:</p>
+<p>sub ax, bx // equivale a: ax = ax - bx</p>
+<p>sub [10], 2 // equivale a: [10] = [10] - 2</p>
+<h3 id="test">TEST – Test logico</h3>
+<p>Sintassi:</p>
+<p><strong>TEST <em>destinazione</em>, <em>sorgente</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>destinazione &amp; sorgente, senza memorizzare il risultato</strong></p>
+<p>Flag definiti:</p>
+<p><strong>SF, ZF; OF = 0, CF = 0</strong></p>
+<p>Descrizione:</p>
+<p>TEST esegue un AND tra i due operandi senza modificarli, aggiornando soltanto i flag: sta ad AND come CMP sta a SUB. Si usa per controllare il valore di uno o più bit.</p>
+<p>Esempi:</p>
+<p>test ax, 1</p>
+<p>jz pari // salta se il bit 0 di AX è 0</p>
+<h3 id="xchg">XCHG – Scambio</h3>
+<p>Sintassi:</p>
+<p><strong>XCHG <em>operando1</em>, <em>operando2</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>scambia il contenuto dei due operandi</strong></p>
+<p>Flag definiti:</p>
+<p><strong>Nessuno</strong></p>
+<p>Descrizione:</p>
+<p>XCHG scambia il contenuto di due registri, o di un registro e di una locazione di memoria, senza bisogno di un registro d’appoggio. Gli operandi devono avere la stessa dimensione; non sono ammesse costanti né due operandi in memoria.</p>
+<p>Esempi:</p>
+<p>xchg ax, bx</p>
+<p>xchg cl, ch // scambia i due byte di CX</p>
+<p>xchg dx, [10]</p>
+<h3 id="xor">XOR – Or esclusivo</h3>
+<p>Sintassi:</p>
+<p><strong>XOR <em>destinazione</em>, <em>sorgente</em></strong></p>
+<p>Operazione svolta:</p>
+<p><strong>destinazione = destinazione ^ sorgente</strong></p>
+<p>Flag definiti:</p>
+<p><strong>SF, ZF; OF = 0, CF = 0</strong></p>
+<p>Descrizione:</p>
+<p>XOR imposta a 1 i bit del risultato se entrambi i bit corrispondenti dei due operandi sono diversi tra loro; altrimenti li imposta a 0. Il risultato è memorizzato nell’operando destinazione.</p>
+<p>Esempio:</p>
+<p>mov ax, 2</p>
+<p>xor ax, 4 // produce come risultato: 6</p>
+<h2 id="struttura-di-un-programma-assembly">Struttura di un programma assembly</h2>
+<p>I programmi assembly compatibili con EasyCPU sono suddivisi in due sezioni, «codice» e «dati». La sezione codice contiene le istruzioni in linguaggio assembly e comincia con l’inizio del file. La parte dati, opzionale, è preceduta dalla direttiva «.DATA» e consente di definire variabili e costanti e di inizializzare il contenuto di una o più celle di memoria (vedi «La sezione dati»). All’interno dell’IDE di EasyCPU, le due sezioni vengono gestite mediante due editor separati. Un programma può inoltre contenere delle righe di commento, prefissate dal simbolo “//” oppure “;”. Un commento può anche seguire il testo di un’istruzione.</p>
+<p>Di seguito viene riportato un programma di esempio che calcola la somma degli elementi dispari all’interno di un sequenza. All’indirizzo 0 di memoria è memorizzato il numero di elementi, all’indirizzo 1 l’indirizzo di partenza della sequenza, che nella sezione dati è definita a partire dall’indirizzo 2. Lo stesso programma è disponibile in «Docs/samples/07-programmi/programma-somma-dispari.asj».</p>
+<p>// Programma SommaDispari</p>
+<p>// Calcola la somma degli elementi dispari di un vettore e la memorizz in BX</p>
+<p>mov bx, 0 // bx memorizza la somma</p>
+<p>mov cx, [0] // memorizza in cx il numero degli elementi</p>
+<p>mov si, [1] // si memorizza l'indirizzo del vettore</p>
+<p>ciclo: cmp cx, 0 // verifica se il ciclo è finito</p>
+<p>je fine</p>
+<p>mov ax,[si] // preleva l'elemento</p>
+<p>mov dx, 0 // non obbligatoria</p>
+<p>div 2 // divide per 2 per ottenere il resto in dx</p>
+<p>cmp dx, 0 // se dx è 0 il numero è pari</p>
+<p>je pari</p>
+<p>add bx, [si] // somma l'elemento</p>
+<p>pari:</p>
+<p>inc si</p>
+<p>dec cx</p>
+<p>jmp ciclo</p>
+<p>fine:</p>
+<p>stop</p>
+<p>.DATA</p>
+<p>0: 5</p>
+<p>1: 2</p>
+<p>2: 1, 3, 4, 6, 7</p>
+<h2 id="la-sezione-dati">La sezione dati</h2>
+<p>La sezione dati è composta da righe di questi tipi:</p>
+<table>
+<thead>
+<tr>
+<th>Forma</th>
+<th>Significato</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>nome <strong>DW</strong> elemento, elemento, …</td>
+<td>Variabile di parole (16 bit)</td>
+</tr>
+<tr>
+<td>nome <strong>DB</strong> elemento, elemento, …</td>
+<td>Variabile di byte (8 bit)</td>
+</tr>
+<tr>
+<td>nome <strong>EQU</strong> valore</td>
+<td>Costante simbolica: non occupa memoria</td>
+</tr>
+<tr>
+<td><strong>ORG</strong> indirizzo</td>
+<td>Le variabili successive partono dall’indirizzo indicato</td>
+</tr>
+<tr>
+<td>indirizzo: valore, valore, …</td>
+<td>Scrive i valori a partire dall’indirizzo indicato (forma originale; non ammessa nella memoria a byte)</td>
+</tr>
+</tbody>
+</table>
+<p>Le variabili DB e DW vengono collocate in memoria una dopo l’altra, a partire dall’indirizzo 0 o dall’ultimo ORG. Il nome è facoltativo: una riga DB o DW senza nome occupa comunque le celle, ad esempio per proseguire la variabile precedente. Le variabili non possono occupare l’area dello stack (indirizzi da 240 a 255; da 448 a 511 nella memoria a byte).</p>
+<p>Un elemento può essere:</p>
+<ul>
+<li>un valore numerico o carattere, oppure il nome di una costante EQU;</li>
+<li>«?», che indica una cella non inizializzata (vale 0);</li>
+<li>una stringa tra apici, come 'Ciao': ogni carattere occupa una cella (solo con DB);</li>
+<li>«n DUP(elemento)», che ripete l’elemento n volte;</li>
+<li>«offset nome», l’indirizzo di un’altra variabile;</li>
+<li>il nome di un’etichetta del codice, che vale il numero della sua istruzione: serve a costruire tabelle di salto (tab DW caso0, caso1) per JMP e CALL indiretti.</li>
+</ul>
+<p>I valori di una variabile DB devono essere compresi tra –128 e 255, quelli di una variabile DW tra –32768 e 65535. Nella memoria a parole le celle restano di 16 bit: una variabile DB usa soltanto il byte basso di ogni cella. Nella memoria a byte ogni valore DB occupa un byte e ogni valore DW due byte (vedi «Modalità x86 fedele: memoria a byte»).</p>
+<p>N EQU 5 // costante</p>
+<p>conta DW 0 // una parola, indirizzo 0</p>
+<p>vet DW 1, 3, 4, 6, 7 // cinque parole, indirizzi 1..5</p>
+<p>buffer DW N DUP(0) // cinque parole a zero, indirizzi 6..10</p>
+<p>msg DB 'Ciao mondo!$' // una cella per carattere</p>
+<p>ORG 100</p>
+<p>tabella DW N DUP(?) // cinque parole a partire dall'indirizzo 100</p>
+<p>Gli esempi indicano gli indirizzi della memoria a parole. I nomi non distinguono maiuscole e minuscole e non possono coincidere con un registro, un’istruzione, una parola riservata (DB, DW, EQU, ORG, DUP, OFFSET) o un’etichetta del codice.</p>
+<h3 id="uso-dei-nomi-nel-codice">Uso dei nomi nel codice</h3>
+<p>EasyCPU segue la convenzione dell’assemblatore MASM:</p>
+<p>mov cx, N // costante EQU: CX = 5</p>
+<p>mov ax, conta // contenuto della variabile: come mov ax, [conta]</p>
+<p>mov ax, [conta] // contenuto della variabile</p>
+<p>mov si, offset vet // indirizzo della variabile: SI = 1</p>
+<p>mov ax, vet+2 // contenuto della cella vet + 2: come mov ax, [vet+2]</p>
+<p>mov ax, [vet+si] // contenuto della cella di indirizzo vet + SI</p>
+<p>mov ax, [bp+N] // un nome EQU può essere uno scostamento</p>
+<p>mov bx, offset fine // indirizzo di un’etichetta: il numero della sua istruzione</p>
+<p>Nel codice l’indirizzo di un’etichetta si scrive sempre con offset: mov bx, fine produce un errore che suggerisce offset fine.</p>
+<p>La dimensione di un accesso a una variabile dipende dal suo tipo: una variabile DB si usa con registri a 8 bit (mov al, msg) e una variabile DW con registri a 16 bit (mov ax, conta). Istruzioni come mov ax, msg o push msg (con msg di tipo DB) producono l’errore «Dimensione degli operandi non valida o non coerente». Anche un’istruzione con una sola variabile, come inc conta, opera sulla dimensione della variabile.</p>
+<p>Il pannello Memoria mostra, sotto il contenuto della memoria, l’elenco dei nomi definiti con indirizzo, tipo, numero di elementi e valore corrente del primo elemento; in fondo all’elenco compaiono le etichette del codice con il numero della loro istruzione.</p>
+<h3 id="esempio-hello-world">Esempio: Hello world</h3>
+<p>// sezione dati</p>
+<p>msg DB 'Ciao mondo!', 13, 10, '$'</p>
+<p>// sezione codice</p>
+<p>mov ah, 9 // servizio: scrivi stringa</p>
+<p>mov dx, offset msg</p>
+<p>int 21h</p>
+<p>mov ah, 4Ch // servizio: termina il programma</p>
+<p>int 21h</p>
+<h2 id="modalita-x86-fedele-memoria-a-byte">Modalità x86 fedele: memoria a byte</h2>
+<p>Nella modalità predefinita la memoria di EasyCPU è formata da 256 celle da 16 bit: ogni indirizzo contiene una parola intera e due indirizzi consecutivi non si sovrappongono. È un modello semplice, ma diverso da quello dei microprocessori X86, dove la memoria è formata da byte e una parola occupa due byte consecutivi. La modalità x86 fedele adotta il modello X86.</p>
+<h3 id="come-si-sceglie">Come si sceglie</h3>
+<p>La modalità è una proprietà del programma: si attiva con la voce «Memoria a byte (x86)» del menu Esegui e viene salvata nel file .asj. Un programma nuovo, un file .asj senza l’indicazione e un file .as usano la memoria a parole. Quando la modalità è attiva il pannello Memoria si intitola «Memoria (byte)»; cambiarla azzera la CPU e richiede una nuova compilazione.</p>
+<h3 id="il-modello-di-memoria">Il modello di memoria</h3>
+<table>
+<thead>
+<tr>
+<th>Aspetto</th>
+<th>Memoria a parole</th>
+<th>Memoria a byte</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dimensione</td>
+<td>256 celle da 16 bit</td>
+<td>512 byte</td>
+</tr>
+<tr>
+<td>Parola all’indirizzo a</td>
+<td>cella a</td>
+<td>byte a (basso) e a+1 (alto)</td>
+</tr>
+<tr>
+<td>Accesso a 8 bit</td>
+<td>byte basso della cella</td>
+<td>il byte all’indirizzo</td>
+</tr>
+<tr>
+<td>Area dello stack</td>
+<td>celle 240..255 (16 parole)</td>
+<td>byte 448..511 (32 parole)</td>
+</tr>
+<tr>
+<td>SP iniziale</td>
+<td>256</td>
+<td>512</td>
+</tr>
+<tr>
+<td>PUSH, POP, CALL, RET</td>
+<td>SP varia di 1</td>
+<td>SP varia di 2</td>
+</tr>
+<tr>
+<td>RET n</td>
+<td>n parole</td>
+<td>n byte</td>
+</tr>
+<tr>
+<td>Istruzioni stringa</td>
+<td>passo di 1 cella</td>
+<td>passo di 1 (forme B) o 2 (forme W)</td>
+</tr>
+<tr>
+<td>DB, DW, stringhe</td>
+<td>una cella per valore</td>
+<td>1 byte per valore DB o carattere, 2 byte per valore DW</td>
+</tr>
+</tbody>
+</table>
+<p>Le parole sono memorizzate con il byte basso all’indirizzo più basso (ordine little-endian, come su X86):</p>
+<p>mov word ptr [10], 1234h // byte 10 = 34h, byte 11 = 12h</p>
+<p>mov al, [11] // AL = 12h</p>
+<p>mov ax, [11] // AX = parola formata dai byte 11 e 12</p>
+<p>Un accesso a parola che esce dalla memoria (ad esempio all’indirizzo 511) produce l’errore «Violazione dei limiti della memoria».</p>
+<h3 id="regole-in-piu-rispetto-alla-memoria-a-parole">Regole in più rispetto alla memoria a parole</h3>
+<p>Nella memoria a byte il compilatore applica tre regole dei microprocessori X86:</p>
+<ul>
+<li>la dimensione di un operando in memoria dev’essere determinata da un registro, dal tipo di una variabile o da byte ptr / word ptr: inc [si], mov [di], 5 e mul [bx] producono l’errore «Dimensione dell'operando non specificata: usare byte ptr o word ptr». Fanno eccezione PUSH, POP, JMP e CALL, che lavorano sempre a parole, e LEA, che non accede alla memoria;</li>
+<li>un’istruzione non può avere due operandi in memoria: mov a, b e add [10], [si] producono l’errore «Un'istruzione non può avere due operandi in memoria: usare un registro»; per copiare da memoria a memoria si usano un registro o le istruzioni stringa;</li>
+<li>nella sezione dati la forma «indirizzo: valori», che non indica la dimensione dei valori, non è ammessa: si usano DB e DW.</li>
+</ul>
+<h3 id="differenze-nei-programmi">Differenze nei programmi</h3>
+<p>Gli elementi di un vettore di parole distano 2 byte: l’indice avanza di 2.</p>
+<p>vet DW 3, 8, 1 // sezione dati: vet occupa i byte 0..5</p>
+<p>mov si, 0</p>
+<p>mov cx, 3</p>
+<p>ciclo: add ax, [vet+si]</p>
+<p>add si, 2 // parola successiva</p>
+<p>loop ciclo</p>
+<p>Anche i parametri di una procedura distano 2 byte: dopo push bp e mov bp, sp l’indirizzo di ritorno è in [bp+2] e i parametri in [bp+4], [bp+6]; ret 4 rimuove due parametri.</p>
+<p>somma: push bp</p>
+<p>mov bp, sp</p>
+<p>mov ax, [bp+4] // ultimo parametro depositato</p>
+<p>add ax, [bp+6]</p>
+<p>pop bp</p>
+<p>ret 4</p>
+<p>Una tabella di salto contiene parole: l’indice si moltiplica per 2 prima di jmp [tab+bx] o call [proc+bx].</p>
+<p>mov bl, scelta</p>
+<p>mov bh, 0</p>
+<p>shl bx, 1 // due byte per elemento</p>
+<p>jmp [tab+bx]</p>
+<p>Gli esempi della cartella Docs/samples/12-memoria-byte mostrano questi casi e gli errori di compilazione della modalità.</p>
+<h3 id="pannelli">Pannelli</h3>
+<p>Il pannello Memoria (byte) mostra 16 byte per riga, con valori da 0 a 255 (da 00 a FF in esadecimale); il pannello Stack mostra una parola per riga, all’indirizzo del suo byte basso; nella sezione Simboli il valore di una variabile DB è il suo primo byte, quello di una variabile DW la sua prima parola.</p>
+
+</main>
+<script>
+// Aperta in una scheda in background la pagina viene impaginata con un'altra larghezza:
+// quando diventa visibile il salto all'ancora va ripetuto.
+function vaiAncora() { const t = location.hash && document.getElementById(decodeURIComponent(location.hash.slice(1))); if (t) t.scrollIntoView(); }
+addEventListener('load', vaiAncora);
+document.addEventListener('visibilitychange', function f() { if (!document.hidden) { vaiAncora(); document.removeEventListener('visibilitychange', f); } });
+</script>
+</body>
+</html>
