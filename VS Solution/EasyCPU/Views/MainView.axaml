@@ -29,6 +29,7 @@
   </UserControl.Styles>
   <Grid>
     <SplitView IsPaneOpen="False"
+               PaneClosed="OnDrawerClosed"
                DisplayMode="Overlay"
                UseLightDismissOverlayMode="True"
                OpenPaneLength="280"
@@ -62,11 +63,24 @@
                         <TextBlock Text="Salva come..." VerticalAlignment="Center"/>
                     </StackPanel>
                 </Button>
-                <TextBlock Classes="drawer-header" Text="RECENTI" IsVisible="{Binding HasRecentFiles}"/>
-                <ItemsControl ItemsSource="{Binding RecentFileItems}" IsVisible="{Binding HasRecentFiles}">
+                <!-- Recenti: la voce apre e chiude l'elenco, come il sottomenu del Desktop -->
+                <Button Classes="drawer-item drawer-toggle" Click="OnRecentiClick"
+                        HorizontalContentAlignment="Stretch" IsVisible="{Binding HasRecentFiles}">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <icons:ThemedIcon Source="/images/toolbar/open.png" Width="20" Height="20"/>
+                            <TextBlock Text="Recenti" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <!-- freccia disegnata: il font dell'app non ha i caratteri ▸/▾ -->
+                        <Path x:Name="RecentiFreccia" Grid.Column="1" Data="M 0,0 L 5,5 L 0,10"
+                              Stroke="{Binding $parent[Button].Foreground}" StrokeThickness="1.5"
+                              VerticalAlignment="Center" RenderTransformOrigin="50%,50%"/>
+                    </Grid>
+                </Button>
+                <ItemsControl x:Name="RecentiElenco" ItemsSource="{Binding RecentFileItems}" IsVisible="False">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:RecentFileItem">
-                            <Button Classes="drawer-item" Command="{Binding Command}">
+                            <Button Classes="drawer-item" Command="{Binding Command}" Padding="48,8,16,8">
                                 <TextBlock Text="{Binding Header}" VerticalAlignment="Center"
                                            TextTrimming="CharacterEllipsis"/>
                             </Button>

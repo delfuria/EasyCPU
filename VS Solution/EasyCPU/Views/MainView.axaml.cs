@@ -27,12 +27,26 @@ public partial class MainView : UserControl
     {
         // Il bottone hamburger gestisce l'apertura/chiusura per conto proprio: se il click
         // arriva da lui non richiudere subito quello che ha appena aperto/chiuso.
+        // Lo stesso vale per le voci che aprono una sezione del menu (Recenti).
         if (e.Source is Visual sv && sv.FindAncestorOfType<Button>(includeSelf: true) is { } clicked
-            && clicked.Classes.Contains("hamburger-button"))
+            && (clicked.Classes.Contains("hamburger-button") || clicked.Classes.Contains("drawer-toggle")))
             return;
 
         if (e.Source is Visual v && v.FindAncestorOfType<SplitView>() is { } drawer)
             drawer.IsPaneOpen = false;
+    }
+
+    private void OnRecentiClick(object? sender, RoutedEventArgs e) =>
+        MostraRecenti(!this.FindControl<ItemsControl>("RecentiElenco")!.IsVisible);
+
+    // Alla chiusura del menu l'elenco dei recenti torna chiuso, come un sottomenu.
+    private void OnDrawerClosed(object? sender, RoutedEventArgs e) => MostraRecenti(false);
+
+    private void MostraRecenti(bool visibile)
+    {
+        this.FindControl<ItemsControl>("RecentiElenco")!.IsVisible = visibile;
+        this.FindControl<Avalonia.Controls.Shapes.Path>("RecentiFreccia")!.RenderTransform =
+            new Avalonia.Media.RotateTransform(visibile ? 90 : 0);
     }
 
     private void OnAttachedToVisualTree(object? sender, Avalonia.VisualTreeAttachmentEventArgs e)
