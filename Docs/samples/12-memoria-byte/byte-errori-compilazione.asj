@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "memoria": "byte",
+  "code": [
+    "// ======================================================================",
+    "// Memoria a byte: errori di compilazione",
+    "//",
+    "// Cosa illustra:",
+    "//   Regole che valgono solo nella memoria a byte, come su x86: la dimensione",
+    "//   di un operando in memoria dev'essere determinata, un'istruzione non può",
+    "//   avere due operandi in memoria, la forma «indirizzo: valori» non è",
+    "//   ammessa. Il programma NON compila.",
+    "//   Il file attiva la memoria a byte (menu Esegui, «Memoria a byte (x86)»):",
+    "//   512 byte, parole little-endian, stack nei byte 448..511.",
+    "//",
+    "// Utilizzo:",
+    "//   Premere Compila e osservare il pannello Errori; togliere la spunta di",
+    "//   «Memoria a byte (x86)» e ricompilare: restano solo gli errori che",
+    "//   valgono in entrambe le modalità.",
+    "//",
+    "// Risultato atteso:",
+    "//   6 errori di tipo Codice e 1 di tipo Dati, con i messaggi indicati nei",
+    "//   commenti",
+    "// ======================================================================",
+    "",
+    "        inc [si]            // dimensione non specificata: byte ptr o word ptr",
+    "        mov [di], 5         // dimensione non specificata",
+    "        mul [bx]            // dimensione non specificata",
+    "        mov a, b            // due operandi in memoria",
+    "        add [10], [si]      // due operandi in memoria",
+    "        mov al, word ptr a  // dimensione non coerente (vale in entrambe le modalità)",
+    "        stop"
+  ],
+  "data": [
+    "a       DW 1",
+    "b       DW 2",
+    "10: 1, 2                    // nella memoria a byte servono DB o DW"
+  ]
+}

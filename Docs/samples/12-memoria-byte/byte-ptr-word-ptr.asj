@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "memoria": "byte",
+  "code": [
+    "// ======================================================================",
+    "// Memoria a byte: byte ptr e word ptr",
+    "//",
+    "// Cosa illustra:",
+    "//   Con un operando in memoria senza registro né variabile (es. [si]) la",
+    "//   dimensione va indicata con byte ptr o word ptr; con una variabile i due",
+    "//   operatori ne scelgono una parte o la estendono.",
+    "//   Il file attiva la memoria a byte (menu Esegui, «Memoria a byte (x86)»):",
+    "//   512 byte, parole little-endian, stack nei byte 448..511.",
+    "//",
+    "// Utilizzo:",
+    "//   Eseguire con Step Into con il pannello Memoria (byte) in formato Hex.",
+    "//",
+    "// Risultato atteso:",
+    "//   w = 4242h (byte 0 = 42h, byte 1 = 42h), AX = 4242h, BL = 42h,",
+    "//   c = 'A' (CL = 41h)",
+    "// ======================================================================",
+    "",
+    "        mov si, offset w",
+    "        mov byte ptr [si], 41h      // byte basso di w",
+    "        mov byte ptr [si+1], 42h    // byte alto: w = 4241h",
+    "        inc word ptr [si]           // w = 4242h",
+    "        mov ax, w",
+    "        mov bl, byte ptr w+1        // solo il byte alto",
+    "        sub byte ptr c, 20h         // 'a' diventa 'A'",
+    "        mov cl, c",
+    "        stop"
+  ],
+  "data": [
+    "w       DW 0",
+    "c       DB 'a'"
+  ]
+}

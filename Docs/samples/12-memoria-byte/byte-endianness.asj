@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "memoria": "byte",
+  "code": [
+    "// ======================================================================",
+    "// Memoria a byte: parole little-endian",
+    "//",
+    "// Cosa illustra:",
+    "//   Una parola occupa due byte consecutivi: all'indirizzo più basso il byte",
+    "//   basso, al successivo il byte alto (little-endian, come su x86). Due",
+    "//   parole a indirizzi vicini si sovrappongono.",
+    "//   Il file attiva la memoria a byte (menu Esegui, «Memoria a byte (x86)»):",
+    "//   512 byte, parole little-endian, stack nei byte 448..511.",
+    "//",
+    "// Utilizzo:",
+    "//   Eseguire con Step Into con il pannello Memoria (byte) in formato Hex.",
+    "//",
+    "// Risultato atteso:",
+    "//   AX = 1234h, BX = 1234h (BL dal byte 0, BH dal byte 1),",
+    "//   CX = ABCDh (byte 10 = CDh, byte 11 = ABh),",
+    "//   DX = 0012h (parola a cavallo dei byte 1 e 2)",
+    "// ======================================================================",
+    "",
+    "        mov ax, num             // parola: byte 0 (34h) e byte 1 (12h)",
+    "        mov bl, byte ptr num    // byte basso, indirizzo 0",
+    "        mov bh, byte ptr num+1  // byte alto, indirizzo 1",
+    "        mov word ptr [10], 0ABCDh",
+    "        mov cl, [10]            // CDh",
+    "        mov ch, [11]            // ABh",
+    "        mov dx, [1]             // byte 1 (12h) e byte 2 (00h): 0012h",
+    "        stop"
+  ],
+  "data": [
+    "num     DW 1234h",
+    "        DB 0"
+  ]
+}

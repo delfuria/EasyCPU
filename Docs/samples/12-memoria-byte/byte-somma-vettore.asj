@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "memoria": "byte",
+  "code": [
+    "// ======================================================================",
+    "// Memoria a byte: somma di un vettore di parole",
+    "//",
+    "// Cosa illustra:",
+    "//   Nella memoria a byte ogni elemento DW occupa due byte: l'indice avanza",
+    "//   di 2 (add si, 2) invece che di 1 come nella memoria a parole.",
+    "//   Il file attiva la memoria a byte (menu Esegui, «Memoria a byte (x86)»):",
+    "//   512 byte, parole little-endian, stack nei byte 448..511.",
+    "//",
+    "// Utilizzo:",
+    "//   Eseguire con Step Into osservando SI e AX nel pannello Registri.",
+    "//",
+    "// Risultato atteso:",
+    "//   AX = 22 (3 + 8 + 1 + 10), SI = 8",
+    "// ======================================================================",
+    "",
+    "        mov si, 0",
+    "        mov cx, N",
+    "        mov ax, 0",
+    "ciclo:  add ax, [vet+si]",
+    "        add si, 2           // parola successiva: due byte più avanti",
+    "        loop ciclo",
+    "        stop"
+  ],
+  "data": [
+    "vet     DW 3, 8, 1, 10",
+    "N       EQU 4"
+  ]
+}
