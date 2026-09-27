@@ -45,7 +45,7 @@ EasyCPU is an educational tool designed to make learning assembly language and C
 - **Run-to-Instruction** – Execute all instructions up to a selected line for faster iteration
 - **Execution State Indicators** – Visual feedback on whether program is running, paused, or stopped
 - **Error Highlighting** – Clicking compilation errors jumps directly to problematic code
-- **Contextual Help (F1)** – Opens the Assembly Reference in the browser at the instruction under the cursor (offline on desktop, online on iOS/Android)
+- **Contextual Help (F1)** – Opens the [Assembly Reference](https://delfuria.github.io/EasyCPU/help/reference.html) in the browser at the instruction under the cursor (offline on desktop, online on iOS/Android)
 
 ---
 
@@ -118,11 +118,11 @@ MUL/DIV operate on unsigned values, IMUL/IDIV on signed values.
 
 `int 21h` provides DOS-style services selected via `AH`: `01h` read a character with echo (into `AL`), `02h` write the character in `DL`, `07h` read a character without echo, `09h` write the `$`-terminated string at `DX`, `0Ah` read a line into the buffer at `DX`, `4Ch` terminate the program. Output and keyboard input are shown/captured in the dedicated **Console** panel.
 
-By default memory is made of 256 16-bit cells (word model). The optional x86-faithful mode switches the program to a 512-byte memory with little-endian words, a 64-byte stack (SP starts at 512 and moves by 2), and x86 compile-time rules; see the *Modalità x86 fedele* chapter of the Assembly Reference.
+By default memory is made of 256 16-bit cells (word model). The optional x86-faithful mode switches the program to a 512-byte memory with little-endian words, a 64-byte stack (SP starts at 512 and moves by 2), and x86 compile-time rules; see the [*Modalità x86 fedele*](https://delfuria.github.io/EasyCPU/help/reference.html#modalita-x86-fedele-memoria-a-byte) chapter of the Assembly Reference.
 
 The data section supports MASM-style symbolic declarations: `DB`/`DW` variables, `EQU` constants, strings, `DUP`, `ORG` and `offset`; code labels can be used as values (`offset label` in code, `tab DW case0, case1` in data) to build jump tables. `byte ptr` and `word ptr` set the size of a memory operand (example programs in [`Docs/samples`](./Docs/samples)).
 
-For complete instruction documentation, register definitions, addressing modes, and flag behavior, see the [**Easy CPU Assembly Reference**](./Docs/Easy%20CPU%20%20Assembly%20Reference.md).
+For complete instruction documentation, register definitions, addressing modes, and flag behavior, see the [**Easy CPU Assembly Reference**](https://delfuria.github.io/EasyCPU/help/reference.html).
 
 ---
 
@@ -165,7 +165,7 @@ For detailed step-by-step tutorials and screenshots, see the [**EasyCPU IDE Tuto
 
 Complete documentation is available in the `Docs/` folder:
 
-- **[Easy CPU Assembly Reference](./Docs/Easy%20CPU%20%20Assembly%20Reference.md)** – Complete instruction set documentation with syntax, examples, and flag behavior
+- **[Easy CPU Assembly Reference](https://delfuria.github.io/EasyCPU/help/reference.html)** – Complete instruction set documentation with syntax, examples, and flag behavior
 - **[EasyCPU IDE Tutorial](./Docs/EasyCPU%20%20IDE%20Tutorial.md)** – Step-by-step guide to using the IDE, debugging, and managing programs
 - **[Toolbar Icons Reference](./ICONE-TOOLBAR.md)** – Visual guide to IDE toolbar buttons
 
