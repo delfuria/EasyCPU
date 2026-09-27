@@ -13,12 +13,14 @@ namespace EasyCpu.Assembler.Parsing
     public class Compiler
     {
         readonly Parser _parser = new();
-        List<IndirizzoEtichetta> _tabellaEtichette;
+        bool _etichetteLette;                       // pre-scansione del codice già eseguita
+        List<CompilerError> _erroriEtichette;       // errori della pre-scansione, riportati da CompilaCodice
+        List<(string nome, int indRiga)> _righeEtichette;   // etichette lette, con la riga che le definisce
 
         public List<int> InstrToLineMap { get; private set; }  // indice istruzione → riga sorgente (0-based)
         public int[] LineToInstrMap { get; private set; }      // riga sorgente (0-based) → indice istruzione (-1 se non eseguibile)
 
-        // nomi definiti nella sezione dati: va compilata prima del codice che li usa
+        // nomi definiti nella sezione dati ed etichette del codice: i dati vanno compilati prima del codice che li usa
         public IReadOnlyList<Simbolo> Simboli => _parser.ElencoSimboli;
 
         static bool SeCommento(string s)
@@ -26,10 +28,14 @@ namespace EasyCpu.Assembler.Parsing
             return s[0] == '\'';
         }
 
-        public List<int> CompilaDati(List<string> data, ref List<CompilerError> errori)
+        // codice: se fornito, le sue etichette sono lette per prime e i dati possono usarle (tab DW caso0, caso1)
+        public List<int> CompilaDati(List<string> data, ref List<CompilerError> errori, List<string> codice = null)
         {
             List<int> memoria = new int[Ram.MASSIMO_INDIRIZZO + 1].ToList();
             _parser.AzzeraSimboli();
+            _etichetteLette = false;
+            if (codice != null)
+                LeggiEtichette(codice);
             int contatore = 0;      // prossimo indirizzo libero per DB/DW
             for (int indRiga = 0; indRiga < data.Count; indRiga++)
             {
@@ -86,12 +92,58 @@ namespace EasyCpu.Assembler.Parsing
             return riga;
         }
 
+        // Pre-scansione: definisce le etichette con il numero dell'istruzione a cui puntano, prima
+        // che dati e codice le usino. Ogni riga non vuota produce al massimo un'istruzione; una riga
+        // con la sola etichetta punta all'istruzione successiva (stessa regola di CompilaCodice).
+        void LeggiEtichette(List<string> code)
+        {
+            _etichetteLette = true;
+            _erroriEtichette = null;
+            _righeEtichette = new();
+            int istruzione = 0;
+            for (int indRiga = 0; indRiga < code.Count; indRiga++)
+            {
+                string s = PreparaRiga(code[indRiga]);
+                if (s == "") continue;
+                string etichetta = _parser.LeggiEtichetta(s, out bool soloEtichetta);
+                if (etichetta != null)
+                {
+                    try
+                    {
+                        string grafia = PreparaRiga(code[indRiga], minuscole: false).Substring(0, etichetta.Length);
+                        _parser.DefinisciEtichetta(etichetta, grafia, istruzione);
+                        _righeEtichette.Add((etichetta, indRiga));
+                    }
+                    catch (CodiceException e)
+                    {
+                        _erroriEtichette ??= new List<CompilerError>();
+                        _erroriEtichette.Add(new CompilerError(Errori.Msg(e.err), indRiga, 0, CompilerError.CODICE));
+                    }
+                }
+                if (!soloEtichetta)
+                    istruzione++;
+            }
+        }
+
         public List<Instruction> CompilaCodice(List<string> code, ref List<CompilerError> errori)
         {
             if (code == null || code.Count == 0) return null;
-            int indiceEtichetta;
+            if (!_etichetteLette)
+                LeggiEtichette(code);
+            if (_erroriEtichette != null)
+                (errori ??= new List<CompilerError>()).AddRange(_erroriEtichette);
+            foreach (var (nome, indRiga) in _righeEtichette)
+            {
+                try
+                {
+                    _parser.AggiungiEtichetta(nome);
+                }
+                catch (CodiceException e)
+                {
+                    (errori ??= new List<CompilerError>()).Add(new CompilerError(Errori.Msg(e.err), indRiga, 0, CompilerError.CODICE));
+                }
+            }
             List<Instruction> istruzioni = new List<Instruction>();
-            List<IndirizzoEtichetta> etichette = new List<IndirizzoEtichetta>();
             List<int> debug = new List<int>();
 
             for (int indRiga = 0; indRiga < code.Count; indRiga++)
@@ -99,25 +151,14 @@ namespace EasyCpu.Assembler.Parsing
                 try
                 {
                     string s = PreparaRiga(code[indRiga]);
-                    string etichetta;
                     if (s == "") continue;
-                    Instruction istr = _parser.Compila(s, out etichetta);
+                    Instruction istr = _parser.Compila(s, out _);     // etichette già definite dalla pre-scansione
 
                     if (istr != null)
                     {
                         istr.indRiga = indRiga;
                         istruzioni.Add(istr);
                         debug.Add(indRiga);
-                        indiceEtichetta = istruzioni.Count - 1;
-                    }
-                    else
-                        indiceEtichetta = istruzioni.Count;
-
-                    if (etichetta != null)
-                    {
-                        if (_parser.SeSimbolo(etichetta))
-                            throw new CodiceException(CodiceErrore.SimboloDuplicato);
-                        etichette.Add(new IndirizzoEtichetta(etichetta, indiceEtichetta));
                     }
                 }
                 catch (CodiceException e)
@@ -128,13 +169,12 @@ namespace EasyCpu.Assembler.Parsing
                 }
             }
 
-            _tabellaEtichette = etichette;
             // risolve i riferimenti alle etichette
             for (int indRiga = 0; indRiga < istruzioni.Count; indRiga++)
             {
                 Instruction istr = istruzioni[indRiga];
                 if (istr.Etichetta == null) continue;
-                istr.Op1.Scostamento = CercaEtichetta(istr.Etichetta);
+                istr.Op1.Scostamento = _parser.CercaEtichetta(istr.Etichetta);
                 if (istr.Op1.Scostamento == -1)
                 {
                     if (errori == null)
@@ -161,14 +201,6 @@ namespace EasyCpu.Assembler.Parsing
             for (int instrIdx = 0; instrIdx < debug.Count; instrIdx++)
                 map[debug[instrIdx]] = instrIdx;
             LineToInstrMap = map;
-        }
-
-        int CercaEtichetta(string s)
-        {
-            for (int i = 0; i < _tabellaEtichette.Count; i++)
-                if (s == _tabellaEtichette[i].Etichetta)
-                    return _tabellaEtichette[i].Indirizzo;
-            return -1;
         }
     }
 }

@@ -1,12 +1,12 @@
 # Proposte di estensione x86 per EasyCPU
 
-Stato al 27 settembre 2026: **fasi 0–4 completate** e **persistenza nel browser (D) implementata**. Restano aperte tre proposte principali (salti indiretti, divieto delle operazioni memoria-memoria, modalità x86 fedele), la bozza automatica e alcuni interventi di manutenzione. Il documento riassume lo stato attuale, le decisioni prese, le differenze che restano rispetto a x86 e l'**ordine consigliato** per le prossime fasi.
+Stato al 27 settembre 2026: **fasi 0–4 completate**, **persistenza nel browser (D)** e **salti indiretti (A)** implementati. Restano aperte due proposte principali (divieto delle operazioni memoria-memoria, modalità x86 fedele), la bozza automatica e il riallineamento dei manuali `.docx`/`.odt`. Il documento riassume lo stato attuale, le decisioni prese, le differenze che restano rispetto a x86 e l'**ordine consigliato** per le prossime fasi.
 
 Documenti di progetto collegati, nella stessa cartella:
 
 | Documento | Contenuto | Stato |
 |---|---|---|
-| [`SALTI-INDIRETTI.md`](SALTI-INDIRETTI.md) | `jmp`/`call` con registro o memoria, tabelle di salto | progetto |
+| [`SALTI-INDIRETTI.md`](SALTI-INDIRETTI.md) | `jmp`/`call` con registro o memoria, tabelle di salto | implementato |
 | [`MODALITA-X86-FEDELE.md`](MODALITA-X86-FEDELE.md) | fase 5: memoria a byte, `byte ptr`/`word ptr` | progetto |
 | [`PERSISTENZA-BROWSER.md`](PERSISTENZA-BROWSER.md) | opzioni, layout, recenti e breakpoint conservati nel browser | implementato |
 | [`INTERRUPT-CONSOLE.md`](INTERRUPT-CONSOLE.md) | specifica originale di `int 21h` e del pannello Console | implementato (servizi poi estesi in fase 2) |
@@ -28,7 +28,7 @@ Documenti di progetto collegati, nella stessa cartella:
 
 ### Indirizzamento
 
-Immediato (decimale, esadecimale, carattere), a registro, diretto (`[10]`), indiretto (`[si]`), indiretto con scostamento (`[bp+2]`), base + indice (`[bx+si+2]`, solo BX/BP con SI/DI), nomi di variabili e costanti (`conta`, `[vet+si]`, `offset vet`, `[bp+N]`).
+Immediato (decimale, esadecimale, carattere), a registro, diretto (`[10]`), indiretto (`[si]`), indiretto con scostamento (`[bp+2]`), base + indice (`[bx+si+2]`, solo BX/BP con SI/DI), nomi di variabili e costanti (`conta`, `[vet+si]`, `offset vet`, `[bp+N]`); etichette come valori (`offset etichetta` nel codice, `tab DW caso0, caso1` nei dati).
 
 ### Istruzioni (87 nomi, sinonimi compresi, e 5 prefissi)
 
@@ -43,7 +43,7 @@ Immediato (decimale, esadecimale, carattere), a registro, diretto (`[10]`), indi
 | Salti con segno | `je`/`jz`, `jne`/`jnz`, `jg`/`jnle`, `jge`/`jnl`, `jl`/`jnge`, `jle`/`jng`, `jo`, `jno`, `js`, `jns` |
 | Salti senza segno | `ja`/`jnbe`, `jae`/`jnb`/`jnc`, `jb`/`jnae`/`jc`, `jbe`/`jna` |
 | Cicli | `loop`, `loope`/`loopz`, `loopne`/`loopnz`, `jcxz` |
-| Controllo | `jmp`, `call`, `ret`, `ret n`, `nop`, `stop` |
+| Controllo | `jmp`, `call` (dirette e indirette: `jmp bx`, `jmp [tab+bx]`, `call [proc+si]`), `ret`, `ret n`, `nop`, `stop` |
 | Stringhe | `movs`/`movsb`/`movsw`, `lodsb`/`lodsw`, `stosb`/`stosw`, `cmpsb`/`cmpsw`, `scasb`/`scasw`; prefissi `rep`, `repe`/`repz`, `repne`/`repnz` |
 | Sistema | `int 21h` con AH = 01h, 02h, 07h, 09h, 0Ah, 4Ch |
 
@@ -57,7 +57,7 @@ Pannello Registri con byte alto/basso e flag C, Z, S, O, D; pannello Memoria con
 
 ### Verifica
 
-96 test automatici (`EasyCpu.Assembler.Tests`) e 63 programmi di esempio in `Docs/samples`, suddivisi in 10 cartelle per argomento, ognuno con un commento iniziale che descrive il risultato atteso.
+105 test automatici (`EasyCpu.Assembler.Tests`) e 66 programmi di esempio in `Docs/samples`, suddivisi in 11 cartelle per argomento, ognuno con un commento iniziale che descrive il risultato atteso.
 
 ---
 
@@ -83,7 +83,6 @@ Sono scelte del modello didattico o limiti noti; ognuna è documentata nel manua
 |---|---|---|
 | Memoria a celle da 16 bit: `[10]` e `[11]` non si sovrappongono, un vettore di parole avanza di 1 | Semplicità, compatibilità con i programmi esistenti | C – modalità x86 fedele |
 | Operazioni memoria-memoria accettate (`mov a, b`) | Non rompere i programmi esistenti | B |
-| `jmp`/`call` solo verso un'etichetta | Le etichette non sono ancora usabili come valori | A |
 | Codice in una memoria separata, IP = numero dell'istruzione | Modello Harvard semplificato | nessuna: da spiegare nel manuale |
 | Niente segmenti (CS, DS, SS, ES) | Fuori dagli obiettivi didattici | nessuna |
 | Flag PF, AF, IF assenti (niente `jp`/`jnp`) | Poco utili didatticamente | nessuna, salvo richiesta |
@@ -96,13 +95,14 @@ Sono scelte del modello didattico o limiti noti; ognuna è documentata nel manua
 
 Valore didattico (**V**) e sforzo (**S**) su una scala da 1 a 3.
 
-### A — Salti e chiamate indirette · V3 · S2
+### A — Salti e chiamate indirette · V3 · S2 · ✅ implementata
 
 `jmp ax`, `jmp [tab+bx]`, `call [procedure+si]`, con le etichette usabili come valori (`offset etichetta`, `tab DW caso0, caso1`). Insegna tabelle di salto (`switch`/`case`) e puntatori a funzione.
 
 - L'esecuzione è già quasi pronta (`NuovoIp()` legge qualsiasi operando); il lavoro è nel compilatore: una **pre-scansione** delle etichette prima della sezione dati.
 - Rischio medio: cambia l'ordine di compilazione; lo coprono i test di regressione e i 63 esempi.
 - Progetto completo: [`SALTI-INDIRETTI.md`](SALTI-INDIRETTI.md).
+- Realizzata con una pre-scansione delle etichette; le etichette entrano fra i simboli dopo la sezione dati, così un conflitto con una variabile è segnalato sulla riga dell'etichetta come prima. 9 nuovi test (`SaltiIndirettiTests`) e 3 esempi in `Docs/samples/11-salti-indiretti`; i 63 esempi esistenti danno gli stessi risultati.
 
 ### B — Divieto delle operazioni memoria-memoria · V2 · S1
 
@@ -140,7 +140,7 @@ Piccoli interventi emersi durante le fasi 0–4:
 2. ✅ **Sezione OR mancante** nell'Assembly Reference (esistono AND, XOR, NOT e TEST): aggiunta.
 3. ✅ **Esempio «Struttura di un programma»** nel manuale: usa ancora il vecchio programma SommaDispari, in cui la cella 1 fa sia da indirizzo del vettore sia da suo primo elemento; sostituirlo con la versione corretta di `Docs/samples/07-programmi/programma-somma-dispari.asj`. ✅ Sostituito.
 4. ✅ **Backspace nel servizio 0Ah**: il pannello Console ora invia il codice 8 e il servizio cancella l'ultimo carattere letto (test `Int21h_AH0A_BackspaceCancellaUltimoCarattere`).
-5. **Nota sul modello di memoria del codice** (IP = numero dell'istruzione) nel manuale, utile soprattutto dopo la proposta A.
+5. ✅ **Nota sul modello di memoria del codice** (IP = numero dell'istruzione) nel manuale: aggiunta con la proposta A («Memoria dati», JMP).
 
 ---
 
@@ -158,15 +158,15 @@ Piccoli interventi emersi durante le fasi 0–4:
 | Ordine | Proposta | Perché in questa posizione |
 |---|---|---|
 | 1 | ✅ **D** – Persistenza nel browser | Fatta. Subito dopo sono state fatte anche le piccole correzioni F.2–F.4. |
-| 2 | **A** – Salti indiretti | Completa il set di istruzioni 8086 di base in entrambe le modalità. Cambia l'ordine di compilazione: meglio farlo e stabilizzarlo **prima** del grande refactoring della fase 5. |
+| 2 | ✅ **A** – Salti indiretti | Fatta, prima del grande refactoring della fase 5 come previsto; con A è stata aggiunta anche la nota sul modello (F.5). |
 | 3 | **C** – Modalità x86 fedele, con **B** attivo solo in questa modalità | La più invasiva, da affrontare con il resto stabile. Il divieto memoria-memoria nasce dentro una modalità nuova e opzionale, senza rompere i programmi esistenti. |
 | 4 | **E** – Bozza automatica | Miglioramento dell'IDE, può anche seguire subito D se la perdita del lavoro si rivela un problema frequente. |
 | 5 | **B** nella modalità a parole (facoltativo) | Solo se si decide di allineare anche la modalità predefinita a x86, accettando di rompere i programmi che copiano memoria su memoria. |
-| 6 | **F.1, F.5** – Manuale `.docx`/`.odt` e nota sul modello | Alla fine, quando il linguaggio è stabile: evita di riallineare i manuali più volte. |
+| 6 | **F.1** – Manuale `.docx`/`.odt` | Alla fine, quando il linguaggio è stabile: evita di riallineare i manuali più volte. |
 
 ```
-D ✅ ──► A ──► C (+B) ──► F.1, F.5
-   └──► E (in qualsiasi momento); F.2–F.4 ✅
+D ✅ ──► A ✅ ──► C (+B) ──► F.1
+   └──► E (in qualsiasi momento); F.2–F.5 ✅
                         B in modalità a parole: facoltativo, dopo C
 ```
 

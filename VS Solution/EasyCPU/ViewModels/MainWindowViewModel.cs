@@ -747,9 +747,10 @@ public partial class MainViewModel : ObservableObject
             .Split('\n')
             .ToList();
 
-        // i dati prima del codice: il codice usa i nomi definiti nella sezione dati
+        // i dati prima del codice: il codice usa i nomi definiti nella sezione dati;
+        // le etichette del codice sono lette per prime, i dati possono usarle (tab DW caso0, caso1)
         List<CompilerError> dataErrors = null!;
-        var memory = Compiler.CompilaDati(dataLines, ref dataErrors);
+        var memory = Compiler.CompilaDati(dataLines, ref dataErrors, codeLines);
 
         List<CompilerError> codeErrors = null!;
         var instructions = Compiler.CompilaCodice(codeLines, ref codeErrors);

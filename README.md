@@ -105,8 +105,8 @@ EasyCPU implements an 8086-style instruction set (16-bit and 8-bit registers, CF
 **Conditional Jumps (signed):** JE/JZ, JNE/JNZ, JL, JLE, JG, JGE, JO, JNO, JS, JNS (plus x86 synonyms JNGE, JNG, JNLE, JNL)  
 **Conditional Jumps (unsigned):** JA, JAE, JB, JBE, JC, JNC (plus synonyms JNBE, JNB, JNAE, JNA)  
 **Loops:** LOOP, LOOPE/LOOPZ, LOOPNE/LOOPNZ, JCXZ  
-**Unconditional Control:** JMP  
-**Procedure Calls:** CALL, RET, RET n  
+**Unconditional Control:** JMP (direct, or indirect through a register or memory: `jmp bx`, `jmp [tab+bx]`)  
+**Procedure Calls:** CALL (direct or indirect: `call [proc+si]`), RET, RET n  
 **Stack:** PUSH, POP, PUSHF, POPF  
 **Flags:** CLC, STC, CMC, CLD, STD  
 **Interrupts:** INT (DOS-style `int 21h` console services)  
@@ -116,7 +116,7 @@ MUL/DIV operate on unsigned values, IMUL/IDIV on signed values.
 
 `int 21h` provides DOS-style services selected via `AH`: `01h` read a character with echo (into `AL`), `02h` write the character in `DL`, `07h` read a character without echo, `09h` write the `$`-terminated string at `DX`, `0Ah` read a line into the buffer at `DX`, `4Ch` terminate the program. Output and keyboard input are shown/captured in the dedicated **Console** panel.
 
-The data section supports MASM-style symbolic declarations: `DB`/`DW` variables, `EQU` constants, strings, `DUP`, `ORG` and `offset` (example programs in [`Docs/samples`](./Docs/samples)).
+The data section supports MASM-style symbolic declarations: `DB`/`DW` variables, `EQU` constants, strings, `DUP`, `ORG` and `offset`; code labels can be used as values (`offset label` in code, `tab DW case0, case1` in data) to build jump tables (example programs in [`Docs/samples`](./Docs/samples)).
 
 For complete instruction documentation, register definitions, addressing modes, and flag behavior, see the [**Easy CPU Assembly Reference**](./Docs/Easy%20CPU%20%20Assembly%20Reference.md).
 
@@ -133,7 +133,7 @@ Side-by-side editors for assembly code and data section initialization. Supports
 Displays all CPU registers (AX, BX, CX, DX, SI, DI, BP, SP, IP) in the selected format, with the high and low bytes of AX–DX (`AX = 0141 [AH=01 AL=41]`). The flags are listed as C, Z, S, O, D (carry, zero, sign, overflow, direction).
 
 ### Memory Inspector
-Shows the data memory and the stack. Toggle between decimal, hexadecimal, and character formats (the choice is remembered); view the stack in one or two columns. Below the memory, the **Symbols** section lists the names defined in the data section.
+Shows the data memory and the stack. Toggle between decimal, hexadecimal, and character formats (the choice is remembered); view the stack in one or two columns. Below the memory, the **Symbols** section lists the names defined in the data section and the code labels with their instruction number.
 
 ### Console Panel
 Displays output and captures keyboard input for `int 21h` calls. Auto-activates on `int 21h` and shows a blinking cursor while waiting for a keypress.
@@ -165,7 +165,7 @@ Complete documentation is available in the `Docs/` folder:
 - **[EasyCPU IDE Tutorial](./Docs/EasyCPU%20%20IDE%20Tutorial.md)** – Step-by-step guide to using the IDE, debugging, and managing programs
 - **[Toolbar Icons Reference](./ICONE-TOOLBAR.md)** – Visual guide to IDE toolbar buttons
 
-Ready-to-run example programs (`.asj`) are available in [`Docs/samples/`](./Docs/samples), organized by topic (data transfer, arithmetic and flags, logic and shifts, stack and subroutines, data section, `int 21h` console, complete programs, jumps and loops, string instructions, errors); each one starts with a comment describing what it shows and the expected result. The original examples in the legacy `.as` format are in `Docs/Subroutines/`.
+Ready-to-run example programs (`.asj`) are available in [`Docs/samples/`](./Docs/samples), organized by topic (data transfer, arithmetic and flags, logic and shifts, stack and subroutines, data section, `int 21h` console, complete programs, jumps and loops, string instructions, errors, indirect jumps); each one starts with a comment describing what it shows and the expected result. The original examples in the legacy `.as` format are in `Docs/Subroutines/`.
 
 Design documents for the x86 extensions (roadmap, open proposals and their designs) are in [`Proposte/`](./Proposte).
 

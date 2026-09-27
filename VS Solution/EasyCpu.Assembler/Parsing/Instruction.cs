@@ -85,6 +85,14 @@ namespace EasyCpu.Assembler.Parsing
                     throw new CodiceException(CodiceErrore.DestinazioneCostante);
             }
 
+            if (Code is "jmp" or "call")    // forma indiretta: indirizzo a 16 bit in un registro o in memoria
+            {
+                if (Op1.Tipo == TipoOperando.Costante)      // per un salto diretto si scrive l'etichetta
+                    throw new CodiceException(CodiceErrore.OperandoNonValido);
+                if (Op1.Larghezza == 8)
+                    throw new CodiceException(CodiceErrore.DimensioneOperandi);
+            }
+
             if (Code == "xchg")     // scambio: nessuna costante, al massimo un operando in memoria
             {
                 if (Op2.Tipo == TipoOperando.Costante || (InMemoria(Op1) && InMemoria(Op2)))

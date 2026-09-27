@@ -27,22 +27,6 @@ namespace EasyCpu.Assembler.Parsing
         }
     }
 
-    public struct IndirizzoEtichetta
-    {
-        public string Etichetta;
-        public int Indirizzo;
-        public IndirizzoEtichetta(string etichetta, int indirizzo)
-        {
-            this.Etichetta = etichetta;
-            this.Indirizzo = indirizzo;
-        }
-
-        public override string ToString()
-        {
-            return string.Format("{0} {1}", Etichetta, Indirizzo);
-        }
-    }
-
     public struct Operando
     {
         public TipoOperando Tipo;

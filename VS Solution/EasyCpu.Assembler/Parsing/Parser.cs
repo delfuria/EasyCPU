@@ -115,18 +115,22 @@ namespace EasyCpu.Assembler.Parsing
 		public const char FINE = '\0';
 		string _riga;
 		int _indcar;
+		bool _inDati;       // true durante la compilazione della sezione dati: le etichette valgono senza offset
 
-		// nomi definiti nella sezione dati, in ordine di definizione
+		// nomi definiti nella sezione dati ed etichette del codice, in ordine di definizione
 		readonly Dictionary<string, Simbolo> _simboli = new();
 		public List<Simbolo> ElencoSimboli { get; } = new();
+
+		// etichette della pre-scansione, non ancora aggiunte ai simboli: la sezione dati le può
+		// usare, ma in caso di conflitto con una variabile l'errore va sulla riga dell'etichetta
+		readonly Dictionary<string, Simbolo> _etichette = new();
 
 		public void AzzeraSimboli()
 		{
 			_simboli.Clear();
 			ElencoSimboli.Clear();
+			_etichette.Clear();
 		}
-
-		public bool SeSimbolo(string nome) => _simboli.ContainsKey(nome);
 
 		public int IndCar => _indcar;
 
@@ -447,7 +451,13 @@ namespace EasyCpu.Assembler.Parsing
 			{
 				EstraiToken();
 				Simbolo sim = CercaSimbolo(token);
-				if (sim.Tipo != TipoSimbolo.Equ)
+				if (sim.Tipo == TipoSimbolo.Etichetta)
+				{
+					// nel codice l'indirizzo di un'etichetta si scrive offset nome, come per le variabili
+					if (!_inDati)
+						throw new CodiceException(CodiceErrore.EtichettaSenzaOffset);
+				}
+				else if (sim.Tipo != TipoSimbolo.Equ)
 				{
 					if (s < 0)
 						throw new CodiceException(CodiceErrore.Sintassi);
@@ -462,7 +472,7 @@ namespace EasyCpu.Assembler.Parsing
 
 		Simbolo CercaSimbolo(string nome)
 		{
-			if (nome == null || !_simboli.TryGetValue(nome, out Simbolo sim))
+			if (nome == null || !(_simboli.TryGetValue(nome, out Simbolo sim) || _etichette.TryGetValue(nome, out sim)))
 				throw new CodiceException(CodiceErrore.SimboloNonDefinito);
 			return sim;
 		}
@@ -536,6 +546,7 @@ namespace EasyCpu.Assembler.Parsing
 			indirizzo = 0;
 			_riga = s;
 			_indcar = 0;
+			_inDati = true;
 			string primo = TestToken();
 			if (primo != null && Char.IsDigit(primo[0]))
 				return CompilaDatiIndirizzo(out indirizzo);
@@ -690,23 +701,72 @@ namespace EasyCpu.Assembler.Parsing
 			return testo;
 		}
 
+		// Etichetta all'inizio della riga (identificatore seguito da ':'); null se assente.
+		// soloEtichetta: dopo i duepunti non c'è altro, l'etichetta indica l'istruzione successiva.
+		public string LeggiEtichetta(string s, out bool soloEtichetta)
+		{
+			_riga = s;
+			_indcar = 0;
+			soloEtichetta = false;
+			string token = LeggiIdentificatore();
+			if (token == null || _riga[_indcar] != ':')
+			{
+				_indcar = 0;
+				return null;
+			}
+			_indcar++;              // scarta i duepunti
+			SaltaSpazi();
+			soloEtichetta = SeFine();
+			return token;
+		}
+
+		// Pre-scansione: etichetta del codice con il numero dell'istruzione a cui punta
+		public void DefinisciEtichetta(string nome, string grafia, int istruzione)
+		{
+			if (Registri.ContainsKey(nome) || CercaOpCode(nome, out _, out _) != -1)
+				throw new CodiceException(CodiceErrore.NomeSimboloNonValido);
+			if (_etichette.ContainsKey(nome))
+				throw new CodiceException(CodiceErrore.SimboloDuplicato);
+			_etichette.Add(nome, new Simbolo(nome, TipoSimbolo.Etichetta, istruzione, 0) { Grafia = grafia });
+		}
+
+		// Dopo la sezione dati: l'etichetta entra fra i simboli; con lo stesso nome di una variabile
+		// o costante resta valido il nome dei dati e l'errore riguarda l'etichetta
+		public void AggiungiEtichetta(string nome)
+		{
+			Simbolo sim = _etichette[nome];
+			_etichette.Remove(nome);
+			DefinisciSimbolo(sim);
+		}
+
+		// numero dell'istruzione indicata dall'etichetta; -1 se il nome non è un'etichetta
+		public int CercaEtichetta(string nome)
+		{
+			return _simboli.TryGetValue(nome, out Simbolo sim) && sim.Tipo == TipoSimbolo.Etichetta ? sim.Valore : -1;
+		}
+
+		// jmp/call: forma indiretta se l'operando non è il nome di un'etichetta
+		// (registro, [...], variabile, costante); un nome sconosciuto resta un'etichetta
+		bool SeSaltoIndiretto()
+		{
+			string token = TestToken();
+			if (token == null)
+				return false;
+			if (_simboli.TryGetValue(token, out Simbolo sim))
+				return sim.Tipo != TipoSimbolo.Etichetta;
+			return !(Char.IsLetter(token[0]) || token[0] == '_') || Registri.ContainsKey(token) || token == "offset";
+		}
+
 		public Instruction Compila(string s, out string etichetta)
 		{
-			etichetta = null;
 			int numOp = -1;
 			TipoOp tipo;
 			Operando op1, op2;
-			_indcar = 0;
-			_riga = s;
-			string token = LeggiIdentificatore();
-			if (token != null && _riga[_indcar] == ':')
-			{
-				etichetta = token;
-				EstraiToken();          // scarta i duepunti
-				token = EstraiToken();
-				if (token == null)      // c'è solo l'etichetta
-					return null;
-			}
+			_inDati = false;
+			etichetta = LeggiEtichetta(s, out bool soloEtichetta);
+			if (soloEtichetta)
+				return null;
+			string token = etichetta == null ? LeggiIdentificatore() : EstraiToken();
 			string prefisso = null;
 			if (token != null && Prefissi.Contains(token))     // rep movsb, repne scasb, ...
 			{
@@ -741,6 +801,13 @@ namespace EasyCpu.Assembler.Parsing
 					return new Instruction(code);
 
 				case 1:
+					if (code is "jmp" or "call" && SeSaltoIndiretto())
+					{
+						op1 = LeggiOperando();      // jmp bx, jmp [tab+bx], call tab
+						if (TestToken() != null)
+							throw new CodiceException(CodiceErrore.NumeroOperandi);
+						return new Instruction(code, op1);
+					}
 					if (tipo == TipoOp.Codice)
 					{
 						string salto = EstraiToken();

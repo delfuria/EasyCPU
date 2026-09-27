@@ -39,6 +39,7 @@ namespace EasyCpu.Common
 		ServizioNonValido,
 		CombinazioneRegistriNonValida,
 		PrefissoNonValido,
+		EtichettaSenzaOffset,
 
 	}
 
@@ -81,6 +82,7 @@ namespace EasyCpu.Common
 				case CodiceErrore.ServizioNonValido: return "Servizio int 21h non valido (valore di AH)";
 				case CodiceErrore.CombinazioneRegistriNonValida: return "Combinazione di registri non valida: si può sommare BX o BP con SI o DI";
 				case CodiceErrore.PrefissoNonValido: return "Prefisso non valido: REP si usa con le istruzioni stringa, REPE e REPNE con CMPS e SCAS";
+				case CodiceErrore.EtichettaSenzaOffset: return "Per usare l'indirizzo di un'etichetta scrivere offset seguito dal nome (es. offset fine)";
 					//case CodiceErrore.: return "";
 					//case CodiceErrore.: return "";
 			}

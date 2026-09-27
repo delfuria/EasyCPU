@@ -4,16 +4,17 @@ namespace EasyCpu.Assembler.Parsing
     {
         Equ,    // costante simbolica: non occupa memoria
         Db,     // variabile a byte
-        Dw      // variabile a parola
+        Dw,     // variabile a parola
+        Etichetta   // etichetta del codice: non occupa memoria
     }
 
-    // Nome definito nella sezione dati
+    // Nome definito nella sezione dati o etichetta del codice
     public class Simbolo
     {
         public string Nome;     // in minuscolo: i nomi non distinguono maiuscole e minuscole
         public string Grafia;   // come scritto nella dichiarazione, per la visualizzazione
         public TipoSimbolo Tipo;
-        public int Valore;      // EQU: valore della costante; DB/DW: indirizzo della prima cella
+        public int Valore;      // EQU: valore della costante; DB/DW: indirizzo della prima cella; etichetta: numero dell'istruzione
         public int Celle;       // DB/DW: numero di celle allocate
 
         public Simbolo(string nome, TipoSimbolo tipo, int valore, int celle)

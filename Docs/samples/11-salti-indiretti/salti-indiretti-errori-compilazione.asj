@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "code": [
+    "// ======================================================================",
+    "// Salti indiretti: errori di compilazione",
+    "//",
+    "// Cosa illustra:",
+    "//   Forme non ammesse con le etichette usate come valori e con jmp/call",
+    "//   indiretti: il programma NON compila.",
+    "//",
+    "// Utilizzo:",
+    "//   Premere Compila e osservare il pannello Errori; doppio clic per",
+    "//   andare alla riga.",
+    "//",
+    "// Risultato atteso:",
+    "//   6 errori di tipo Codice, con i messaggi indicati nei commenti",
+    "// ======================================================================",
+    "",
+    "        mov bx, fine        // etichetta senza offset: si scrive offset fine",
+    "        jmp 5               // costante: per un salto diretto si scrive l'etichetta",
+    "        jmp offset fine     // idem: si scrive jmp fine",
+    "        jmp al              // l'indirizzo è a 16 bit",
+    "        jmp car             // car è DB: l'indirizzo è a 16 bit",
+    "        je tab              // i salti condizionati accettano solo un'etichetta",
+    "fine:   stop"
+  ],
+  "data": [
+    "tab     DW fine",
+    "car     DB 1"
+  ]
+}

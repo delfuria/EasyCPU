@@ -1170,7 +1170,8 @@ namespace EasyCpu.Assembler.Processore
             return Convert.ToChar(x).ToString();
         }
 
-        // Una riga per nome della sezione dati: "vet  [000A] DW x5 = 1", "N  EQU 5".
+        // Una riga per nome della sezione dati: "vet  [000A] DW x5 = 1", "N  EQU 5";
+        // in fondo le etichette del codice: "fine  ETICHETTA 7" (numero dell'istruzione).
         // Per le variabili mostra il valore corrente della prima cella (byte basso per DB).
         public List<string> DumpSimboli(IEnumerable<Simbolo> simboli)
         {
@@ -1179,9 +1180,10 @@ namespace EasyCpu.Assembler.Processore
             var dump = new List<string>();
             foreach (var sim in simboli)
             {
-                if (sim.Tipo == TipoSimbolo.Equ)
+                if (sim.Tipo is TipoSimbolo.Equ or TipoSimbolo.Etichetta)
                 {
-                    dump.Add(string.Format("{0,-10} EQU {1}", sim.Grafia ?? sim.Nome, sim.Valore));
+                    dump.Add(string.Format("{0,-10} {1} {2}", sim.Grafia ?? sim.Nome,
+                        sim.Tipo == TipoSimbolo.Equ ? "EQU" : "ETICHETTA", sim.Valore));
                     continue;
                 }
                 short valore = memoria[sim.Valore];

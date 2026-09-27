@@ -71,7 +71,7 @@ Questa rappresenta l’editor del programma, sia per quanto riguarda la scrittur
 
 Quest’area rappresenta una finestra sul contenuto della memoria della CPU, esclusa la zona dedicata allo stack. Esistono tre modalità di visualizzazione dei dati: decimale, esadecimale e carattere. L’utente può decidere se visualizzare o nascondere quest’area.
 
-Se la sezione dati definisce dei nomi (variabili DB e DW, costanti EQU), sotto il contenuto della memoria compare la sezione «Simboli»: per ogni nome riporta l’indirizzo, il tipo, il numero di celle e il valore corrente della prima cella, così da ritrovare facilmente le variabili del programma.
+Se il programma definisce dei nomi (variabili DB e DW, costanti EQU, etichette del codice), sotto il contenuto della memoria compare la sezione «Simboli»: per ogni nome della sezione dati riporta l’indirizzo, il tipo, il numero di celle e il valore corrente della prima cella, così da ritrovare facilmente le variabili del programma; in fondo elenca le etichette con il numero della loro istruzione, utile per leggere le tabelle di salto.
 
 In caso di errori di compilazione del programma, l’area di memoria viene nascosta e viene mostrato l’elenco degli errori di sintassi riscontrati. Cliccando su un errore è il caret dell’editor viene posizionato automaticamente sulla posizione corrispondente nel programma.
 

@@ -122,7 +122,7 @@ EasyCPU supporta una memoria non segmentata di 256 elementi interi. Di questi, g
 
 ![](data:image/x-emf;base64...)
 
-Diversamente da quanto accade in un sistema reale, nella memoria vengono memorizzati soltanto i dati. Le istruzioni sono collocate in un vettore a se stante, del quale il registro IP funge da indice.
+Diversamente da quanto accade in un sistema reale, nella memoria vengono memorizzati soltanto i dati. Le istruzioni sono collocate in un vettore a se stante, del quale il registro IP funge da indice. Di conseguenza l’indirizzo di un’etichetta è il numero d’ordine della sua istruzione (0, 1, 2…) e non un indirizzo di memoria in byte come su x86: è il valore che contengono le tabelle di salto usate da JMP e CALL indiretti.
 
 ### Registri
 
@@ -382,13 +382,15 @@ Sintassi:
 
 **CALL *etichetta***
 
+**CALL *sorgente***
+
 Operazione svolta:
 
 **SP = SP – 1**
 
 **MEMORIA[SP] = IP**
 
-**IP = indirizzo designato dall’etichetta**
+**IP = indirizzo designato dall’etichetta, oppure valore di sorgente**
 
 Flag definiti:
 
@@ -405,6 +407,12 @@ call ciclo // IP viene punta alla istruzione designata da "ciclo"
 ...
 
 ciclo: *<inizio della procedura>*
+
+Nella forma indiretta l’indirizzo della procedura viene letto durante l’esecuzione da un registro a 16 bit o da una cella di memoria (vedi JMP). Una tabella di procedure consente di scegliere la procedura da chiamare in base a un indice:
+
+proc DW somma, prodotto // sezione dati: indirizzi di due procedure
+
+call [proc+si] // chiama la procedura il cui indirizzo è nella cella proc + SI
 
 ### CBW – Estensione del segno da byte a parola
 
@@ -1075,9 +1083,11 @@ Sintassi:
 
 **JMP *etichetta***
 
+**JMP *sorgente***
+
 Operazione svolta:
 
-**IP = indirizzo designato dall’etichetta**
+**IP = indirizzo designato dall’etichetta, oppure valore di sorgente**
 
 Flag definiti:
 
@@ -1092,6 +1102,18 @@ Esempio:
 jmp salto // IP punta alla istruzione designata da " salto "
 
 salto: ...
+
+Nella forma indiretta la destinazione viene letta durante l’esecuzione: *sorgente* può essere un registro a 16 bit o una cella di memoria, con qualsiasi modo di indirizzamento. Il valore è il numero dell’istruzione di destinazione, ottenuto con offset *etichetta* nel codice o con il nome dell’etichetta nella sezione dati:
+
+mov bx, offset fine
+
+jmp bx // salta a "fine"
+
+jmp [tab+bx] // salta all’indirizzo contenuto nella cella tab + BX
+
+jmp dest // dest variabile DW: come jmp [dest]
+
+Una tabella di salto (tab DW caso0, caso1, caso2) realizza una scelta multipla con un solo salto, al posto di una catena di CMP e JE. Solo JMP e CALL hanno la forma indiretta: i salti condizionati, LOOP e JCXZ accettano soltanto un’etichetta. Non sono ammessi una costante (per un salto diretto si scrive l’etichetta), un registro a 8 bit o una variabile DB. Una destinazione che non corrisponde a un’istruzione del programma produce l’errore di esecuzione «Registro IP non indirizza un'istruzione».
 
 ### JNE – Salto se diverso
 
@@ -2145,7 +2167,8 @@ Un elemento può essere:
 - «?», che indica una cella non inizializzata (vale 0);
 - una stringa tra apici, come 'Ciao': ogni carattere occupa una cella (solo con DB);
 - «n DUP(elemento)», che ripete l’elemento n volte;
-- «offset nome», l’indirizzo di un’altra variabile.
+- «offset nome», l’indirizzo di un’altra variabile;
+- il nome di un’etichetta del codice, che vale il numero della sua istruzione: serve a costruire tabelle di salto (tab DW caso0, caso1) per JMP e CALL indiretti.
 
 I valori di una variabile DB devono essere compresi tra –128 e 255, quelli di una variabile DW tra –32768 e 65535. Le celle di memoria restano di 16 bit: una variabile DB usa soltanto il byte basso di ogni cella.
 
@@ -2183,9 +2206,13 @@ mov ax, [vet+si] // contenuto della cella di indirizzo vet + SI
 
 mov ax, [bp+N] // un nome EQU può essere uno scostamento
 
+mov bx, offset fine // indirizzo di un’etichetta: il numero della sua istruzione
+
+Nel codice l’indirizzo di un’etichetta si scrive sempre con offset: mov bx, fine produce un errore che suggerisce offset fine.
+
 La dimensione di un accesso a una variabile dipende dal suo tipo: una variabile DB si usa con registri a 8 bit (mov al, msg) e una variabile DW con registri a 16 bit (mov ax, conta). Istruzioni come mov ax, msg o push msg (con msg di tipo DB) producono l’errore «Dimensione degli operandi non valida o non coerente». Anche un’istruzione con una sola variabile, come inc conta, opera sulla dimensione della variabile.
 
-Il pannello Memoria mostra, sotto il contenuto della memoria, l’elenco dei nomi definiti con indirizzo, tipo, numero di celle e valore corrente della prima cella.
+Il pannello Memoria mostra, sotto il contenuto della memoria, l’elenco dei nomi definiti con indirizzo, tipo, numero di celle e valore corrente della prima cella; in fondo all’elenco compaiono le etichette del codice con il numero della loro istruzione.
 
 ### Esempio: Hello world
 

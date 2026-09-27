@@ -1,6 +1,6 @@
 # Salti e chiamate indirette (jmp/call con registro o memoria)
 
-Stato: **progetto**, niente ancora implementato. È la proposta A di `PROPOSTE-X86.md` (P4 dell'analisi iniziale), rimandata dalla fase 3. Il documento descrive cosa introdurre, perché oggi non è possibile e le operazioni da eseguire.
+Stato: **implementato** il 27 settembre 2026 (test in `SaltiIndirettiTests`, esempi in `Docs/samples/11-salti-indiretti`). Differenza rispetto al progetto: le etichette della pre-scansione restano in una tabella separata finché la sezione dati è compilata, poi entrano fra i simboli; un nome usato sia da un'etichetta sia da una variabile è segnalato sulla riga dell'etichetta. È la proposta A di `PROPOSTE-X86.md` (P4 dell'analisi iniziale), rimandata dalla fase 3. Il documento descrive cosa introdurre, perché oggi non è possibile e le operazioni da eseguire.
 
 ---
 
