@@ -864,9 +864,17 @@ public partial class MainViewModel : ObservableObject
         StatusMessage = IsMemoriaAByte ? "Compilazione completata (memoria a byte)" : "Compilazione completata";
         _atBreakpoint = false;
         _pendingFirstStep = true;
+        // Celle inizializzate dalla sezione dati evidenziate già al caricamento, anche quelle a 0:
+        // la base del confronto è la stessa memoria con ogni cella dichiarata alterata.
+        var baseConfronto = memory.ToList();
+        foreach (var celle in Compiler.CelleDati)
+            if (celle is var (inizio, n))
+                for (int i = inizio; i < inizio + n; i++) baseConfronto[i] ^= 1;
+        Cpu.Init(instructions, baseConfronto, Ambiente.InizializzaRegistri, Ambiente.LoopInfinito, Compiler.Modello);
+        RefreshDebugViews();
         Cpu.Init(instructions, memory, Ambiente.InizializzaRegistri, Ambiente.LoopInfinito, Compiler.Modello);
         SyncBreakpointsToCpu();
-        RefreshDebugViews();
+        RefreshDebugViews(evidenzia: true);
         NotifyCpuStatusChanged();
         return true;
     }
@@ -1042,9 +1050,9 @@ public partial class MainViewModel : ObservableObject
             return false;
         }
 
+        // pannelli già aggiornati dalla compilazione, con i dati evidenziati fino al primo passo
         _pendingFirstStep = false;
         UpdateCurrentSourceLine();
-        RefreshDebugViews();
         StatusMessage = CurrentSourceLine > 0 ? $"Riga {CurrentSourceLine}" : "Esecuzione terminata";
         return false;
     }
