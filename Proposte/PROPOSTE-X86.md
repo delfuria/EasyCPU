@@ -1,13 +1,13 @@
 # Proposte di estensione x86 per EasyCPU
 
-Stato al 27 settembre 2026: **fasi 0–4 completate**, **persistenza nel browser (D)** e **salti indiretti (A)** implementati. Restano aperte due proposte principali (divieto delle operazioni memoria-memoria, modalità x86 fedele), la bozza automatica e il riallineamento dei manuali `.docx`/`.odt`. Il documento riassume lo stato attuale, le decisioni prese, le differenze che restano rispetto a x86 e l'**ordine consigliato** per le prossime fasi.
+Stato al 27 settembre 2026: **fasi 0–5 completate**: persistenza nel browser (D), salti indiretti (A) e modalità x86 fedele (C, con il divieto memoria-memoria B attivo in quella modalità) sono implementati. Restano aperti la bozza automatica (E), il divieto memoria-memoria anche nella modalità a parole (facoltativo) e il riallineamento dei manuali `.docx`/`.odt` (F.1). Il documento riassume lo stato attuale, le decisioni prese, le differenze che restano rispetto a x86 e l'**ordine consigliato** per le prossime fasi.
 
 Documenti di progetto collegati, nella stessa cartella:
 
 | Documento | Contenuto | Stato |
 |---|---|---|
 | [`SALTI-INDIRETTI.md`](SALTI-INDIRETTI.md) | `jmp`/`call` con registro o memoria, tabelle di salto | implementato |
-| [`MODALITA-X86-FEDELE.md`](MODALITA-X86-FEDELE.md) | fase 5: memoria a byte, `byte ptr`/`word ptr` | progetto |
+| [`MODALITA-X86-FEDELE.md`](MODALITA-X86-FEDELE.md) | fase 5: memoria a byte, `byte ptr`/`word ptr` | implementato |
 | [`PERSISTENZA-BROWSER.md`](PERSISTENZA-BROWSER.md) | opzioni, layout, recenti e breakpoint conservati nel browser | implementato |
 | [`INTERRUPT-CONSOLE.md`](INTERRUPT-CONSOLE.md) | specifica originale di `int 21h` e del pannello Console | implementato (servizi poi estesi in fase 2) |
 
@@ -22,9 +22,9 @@ Documenti di progetto collegati, nella stessa cartella:
 | Registri | AX, BX, CX, DX (con AH/AL, BH/BL, CH/CL, DH/DL), SI, DI, BP, SP, IP |
 | Aritmetica | 16 e 8 bit; con e senza segno (MUL/DIV senza segno, IMUL/IDIV con segno) |
 | Flag | CF, ZF, SF, DF, OF, nelle posizioni dei bit di x86 (0, 6, 7, 10, 11) |
-| Memoria dati | 256 celle **da 16 bit** (modello «a parole»); un accesso a 8 bit usa il byte basso della cella |
+| Memoria dati | 256 celle **da 16 bit** (modello «a parole», predefinito); un accesso a 8 bit usa il byte basso della cella. Modalità x86 fedele facoltativa: **512 byte**, parole little-endian |
 | Memoria codice | vettore separato di istruzioni: IP è il numero d'ordine dell'istruzione |
-| Stack | celle 240–255 (16 parole), SP parte da 256 |
+| Stack | celle 240–255 (16 parole), SP parte da 256; memoria a byte: byte 448–511 (32 parole), SP parte da 512 e si sposta di 2 |
 
 ### Indirizzamento
 
@@ -57,7 +57,7 @@ Pannello Registri con byte alto/basso e flag C, Z, S, O, D; pannello Memoria con
 
 ### Verifica
 
-105 test automatici (`EasyCpu.Assembler.Tests`) e 66 programmi di esempio in `Docs/samples`, suddivisi in 11 cartelle per argomento, ognuno con un commento iniziale che descrive il risultato atteso.
+130 test automatici (`EasyCpu.Assembler.Tests`) e 74 programmi di esempio in `Docs/samples`, suddivisi in 12 cartelle per argomento, ognuno con un commento iniziale che descrive il risultato atteso.
 
 ---
 
@@ -70,8 +70,9 @@ Pannello Registri con byte alto/basso e flag C, Z, S, O, D; pannello Memoria con
 | 2 | Sezione dati simbolica; `int 21h` con AH (01h, 02h, 07h, 09h, 0Ah, 4Ch) | Nomi in stile MASM (`conta` = contenuto, `offset conta` = indirizzo); nessuna compatibilità con la vecchia selezione del servizio tramite AX; due editor (Codice e Dati) |
 | 3 | CF e aritmetica senza segno; istruzioni x86 comuni | `mul`/`div` senza segno, nuove `imul`/`idiv`; `shr` logico e nuovo `sar`; bit dei flag come x86; `imul` solo a un operando |
 | 4 | Istruzioni stringa, DF, prefissi REP; indirizzamento base + indice | Forme B/W; una ripetizione per Step; solo le combinazioni x86 (BX/BP + SI/DI) |
+| 5 | Modalità x86 fedele: memoria a byte, `byte ptr`/`word ptr`, divieto memoria-memoria | Modalità scelta dal menu Esegui e salvata nel file `.asj`; 512 byte con 64 byte di stack; forma `indirizzo: valori` vietata; refactoring a comportamento invariato prima della memoria a byte |
 
-Le proposte originali P1–P8 dell'analisi iniziale sono state tutte realizzate, con le eccezioni riportate nella sezione 4 (salti indiretti, divieto memoria-memoria, memoria a byte).
+Le proposte originali P1–P8 dell'analisi iniziale sono state tutte realizzate, anche i salti indiretti (A), la memoria a byte (C) e il divieto memoria-memoria nella modalità a byte (B).
 
 ---
 
@@ -81,8 +82,8 @@ Sono scelte del modello didattico o limiti noti; ognuna è documentata nel manua
 
 | Differenza | Motivo | Proposta |
 |---|---|---|
-| Memoria a celle da 16 bit: `[10]` e `[11]` non si sovrappongono, un vettore di parole avanza di 1 | Semplicità, compatibilità con i programmi esistenti | C – modalità x86 fedele |
-| Operazioni memoria-memoria accettate (`mov a, b`) | Non rompere i programmi esistenti | B |
+| Memoria a celle da 16 bit nella modalità predefinita: `[10]` e `[11]` non si sovrappongono, un vettore di parole avanza di 1 | Semplicità, compatibilità con i programmi esistenti | C ✅ – la modalità x86 fedele, facoltativa, usa la memoria a byte |
+| Operazioni memoria-memoria accettate (`mov a, b`) nella modalità a parole | Non rompere i programmi esistenti | B ✅ nella modalità a byte; facoltativo nella modalità a parole |
 | Codice in una memoria separata, IP = numero dell'istruzione | Modello Harvard semplificato | nessuna: da spiegare nel manuale |
 | Niente segmenti (CS, DS, SS, ES) | Fuori dagli obiettivi didattici | nessuna |
 | Flag PF, AF, IF assenti (niente `jp`/`jnp`) | Poco utili didatticamente | nessuna, salvo richiesta |
@@ -104,21 +105,22 @@ Valore didattico (**V**) e sforzo (**S**) su una scala da 1 a 3.
 - Progetto completo: [`SALTI-INDIRETTI.md`](SALTI-INDIRETTI.md).
 - Realizzata con una pre-scansione delle etichette; le etichette entrano fra i simboli dopo la sezione dati, così un conflitto con una variabile è segnalato sulla riga dell'etichetta come prima. 9 nuovi test (`SaltiIndirettiTests`) e 3 esempi in `Docs/samples/11-salti-indiretti`; i 63 esempi esistenti danno gli stessi risultati.
 
-### B — Divieto delle operazioni memoria-memoria · V2 · S1
+### B — Divieto delle operazioni memoria-memoria · V2 · S1 · ✅ nella modalità x86 fedele
 
 Rendere un errore di compilazione `mov [1], [2]`, `mov a, b`, `add a, b`, come su x86 (restano ammesse le istruzioni stringa). Rimandato dalla fase 4 perché **rompe programmi esistenti**.
 
 - Modifica piccola: un controllo in `Instruction.VerificaIstruzione` (`InMemoria(Op1) && InMemoria(Op2)`, escluse le istruzioni stringa).
 - Nota già presente nell'Assembly Reference («Modelli di indirizzamento»).
-- Proposta: attivarlo solo nella modalità x86 fedele (C), dove i programmi sono comunque nuovi; valutare in seguito se estenderlo alla modalità a parole.
+- Realizzato nella modalità x86 fedele (C), dove i programmi sono comunque nuovi (`Instruction.VerificaMemoriaAByte`, errore `OperandiMemoriaMemoria`). Resta da valutare se estenderlo alla modalità a parole.
 
-### C — Modalità x86 fedele (fase 5) · V3 · S3
+### C — Modalità x86 fedele (fase 5) · V3 · S3 · ✅ implementata
 
 Memoria a byte, parole little-endian, stack a passi di 2, `byte ptr`/`word ptr`, operandi di dimensione ambigua come errore. Modalità **opzionale**, scelta con la voce «Memoria a byte (x86)» del menu Esegui e salvata nel file `.asj`: la modalità a parole resta la predefinita.
 
 - È il cambiamento più invasivo: tocca memoria, CPU, parser, compilatore e pannelli.
 - Il progetto prevede prima un refactoring a comportamento invariato, verificato da tutti i test e gli esempi.
 - Progetto completo: [`MODALITA-X86-FEDELE.md`](MODALITA-X86-FEDELE.md).
+- Realizzata in 8 passi, ognuno con i test verdi; i passi 1–2 (memoria astratta `ModelloMemoria`/`MemoriaCpu`) verificati confrontando tutti gli esempi prima e dopo. 25 nuovi test (`Fase5Tests`), 7 esempi in `Docs/samples/12-memoria-byte` e `01-trasferimento-memoria/byte-ptr-word-ptr.asj`; capitolo «Modalità x86 fedele: memoria a byte» nell'Assembly Reference.
 
 ### D — Persistenza delle impostazioni nel browser · V1 · S2 (utilità alta) · ✅ implementata
 
@@ -159,13 +161,13 @@ Piccoli interventi emersi durante le fasi 0–4:
 |---|---|---|
 | 1 | ✅ **D** – Persistenza nel browser | Fatta. Subito dopo sono state fatte anche le piccole correzioni F.2–F.4. |
 | 2 | ✅ **A** – Salti indiretti | Fatta, prima del grande refactoring della fase 5 come previsto; con A è stata aggiunta anche la nota sul modello (F.5). |
-| 3 | **C** – Modalità x86 fedele, con **B** attivo solo in questa modalità | La più invasiva, da affrontare con il resto stabile. Il divieto memoria-memoria nasce dentro una modalità nuova e opzionale, senza rompere i programmi esistenti. |
+| 3 | ✅ **C** – Modalità x86 fedele, con **B** attivo solo in questa modalità | Fatta. Il divieto memoria-memoria è nato dentro una modalità nuova e opzionale, senza rompere i programmi esistenti. |
 | 4 | **E** – Bozza automatica | Miglioramento dell'IDE, può anche seguire subito D se la perdita del lavoro si rivela un problema frequente. |
 | 5 | **B** nella modalità a parole (facoltativo) | Solo se si decide di allineare anche la modalità predefinita a x86, accettando di rompere i programmi che copiano memoria su memoria. |
 | 6 | **F.1** – Manuale `.docx`/`.odt` | Alla fine, quando il linguaggio è stabile: evita di riallineare i manuali più volte. |
 
 ```
-D ✅ ──► A ✅ ──► C (+B) ──► F.1
+D ✅ ──► A ✅ ──► C (+B) ✅ ──► F.1
    └──► E (in qualsiasi momento); F.2–F.5 ✅
                         B in modalità a parole: facoltativo, dopo C
 ```

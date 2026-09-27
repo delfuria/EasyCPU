@@ -42,7 +42,9 @@ Introduzione 5
 
 2.8 Interrompere un ciclo infinito 10
 
-2.9 Stato della CPU 11
+2.9 Memoria a byte (modalità x86 fedele)
+
+2.10 Stato della CPU 11
 
 3 Preferenze e opzioni di visualizzazione 11
 
@@ -69,15 +71,15 @@ Questa rappresenta l’editor del programma, sia per quanto riguarda la scrittur
 
 ### Area «memoria» ed «errori di compilazione»
 
-Quest’area rappresenta una finestra sul contenuto della memoria della CPU, esclusa la zona dedicata allo stack. Esistono tre modalità di visualizzazione dei dati: decimale, esadecimale e carattere. L’utente può decidere se visualizzare o nascondere quest’area.
+Quest’area rappresenta una finestra sul contenuto della memoria della CPU, esclusa la zona dedicata allo stack. Esistono tre modalità di visualizzazione dei dati: decimale, esadecimale e carattere. L’utente può decidere se visualizzare o nascondere quest’area. Se il programma usa la memoria a byte (vedi «Memoria a byte (modalità x86 fedele)») il pannello si intitola «Memoria (byte)» e mostra 16 byte per riga.
 
-Se il programma definisce dei nomi (variabili DB e DW, costanti EQU, etichette del codice), sotto il contenuto della memoria compare la sezione «Simboli»: per ogni nome della sezione dati riporta l’indirizzo, il tipo, il numero di celle e il valore corrente della prima cella, così da ritrovare facilmente le variabili del programma; in fondo elenca le etichette con il numero della loro istruzione, utile per leggere le tabelle di salto.
+Se il programma definisce dei nomi (variabili DB e DW, costanti EQU, etichette del codice), sotto il contenuto della memoria compare la sezione «Simboli»: per ogni nome della sezione dati riporta l’indirizzo, il tipo, il numero di elementi e il valore corrente del primo elemento, così da ritrovare facilmente le variabili del programma; in fondo elenca le etichette con il numero della loro istruzione, utile per leggere le tabelle di salto.
 
 In caso di errori di compilazione del programma, l’area di memoria viene nascosta e viene mostrato l’elenco degli errori di sintassi riscontrati. Cliccando su un errore è il caret dell’editor viene posizionato automaticamente sulla posizione corrispondente nel programma.
 
 ### Area «stack»
 
-Rappresenta una finestra sull’area di memoria riservata allo stack. Anche in questo caso esistono tre modalità di visualizzazione dei dati: decimale, esadecimale e carattere. Inoltre, è possibile stabilire se visualizzare le celle di memoria in una o due colonne.
+Rappresenta una finestra sull’area di memoria riservata allo stack. Anche in questo caso esistono tre modalità di visualizzazione dei dati: decimale, esadecimale e carattere. Inoltre, è possibile stabilire se visualizzare le celle di memoria in una o due colonne. Con la memoria a byte ogni riga mostra una parola (due byte), all’indirizzo del suo byte basso.
 
 ### Area «registri»
 
@@ -223,6 +225,12 @@ Il valore limite predefinito del contatore è 65535, ma può essere modificato d
 ![](data:image/png;base64...)
 
 Figura 4 Finestra di dialogo di gestione dei cicli infiniti.
+
+### Memoria a byte (modalità x86 fedele)
+
+Nella modalità predefinita la memoria della CPU è formata da 256 celle da 16 bit. La voce «Memoria a byte (x86)» del menu «Esegui» (nella versione Browser, del menu laterale) attiva per il programma corrente la modalità x86 fedele: 512 byte, parole di due byte in ordine little-endian, stack di 32 parole nei byte da 448 a 511, e le regole del compilatore descritte nel manuale del linguaggio (capitolo «Modalità x86 fedele: memoria a byte»).
+
+La modalità è una proprietà del programma: viene salvata nel file .asj insieme al codice e ai dati, e un programma riaperto (anche dai «Recenti» del browser) torna nella sua modalità. Il comando «Nuovo» riporta la memoria a parole. Cambiare la modalità segna il programma come modificato, azzera registri, memoria e stack e richiede una nuova compilazione; non è possibile cambiarla durante l’esecuzione. La barra di stato indica «(memoria a byte)» all’apertura e alla compilazione. Gli esempi della cartella Docs/samples/12-memoria-byte sono già impostati in questa modalità.
 
 ### Stato della CPU
 

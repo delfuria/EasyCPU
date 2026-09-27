@@ -6,99 +6,93 @@ Assembly reference
 | --- | --- |
 | ![](data:image/x-emf;base64...) | **Paolo Meozzi**  **Stefano Del Furia** |
 
-Premessa 5
+Indice
 
-Struttura della CPU 6
-
-Artimetica 6
-
-Memoria dati 6
-
-Registri 6
-
-Modelli di indirizzamento 7
-
-Gestione dello stack 8
-
-Flags 9
-
-Set di istruzioni 10
-
-Descrizione generale delle istruzioni 10
-
-Modalità di descrizione delle istruzioni 10
-
-ADD – Addizione 11
-
-AND – Moltiplicazione logica 11
-
-CALL – Chiamata di una procedura 12
-
-CMP – Confronto 12
-
-DEC – Decremento 13
-
-DIV – Divisione intera 13
-
-INC – Incremento 14
-
-JCXZ – Salto se CX è zero 14
-
-JE – Salto se uguale 15
-
-JG – Salto se maggiore 15
-
-JGE – Salto se maggiore o uguale 16
-
-JL – Salto se minore 16
-
-JLE – Salto se minore o uguale 17
-
-JMP – Salto incondizionato 17
-
-JNE – Salto se diverso 18
-
-JNO – Salto se non overflow 18
-
-JNS – Salto se il flag di segno è 0 19
-
-JO – Salto se overflow 19
-
-JS – Salto se il flag di segno è 1 20
-
-MOV – Trasferimento 20
-
-MOVS – Trasferimento di una sequenza 21
-
-MUL – Moltiplicazione intera 21
-
-NEG – Negazione (formazione del complemento a 2) 22
-
-NOP – Nessuna operazione 22
-
-NOT – Negazione logica (formazione del complemento a 1) 23
-
-POP – Prelevamento dallo stack 23
-
-POPF – Prelevamento del registro dei flags dallo stack 24
-
-PUSH – Deposito di un valore nello stack 24
-
-PUSHF – Deposito del registro dei flags nello stack 25
-
-RET – Ritorno da una procedura 25
-
-SHL – Shift logico a sinistra 26
-
-SHR – Shift logico a destra 26
-
-STOP – Arresta la CPU 27
-
-SUB – Sottrazione 27
-
-XOR – Or esclusivo 28
-
-Struttura di un programma assembly 29
+- Premessa
+- Struttura della CPU
+  - Aritmetica
+  - Memoria dati
+  - Registri
+  - Modelli di indirizzamento
+  - Gestione dello stack
+  - Flags
+- Set di istruzioni
+  - Descrizione generale delle istruzioni
+  - Modalità di descrizione delle istruzioni
+  - ADC – Addizione con riporto
+  - ADD – Addizione
+  - AND – Moltiplicazione logica
+  - CALL – Chiamata di una procedura
+  - CBW – Estensione del segno da byte a parola
+  - CLC – Azzeramento del carry
+  - CLD – Azzeramento del flag di direzione
+  - CMC – Inversione del carry
+  - CMP – Confronto
+  - CMPSB, CMPSW – Confronto di elementi di due sequenze
+  - CWD – Estensione del segno da parola a doppia parola
+  - DEC – Decremento
+  - DIV – Divisione senza segno
+  - IDIV – Divisione con segno
+  - IMUL – Moltiplicazione con segno
+  - INC – Incremento
+  - INT – Chiamata di un servizio di sistema
+  - JA – Salto se superiore (senza segno)
+  - JAE – Salto se superiore o uguale (senza segno)
+  - JB – Salto se inferiore (senza segno)
+  - JBE – Salto se inferiore o uguale (senza segno)
+  - JCXZ – Salto se CX è zero
+  - JE – Salto se uguale
+  - JG – Salto se maggiore
+  - JGE – Salto se maggiore o uguale
+  - JL – Salto se minore
+  - JLE – Salto se minore o uguale
+  - JMP – Salto incondizionato
+  - JNE – Salto se diverso
+  - JNO – Salto se non overflow
+  - JNS – Salto se il flag di segno è 0
+  - JO – Salto se overflow
+  - JS – Salto se il flag di segno è 1
+  - LEA – Caricamento dell’indirizzo effettivo
+  - LODSB, LODSW – Lettura di un elemento di una sequenza
+  - LOOP, LOOPE, LOOPNE – Cicli con contatore
+  - MOV – Trasferimento
+  - MOVS, MOVSB, MOVSW – Copia di un elemento di una sequenza
+  - MUL – Moltiplicazione senza segno
+  - NEG – Negazione (formazione del complemento a 2)
+  - NOP – Nessuna operazione
+  - NOT – Negazione logica (formazione del complemento a 1)
+  - OR – Somma logica
+  - POP – Prelevamento dallo stack
+  - POPF – Prelevamento del registro dei flags dallo stack
+  - PUSH – Deposito di un valore nello stack
+  - PUSHF – Deposito del registro dei flags nello stack
+  - RCL, RCR – Rotazione attraverso il carry
+  - REP, REPE, REPNE – Prefissi di ripetizione
+  - RET – Ritorno da una procedura
+  - ROL, ROR – Rotazione
+  - SAR – Shift aritmetico a destra
+  - SCASB, SCASW – Ricerca in una sequenza
+  - SBB – Sottrazione con prestito
+  - SHL – Shift logico a sinistra
+  - SHR – Shift logico a destra
+  - STC – Impostazione del carry
+  - STD – Impostazione del flag di direzione
+  - STOP – Arresta la CPU
+  - STOSB, STOSW – Scrittura di un elemento di una sequenza
+  - SUB – Sottrazione
+  - TEST – Test logico
+  - XCHG – Scambio
+  - XOR – Or esclusivo
+- Struttura di un programma assembly
+- La sezione dati
+  - Uso dei nomi nel codice
+  - Esempio: Hello world
+- Modalità x86 fedele: memoria a byte
+  - Come si sceglie
+  - Il modello di memoria
+  - Regole in più rispetto alla memoria a parole
+  - Differenze nei programmi
+  - Pannelli
 
 ## Premessa
 
@@ -108,7 +102,7 @@ EasyCPU simula l’architettura dei microprocessori X86 di INTEL, anche se imple
 
 ## Struttura della CPU
 
-### Artimetica
+### Aritmetica
 
 EasyCPU supporta l’aritmetica a 16 bit e a 8 bit. Ogni valore, sia esso immediato (costante) che memorizzato in un registro o in memoria, è rappresentato mediante il tipo intero a 16 bit, con un intervallo di variazione da –32768 e + 32767.
 
@@ -118,7 +112,7 @@ Gli stessi bit possono rappresentare un numero con segno o senza segno: FFFFh va
 
 ### Memoria dati
 
-EasyCPU supporta una memoria non segmentata di 256 elementi interi. Di questi, gli ultimi 16 sono riservati allo «stack»:
+EasyCPU supporta una memoria non segmentata di 256 celle da 16 bit (memoria «a parole», la modalità predefinita). Di queste, le ultime 16 sono riservate allo «stack». Nella modalità x86 fedele la memoria è invece di 512 byte, con le parole di due byte come su x86: vedi «Modalità x86 fedele: memoria a byte».
 
 ![](data:image/x-emf;base64...)
 
@@ -142,7 +136,7 @@ mov al, 'A' // AX = 0141h
 
 In un’istruzione con due operandi, i registri devono avere la stessa dimensione: mov al, bx produce l’errore «Dimensione degli operandi non valida o non coerente». Una costante usata con un registro a 8 bit deve essere compresa tra –128 e 255 (da 0 a FFh in esadecimale).
 
-Quando un registro a 8 bit viene usato con un operando in memoria (mov al, [10], mov [si], dl), l’istruzione legge o scrive soltanto il byte basso della cella: il byte alto della cella non viene modificato. Le celle di memoria restano infatti di 16 bit, e due celle consecutive non si sovrappongono come accade nei microprocessori X86.
+Quando un registro a 8 bit viene usato con un operando in memoria (mov al, [10], mov [si], dl), nella memoria a parole l’istruzione legge o scrive soltanto il byte basso della cella: il byte alto della cella non viene modificato. Le celle di memoria restano infatti di 16 bit, e due celle consecutive non si sovrappongono come accade nei microprocessori X86 (e nella memoria a byte, vedi «Modalità x86 fedele: memoria a byte»).
 
 Le istruzioni PUSH e POP operano soltanto a 16 bit: push al produce un errore.
 
@@ -154,11 +148,11 @@ EasyCPU supporta 6 modelli di indirizzamento: immediato, a registro, diretto, in
 
 Indirizzamento immediato
 
-E’ rappresentato da un valore costante, espresso in forma decimale, esadedimale o carattere. Ad esempio, nelle istruzioni:
+E’ rappresentato da un valore costante, espresso in forma decimale, esadecimale o carattere. Ad esempio, nelle istruzioni:
 
 mov ax, **1** // memorizza 1 nel registro AX
 
-mov ax, **0Ah** // memorizza 10 nel registro BX
+mov ax, **0Ah** // memorizza 10 nel registro AX
 
 mov ax, 'A' // memorizza 65 nel registro AX
 
@@ -166,7 +160,7 @@ i valori 1, 0Ah, ’A’ rappresentano delle costanti espresse in forma decimale
 
 Nel caso in cui un’istruzione richieda due operandi, soltanto il secondo può essere un valore immediato.
 
-Nota: diversamente dai microprocessori X86, EasyCPU accetta istruzioni con entrambi gli operandi in memoria, come mov [1], [2] o add a, b. Su un processore X86 sono errori: un dato va prima copiato in un registro, oppure si usano le istruzioni stringa (MOVSB, MOVSW). Il divieto potrà essere introdotto in una versione successiva.
+Nota: diversamente dai microprocessori X86, nella memoria a parole EasyCPU accetta istruzioni con entrambi gli operandi in memoria, come mov [1], [2] o add a, b. Su un processore X86 sono errori: un dato va prima copiato in un registro, oppure si usano le istruzioni stringa (MOVSB, MOVSW). Nella memoria a byte (modalità x86 fedele) il divieto è attivo e produce l’errore «Un'istruzione non può avere due operandi in memoria: usare un registro».
 
 Indirizzamento a registro
 
@@ -180,7 +174,7 @@ Il registro IP non può apparire come operando di una istruzione.
 
 Indirizzamento diretto
 
-Nell’indirizzamento diretto l’operando è rappresentato dall’indirizzo di una locazione di memoria, che può variare dal 0 a 255. Un riferimento a un indirizzo della memoria dati è caratterizzato dalla sintassi “[indirizzo]”. Ad esempio:
+Nell’indirizzamento diretto l’operando è rappresentato dall’indirizzo di una locazione di memoria, che può variare da 0 a 255 (da 0 a 511 nella memoria a byte). Un riferimento a un indirizzo della memoria dati è caratterizzato dalla sintassi “[indirizzo]”. Ad esempio:
 
 mov ax, **[1]** // memorizza in AX il contenuto della cella di memoria 1
 
@@ -188,7 +182,7 @@ mov bx, **[0Ah]** // memorizza in BX il contenuto della cella di memoria 10
 
 Come si vede, l’indirizzo di memoria può essere espresso sia in forma decimale che esadecimale.
 
-In realtà un indirizzo di memoria può essere espresso anche mediante una costante di tipo carattere, ma non ciò non rappresenta di norma una buona pratica di programmazione.
+In realtà un indirizzo di memoria può essere espresso anche mediante una costante di tipo carattere, ma ciò non rappresenta di norma una buona pratica di programmazione.
 
 Indirizzamento indiretto a registro semplice
 
@@ -234,27 +228,29 @@ Combinazioni come [si+di] o [bx+bp] producono l’errore «Combinazione di regis
 
 Dimensione dell’operando: byte ptr e word ptr
 
-La dimensione di un accesso alla memoria è determinata dal registro usato (mov al, [si] a 8 bit, mov ax, [si] a 16 bit) o dal tipo della variabile (DB o DW). Quando nessuno dei due la determina, come in inc [si] o mov [di], 5, l’accesso è a 16 bit. Scrivendo **byte ptr** o **word ptr** davanti all’operando in memoria se ne fissa la dimensione, anche in contrasto con il tipo della variabile:
+La dimensione di un accesso alla memoria è determinata dal registro usato (mov al, [si] a 8 bit, mov ax, [si] a 16 bit) o dal tipo della variabile (DB o DW). Quando nessuno dei due la determina, come in inc [si] o mov [di], 5, nella memoria a parole l’accesso è a 16 bit, mentre nella memoria a byte l’istruzione produce l’errore «Dimensione dell'operando non specificata: usare byte ptr o word ptr». Scrivendo **byte ptr** o **word ptr** davanti all’operando in memoria se ne fissa la dimensione, anche in contrasto con il tipo della variabile:
 
-inc **byte ptr** [si] // incrementa solo il byte basso della cella
+inc **byte ptr** [si] // incrementa un byte (il byte basso della cella, nella memoria a parole)
 
 mov **word ptr** [di], 5 // scrive una parola
 
 mov al, **byte ptr** conta // byte basso della variabile DW conta
 
-Con byte ptr, come per gli altri accessi a 8 bit, si legge o si scrive il byte basso della cella. Le regole di coerenza restano valide: mov al, word ptr [si] produce l’errore «Dimensione degli operandi non valida o non coerente»; byte ptr e word ptr non si possono usare con un registro o una costante.
+Nella memoria a parole byte ptr, come gli altri accessi a 8 bit, legge o scrive il byte basso della cella; nella memoria a byte accede al byte all’indirizzo indicato. Le regole di coerenza restano valide: mov al, word ptr [si] produce l’errore «Dimensione degli operandi non valida o non coerente»; byte ptr e word ptr non si possono usare con un registro o una costante.
 
 ### Gestione dello stack
 
-In EasyCPU lo stack viene gestito in modo analogo a quanto avviene nei microprocessori della serie X86, ma in forma semplificata. La parte di memoria riservata allo stack inizia a un indirizzo di base immutabile, che è 240; essa occupa esattamente 16 byte.
+In EasyCPU lo stack viene gestito in modo analogo a quanto avviene nei microprocessori della serie X86, ma in forma semplificata. La parte di memoria riservata allo stack inizia a un indirizzo di base immutabile, che è 240; essa occupa esattamente 16 celle, cioè 16 parole.
 
 Nella fase di inizializzazione della CPU, il registro SP (puntatore allo stack) viene impostato al valore 256 (indirizzo massimo dello stack più 1).
 
+Nella memoria a byte lo stack occupa i byte da 448 a 511 (64 byte, cioè 32 parole), SP parte da 512 e ogni PUSH o POP lo sposta di 2, come su x86.
+
 ![](data:image/x-emf;base64...)
 
-Lo stack è una struttura dati di tipo FIFO (*First In, First Out*: il primo che è entra è il primo ad uscire), che viene gestita mediante le istruzioni PUSH e POP. Mediante l’istruzione PUSH viene immesso un valore dallo stack; tale operazione determina un decremento del registro SP. Mediante l’istruzione POP l’ultimo valore allocato viene estratto; essa determina un incremento del registro SP.
+Lo stack è una struttura dati di tipo LIFO (*Last In, First Out*: l’ultimo che entra è il primo ad uscire), che viene gestita mediante le istruzioni PUSH e POP. Mediante l’istruzione PUSH viene immesso un valore nello stack; tale operazione determina un decremento del registro SP. Mediante l’istruzione POP l’ultimo valore allocato viene estratto; essa determina un incremento del registro SP.
 
-Il tentativo di allocare un numero di valori supereriori alla dimensione dello stack produce un errore di «stack overflow».
+Il tentativo di allocare un numero di valori superiore alla dimensione dello stack produce un errore di «stack overflow»; un POP a stack vuoto produce l’errore «stack underflow».
 
 ### Flags
 
@@ -266,7 +262,7 @@ Il flag SF è settato se il risultato di un’operazione aritmetico-logica produ
 
 Il flag ZF è settato se il risultato di un’operazione aritmetico-logica è zero.
 
-Il flag OF è settato se il risultato di un’operazione aritmetico-logica eccede la capacità di memorizzazione dell’operando e dunque l’intervallo di memorizzazione da –3276 a 32768.
+Il flag OF è settato se il risultato di un’operazione aritmetico-logica eccede la capacità di memorizzazione dell’operando e dunque l’intervallo di memorizzazione da –32768 a +32767.
 
 Nelle operazioni a 8 bit i flag si riferiscono al byte: SF riflette il bit 7 del risultato e OF indica un risultato fuori dall’intervallo da –128 a +127.
 
@@ -290,7 +286,7 @@ Il pannello Registri mostra i flag come C, Z, S, O, D.
 
 ### Descrizione generale delle istruzioni
 
-EasyCPU supporta istruzioni con zero, uno e due operandi; ogni istruzione ha un numero di operandi predefinito e immutabile. Le istruzioni rispecchiano la seguente sintassi:
+EasyCPU supporta istruzioni con zero, uno e due operandi; ogni istruzione ha un numero di operandi predefinito (fa eccezione RET, che ammette la forma RET n). Le istruzioni rispecchiano la seguente sintassi:
 
 <*codice mnemonico*> <*operando1*>opz, <*operando2*>opz
 
@@ -398,7 +394,7 @@ Sintassi:
 
 Operazione svolta:
 
-**SP = SP – 1**
+**SP = SP – 1 (SP – 2 nella memoria a byte)**
 
 **MEMORIA[SP] = IP**
 
@@ -425,6 +421,8 @@ Nella forma indiretta l’indirizzo della procedura viene letto durante l’esec
 proc DW somma, prodotto // sezione dati: indirizzi di due procedure
 
 call [proc+si] // chiama la procedura il cui indirizzo è nella cella proc + SI
+
+Nella memoria a byte ogni indirizzo della tabella occupa due byte: l’indice va moltiplicato per 2 (vedi JMP).
 
 ### CBW – Estensione del segno da byte a parola
 
@@ -548,7 +546,7 @@ Operazione svolta:
 
 **[SI] - [DI], senza memorizzare il risultato**
 
-**SI = SI ± 1, DI = DI ± 1**
+**SI = SI ± passo, DI = DI ± passo**
 
 Flag definiti:
 
@@ -558,7 +556,7 @@ Descrizione:
 
 CMPSB e CMPSW confrontano l’elemento puntato da SI con quello puntato da DI come farebbe CMP, poi aggiornano SI e DI. Con REPE confrontano due sequenze finché gli elementi sono uguali.
 
-SI e DI avanzano di una cella se DF = 0 (dopo CLD) o arretrano di una cella se DF = 1 (dopo STD). Poiché le celle di memoria sono di 16 bit, il passo è sempre di una cella: la forma con suffisso B usa il byte basso delle celle e il registro AL, la forma con suffisso W la cella intera e il registro AX. Con il prefisso REP l’istruzione viene ripetuta (vedi «REP, REPE, REPNE»).
+SI e DI avanzano se DF = 0 (dopo CLD) o arretrano se DF = 1 (dopo STD) di un elemento: è il «passo» indicato nell’operazione svolta. Nella memoria a parole l’elemento è sempre una cella: la forma con suffisso B usa il byte basso delle celle e il registro AL, la forma con suffisso W la cella intera e il registro AX. Nella memoria a byte, come su x86, la forma B avanza di 1 byte e la forma W di 2. Con il prefisso REP l’istruzione viene ripetuta (vedi «REP, REPE, REPNE»).
 
 Esempi:
 
@@ -787,7 +785,7 @@ Il buffer del servizio 0Ah ha questo formato: la prima cella contiene il numero 
 
 buf DB 20, ?, 20 DUP(?) // buffer per una riga di al massimo 19 caratteri
 
-Come per le variabili DB, ogni carattere occupa il byte basso di una cella di memoria.
+Come per le variabili DB, ogni carattere occupa il byte basso di una cella di memoria (un byte, nella memoria a byte).
 
 Esempi:
 
@@ -1031,7 +1029,7 @@ Esempi:
 
 cmp ax, bx
 
-jg salto // se "ax > bx" IP punta alla istruzione designata da " salto "
+jge salto // se "ax >= bx" IP punta alla istruzione designata da " salto "
 
 ### JL – Salto se minore
 
@@ -1087,7 +1085,7 @@ Esempi:
 
 cmp ax, bx
 
-jl salto // se "ax < bx" IP punta alla istruzione designata da " salto "
+jle salto // se "ax <= bx" IP punta alla istruzione designata da " salto "
 
 ### JMP – Salto incondizionato
 
@@ -1126,6 +1124,8 @@ jmp [tab+bx] // salta all’indirizzo contenuto nella cella tab + BX
 jmp dest // dest variabile DW: come jmp [dest]
 
 Una tabella di salto (tab DW caso0, caso1, caso2) realizza una scelta multipla con un solo salto, al posto di una catena di CMP e JE. Solo JMP e CALL hanno la forma indiretta: i salti condizionati, LOOP e JCXZ accettano soltanto un’etichetta. Non sono ammessi una costante (per un salto diretto si scrive l’etichetta), un registro a 8 bit o una variabile DB. Una destinazione che non corrisponde a un’istruzione del programma produce l’errore di esecuzione «Registro IP non indirizza un'istruzione».
+
+Nella memoria a byte ogni elemento di una tabella DW occupa due byte: l’indice va moltiplicato per 2 prima del salto (shl bx, 1 seguito da jmp [tab+bx]).
 
 ### JNE – Salto se diverso
 
@@ -1185,7 +1185,7 @@ jno salto // se "non overflow " IP punta alla istruzione designata da "salto"
 
 Sintassi:
 
-**JNO *etichetta***
+**JNS *etichetta***
 
 Operazione svolta:
 
@@ -1211,7 +1211,7 @@ jns salto // se "ax >= 0" IP punta alla istruzione designata da "salto"
 
 Sintassi:
 
-**JNO *etichetta***
+**JO *etichetta***
 
 Operazione svolta:
 
@@ -1237,7 +1237,7 @@ jo salto // se "overflow " IP punta alla istruzione designata da "salto"
 
 Sintassi:
 
-**JNO *etichetta***
+**JS *etichetta***
 
 Operazione svolta:
 
@@ -1294,7 +1294,7 @@ Operazione svolta:
 
 **AL (o AX) = [SI]**
 
-**SI = SI ± 1**
+**SI = SI ± passo**
 
 Flag definiti:
 
@@ -1302,9 +1302,9 @@ Flag definiti:
 
 Descrizione:
 
-LODSB copia in AL il byte basso della cella puntata da SI, LODSW copia in AX la cella intera; poi aggiornano SI. Insieme a STOSB e STOSW servono a scorrere una sequenza elaborandone gli elementi.
+LODSB copia in AL il byte puntato da SI (il byte basso della cella, nella memoria a parole), LODSW copia in AX la parola; poi aggiornano SI. Insieme a STOSB e STOSW servono a scorrere una sequenza elaborandone gli elementi.
 
-SI e DI avanzano di una cella se DF = 0 (dopo CLD) o arretrano di una cella se DF = 1 (dopo STD). Poiché le celle di memoria sono di 16 bit, il passo è sempre di una cella: la forma con suffisso B usa il byte basso delle celle e il registro AL, la forma con suffisso W la cella intera e il registro AX. Con il prefisso REP l’istruzione viene ripetuta (vedi «REP, REPE, REPNE»).
+SI e DI avanzano se DF = 0 (dopo CLD) o arretrano se DF = 1 (dopo STD) di un elemento: è il «passo» indicato nell’operazione svolta. Nella memoria a parole l’elemento è sempre una cella: la forma con suffisso B usa il byte basso delle celle e il registro AL, la forma con suffisso W la cella intera e il registro AX. Nella memoria a byte, come su x86, la forma B avanza di 1 byte e la forma W di 2. Con il prefisso REP l’istruzione viene ripetuta (vedi «REP, REPE, REPNE»).
 
 Esempi:
 
@@ -1392,7 +1392,7 @@ Operazione svolta:
 
 **[DI] = [SI]**
 
-**SI = SI ± 1, DI = DI ± 1**
+**SI = SI ± passo, DI = DI ± passo**
 
 Flag definiti:
 
@@ -1400,9 +1400,9 @@ Flag definiti:
 
 Descrizione:
 
-MOVSB e MOVSW copiano l’elemento puntato da SI nella cella puntata da DI, poi aggiornano SI e DI. MOVS equivale a MOVSW. È l’unica istruzione che copia direttamente da memoria a memoria; con REP copia un intero vettore.
+MOVSB e MOVSW copiano l’elemento puntato da SI nella cella puntata da DI, poi aggiornano SI e DI. MOVS equivale a MOVSW. Come su x86 è l’istruzione per copiare da memoria a memoria (nella memoria a byte è l’unica ammessa, vedi la nota in «Modelli di indirizzamento»); con REP copia un intero vettore.
 
-SI e DI avanzano di una cella se DF = 0 (dopo CLD) o arretrano di una cella se DF = 1 (dopo STD). Poiché le celle di memoria sono di 16 bit, il passo è sempre di una cella: la forma con suffisso B usa il byte basso delle celle e il registro AL, la forma con suffisso W la cella intera e il registro AX. Con il prefisso REP l’istruzione viene ripetuta (vedi «REP, REPE, REPNE»).
+SI e DI avanzano se DF = 0 (dopo CLD) o arretrano se DF = 1 (dopo STD) di un elemento: è il «passo» indicato nell’operazione svolta. Nella memoria a parole l’elemento è sempre una cella: la forma con suffisso B usa il byte basso delle celle e il registro AL, la forma con suffisso W la cella intera e il registro AX. Nella memoria a byte, come su x86, la forma B avanza di 1 byte e la forma W di 2. Con il prefisso REP l’istruzione viene ripetuta (vedi «REP, REPE, REPNE»).
 
 Esempi:
 
@@ -1410,11 +1410,11 @@ mov si, 10
 
 mov di, 0
 
-movsw // equivale a: memoria[0] = memoria[10]; SI = 11, DI = 1
+movsw // memoria a parole: memoria[0] = memoria[10]; SI = 11, DI = 1
 
 mov cx, 5
 
-rep movsw // copia 5 celle
+rep movsw // copia 5 parole
 
 ### MUL – Moltiplicazione senza segno
 
@@ -1436,7 +1436,7 @@ Descrizione:
 
 MUL moltiplica il registro AX per l’operando, considerando entrambi numeri senza segno (da 0 a 65535), e memorizza il risultato a 32 bit nella coppia di registri DX:AX. CF e OF valgono 1 se DX contiene cifre significative, cioè se il risultato non sta in AX.
 
-Se l’operando è a 8 bit (un registro a 8 bit o una variabile DB), MUL moltiplica AL per l’operando (da 0 a 255) e memorizza il risultato in AX; CF e OF valgono 1 se il risultato non sta in AL.
+Se l’operando è a 8 bit (un registro a 8 bit, una variabile DB o un operando byte ptr), MUL moltiplica AL per l’operando (da 0 a 255) e memorizza il risultato in AX; CF e OF valgono 1 se il risultato non sta in AL.
 
 Per moltiplicare numeri con segno si usa IMUL.
 
@@ -1514,7 +1514,7 @@ Flag definiti:
 
 Descrizione:
 
-NOT inverte ogni bit dell’operando, producendo così il complemento a 1 dello stesso..
+NOT inverte ogni bit dell’operando, producendo così il complemento a 1 dello stesso.
 
 Esempi:
 
@@ -1556,7 +1556,7 @@ Operazione svolta:
 
 **destinazione = valore che si trova in testa allo stack**
 
-**SP = SP + 1**
+**SP = SP + 1 (SP + 2 nella memoria a byte)**
 
 Flag definiti:
 
@@ -1582,7 +1582,7 @@ Operazione svolta:
 
 **flags = valore che si trova in testa allo stack**
 
-**SP = SP + 1**
+**SP = SP + 1 (SP + 2 nella memoria a byte)**
 
 Flag definiti:
 
@@ -1604,7 +1604,7 @@ Sintassi:
 
 Operazione svolta:
 
-**SP = SP - 1**
+**SP = SP - 1 (SP - 2 nella memoria a byte)**
 
 **sorgente viene memorizzato in testa allo stack**
 
@@ -1630,7 +1630,7 @@ Sintassi:
 
 Operazione svolta:
 
-**SP = SP - 1**
+**SP = SP - 1 (SP - 2 nella memoria a byte)**
 
 **il registro dei flags viene memorizzato in testa allo stack**
 
@@ -1709,7 +1709,7 @@ Esempi:
 
 mov cx, 10
 
-rep stosw // scrive AX in 10 celle
+rep stosw // scrive AX in 10 parole
 
 mov cx, 100
 
@@ -1726,7 +1726,7 @@ Operazione svolta:
 
 **IP viene prelevato dallo stack**
 
-**SP = SP + 1**
+**SP = SP + 1 (SP + 2 nella memoria a byte)**
 
 **con RET n: SP = SP + n**
 
@@ -1738,7 +1738,7 @@ Descrizione:
 
 RET modifica il flusso di esecuzione delle istruzioni, prelevando IP dallo stack e quindi assegnandogli un nuovo indirizzo nella memoria delle istruzioni. Si presuppone che RET termini una procedura che sia stata precedentemente avviata da un’istruzione CALL.
 
-La forma RET n, dove n è una costante, dopo il ritorno rimuove n valori dallo stack: la procedura elimina così i parametri che il chiamante vi aveva depositato, invece di lasciarlo fare al chiamante con ADD SP, n. Se lo stack contiene meno di n valori si produce l’errore «Stack underflow».
+La forma RET n, dove n è una costante, dopo il ritorno somma n a SP: la procedura elimina così i parametri che il chiamante vi aveva depositato, invece di lasciarlo fare al chiamante con ADD SP, n. Nella memoria a parole n è il numero di parole da rimuovere; nella memoria a byte, come su x86, è in byte (ret 4 rimuove due parametri). Se lo stack contiene meno di n unità si produce l’errore «Stack underflow».
 
 Esempi:
 
@@ -1752,7 +1752,7 @@ ciclo: *<inizio della procedura>*
 
 ret // ritorno all’istruzione successiva a CALL
 
-ret 2 // ritorno e rimozione di due parametri dallo stack
+ret 2 // ritorno e rimozione di due parametri dallo stack (memoria a parole)
 
 ### ROL, ROR – Rotazione
 
@@ -1816,7 +1816,7 @@ Operazione svolta:
 
 **AL (o AX) - [DI], senza memorizzare il risultato**
 
-**DI = DI ± 1**
+**DI = DI ± passo**
 
 Flag definiti:
 
@@ -1826,7 +1826,7 @@ Descrizione:
 
 SCASB e SCASW confrontano AL (o AX) con l’elemento puntato da DI come farebbe CMP, poi aggiornano DI. Con REPNE cercano un valore in una sequenza: alla fine ZF vale 1 se il valore è stato trovato e DI punta all’elemento successivo.
 
-SI e DI avanzano di una cella se DF = 0 (dopo CLD) o arretrano di una cella se DF = 1 (dopo STD). Poiché le celle di memoria sono di 16 bit, il passo è sempre di una cella: la forma con suffisso B usa il byte basso delle celle e il registro AL, la forma con suffisso W la cella intera e il registro AX. Con il prefisso REP l’istruzione viene ripetuta (vedi «REP, REPE, REPNE»).
+SI e DI avanzano se DF = 0 (dopo CLD) o arretrano se DF = 1 (dopo STD) di un elemento: è il «passo» indicato nell’operazione svolta. Nella memoria a parole l’elemento è sempre una cella: la forma con suffisso B usa il byte basso delle celle e il registro AL, la forma con suffisso W la cella intera e il registro AX. Nella memoria a byte, come su x86, la forma B avanza di 1 byte e la forma W di 2. Con il prefisso REP l’istruzione viene ripetuta (vedi «REP, REPE, REPNE»).
 
 Esempi:
 
@@ -1992,7 +1992,7 @@ Operazione svolta:
 
 **[DI] = AL (o AX)**
 
-**DI = DI ± 1**
+**DI = DI ± passo**
 
 Flag definiti:
 
@@ -2000,9 +2000,9 @@ Flag definiti:
 
 Descrizione:
 
-STOSB scrive AL nel byte basso della cella puntata da DI, STOSW scrive AX nella cella intera; poi aggiornano DI. Con REP riempiono una zona di memoria con lo stesso valore.
+STOSB scrive AL nel byte puntato da DI (il byte basso della cella, nella memoria a parole), STOSW scrive AX nella parola; poi aggiornano DI. Con REP riempiono una zona di memoria con lo stesso valore.
 
-SI e DI avanzano di una cella se DF = 0 (dopo CLD) o arretrano di una cella se DF = 1 (dopo STD). Poiché le celle di memoria sono di 16 bit, il passo è sempre di una cella: la forma con suffisso B usa il byte basso delle celle e il registro AL, la forma con suffisso W la cella intera e il registro AX. Con il prefisso REP l’istruzione viene ripetuta (vedi «REP, REPE, REPNE»).
+SI e DI avanzano se DF = 0 (dopo CLD) o arretrano se DF = 1 (dopo STD) di un elemento: è il «passo» indicato nell’operazione svolta. Nella memoria a parole l’elemento è sempre una cella: la forma con suffisso B usa il byte basso delle celle e il registro AL, la forma con suffisso W la cella intera e il registro AX. Nella memoria a byte, come su x86, la forma B avanza di 1 byte e la forma W di 2. Con il prefisso REP l’istruzione viene ripetuta (vedi «REP, REPE, REPNE»).
 
 Esempi:
 
@@ -2012,7 +2012,7 @@ mov di, offset tab
 
 mov cx, 8
 
-rep stosw // azzera 8 celle
+rep stosw // azzera 8 parole
 ### SUB – Sottrazione
 
 Sintassi:
@@ -2035,7 +2035,7 @@ Esempi:
 
 sub ax, bx // equivale a: ax = ax - bx
 
-sub [10], 2 // equivale a: [1] = [1] - 2
+sub [10], 2 // equivale a: [10] = [10] - 2
 
 ### TEST – Test logico
 
@@ -2089,7 +2089,9 @@ xchg dx, [10]
 
 Sintassi:
 
-**XOR *destinazione*, *contatore***
+**XOR *destinazione*, *sorgente***
+
+Operazione svolta:
 
 **destinazione = destinazione ^ sorgente**
 
@@ -2169,9 +2171,9 @@ La sezione dati è composta da righe di questi tipi:
 | nome **DB** elemento, elemento, … | Variabile di byte (8 bit) |
 | nome **EQU** valore | Costante simbolica: non occupa memoria |
 | **ORG** indirizzo | Le variabili successive partono dall’indirizzo indicato |
-| indirizzo: valore, valore, … | Scrive i valori a partire dall’indirizzo indicato (forma originale) |
+| indirizzo: valore, valore, … | Scrive i valori a partire dall’indirizzo indicato (forma originale; non ammessa nella memoria a byte) |
 
-Le variabili DB e DW vengono collocate in memoria una dopo l’altra, a partire dall’indirizzo 0 o dall’ultimo ORG. Il nome è facoltativo: una riga DB o DW senza nome occupa comunque le celle, ad esempio per proseguire la variabile precedente. Le variabili non possono occupare l’area dello stack (indirizzi da 240 a 255).
+Le variabili DB e DW vengono collocate in memoria una dopo l’altra, a partire dall’indirizzo 0 o dall’ultimo ORG. Il nome è facoltativo: una riga DB o DW senza nome occupa comunque le celle, ad esempio per proseguire la variabile precedente. Le variabili non possono occupare l’area dello stack (indirizzi da 240 a 255; da 448 a 511 nella memoria a byte).
 
 Un elemento può essere:
 
@@ -2182,7 +2184,7 @@ Un elemento può essere:
 - «offset nome», l’indirizzo di un’altra variabile;
 - il nome di un’etichetta del codice, che vale il numero della sua istruzione: serve a costruire tabelle di salto (tab DW caso0, caso1) per JMP e CALL indiretti.
 
-I valori di una variabile DB devono essere compresi tra –128 e 255, quelli di una variabile DW tra –32768 e 65535. Le celle di memoria restano di 16 bit: una variabile DB usa soltanto il byte basso di ogni cella.
+I valori di una variabile DB devono essere compresi tra –128 e 255, quelli di una variabile DW tra –32768 e 65535. Nella memoria a parole le celle restano di 16 bit: una variabile DB usa soltanto il byte basso di ogni cella. Nella memoria a byte ogni valore DB occupa un byte e ogni valore DW due byte (vedi «Modalità x86 fedele: memoria a byte»).
 
 N EQU 5 // costante
 
@@ -2198,7 +2200,7 @@ ORG 100
 
 tabella DW N DUP(?) // cinque parole a partire dall'indirizzo 100
 
-I nomi non distinguono maiuscole e minuscole e non possono coincidere con un registro, un’istruzione, una parola riservata (DB, DW, EQU, ORG, DUP, OFFSET) o un’etichetta del codice.
+Gli esempi indicano gli indirizzi della memoria a parole. I nomi non distinguono maiuscole e minuscole e non possono coincidere con un registro, un’istruzione, una parola riservata (DB, DW, EQU, ORG, DUP, OFFSET) o un’etichetta del codice.
 
 ### Uso dei nomi nel codice
 
@@ -2224,7 +2226,7 @@ Nel codice l’indirizzo di un’etichetta si scrive sempre con offset: mov bx, 
 
 La dimensione di un accesso a una variabile dipende dal suo tipo: una variabile DB si usa con registri a 8 bit (mov al, msg) e una variabile DW con registri a 16 bit (mov ax, conta). Istruzioni come mov ax, msg o push msg (con msg di tipo DB) producono l’errore «Dimensione degli operandi non valida o non coerente». Anche un’istruzione con una sola variabile, come inc conta, opera sulla dimensione della variabile.
 
-Il pannello Memoria mostra, sotto il contenuto della memoria, l’elenco dei nomi definiti con indirizzo, tipo, numero di celle e valore corrente della prima cella; in fondo all’elenco compaiono le etichette del codice con il numero della loro istruzione.
+Il pannello Memoria mostra, sotto il contenuto della memoria, l’elenco dei nomi definiti con indirizzo, tipo, numero di elementi e valore corrente del primo elemento; in fondo all’elenco compaiono le etichette del codice con il numero della loro istruzione.
 
 ### Esempio: Hello world
 
@@ -2243,3 +2245,89 @@ int 21h
 mov ah, 4Ch // servizio: termina il programma
 
 int 21h
+
+## Modalità x86 fedele: memoria a byte
+
+Nella modalità predefinita la memoria di EasyCPU è formata da 256 celle da 16 bit: ogni indirizzo contiene una parola intera e due indirizzi consecutivi non si sovrappongono. È un modello semplice, ma diverso da quello dei microprocessori X86, dove la memoria è formata da byte e una parola occupa due byte consecutivi. La modalità x86 fedele adotta il modello X86.
+
+### Come si sceglie
+
+La modalità è una proprietà del programma: si attiva con la voce «Memoria a byte (x86)» del menu Esegui e viene salvata nel file .asj. Un programma nuovo, un file .asj senza l’indicazione e un file .as usano la memoria a parole. Quando la modalità è attiva il pannello Memoria si intitola «Memoria (byte)»; cambiarla azzera la CPU e richiede una nuova compilazione.
+
+### Il modello di memoria
+
+| Aspetto | Memoria a parole | Memoria a byte |
+|---|---|---|
+| Dimensione | 256 celle da 16 bit | 512 byte |
+| Parola all’indirizzo a | cella a | byte a (basso) e a+1 (alto) |
+| Accesso a 8 bit | byte basso della cella | il byte all’indirizzo |
+| Area dello stack | celle 240..255 (16 parole) | byte 448..511 (32 parole) |
+| SP iniziale | 256 | 512 |
+| PUSH, POP, CALL, RET | SP varia di 1 | SP varia di 2 |
+| RET n | n parole | n byte |
+| Istruzioni stringa | passo di 1 cella | passo di 1 (forme B) o 2 (forme W) |
+| DB, DW, stringhe | una cella per valore | 1 byte per valore DB o carattere, 2 byte per valore DW |
+
+Le parole sono memorizzate con il byte basso all’indirizzo più basso (ordine little-endian, come su X86):
+
+mov word ptr [10], 1234h // byte 10 = 34h, byte 11 = 12h
+
+mov al, [11] // AL = 12h
+
+mov ax, [11] // AX = parola formata dai byte 11 e 12
+
+Un accesso a parola che esce dalla memoria (ad esempio all’indirizzo 511) produce l’errore «Violazione dei limiti della memoria».
+
+### Regole in più rispetto alla memoria a parole
+
+Nella memoria a byte il compilatore applica tre regole dei microprocessori X86:
+
+- la dimensione di un operando in memoria dev’essere determinata da un registro, dal tipo di una variabile o da byte ptr / word ptr: inc [si], mov [di], 5 e mul [bx] producono l’errore «Dimensione dell'operando non specificata: usare byte ptr o word ptr». Fanno eccezione PUSH, POP, JMP e CALL, che lavorano sempre a parole, e LEA, che non accede alla memoria;
+- un’istruzione non può avere due operandi in memoria: mov a, b e add [10], [si] producono l’errore «Un'istruzione non può avere due operandi in memoria: usare un registro»; per copiare da memoria a memoria si usano un registro o le istruzioni stringa;
+- nella sezione dati la forma «indirizzo: valori», che non indica la dimensione dei valori, non è ammessa: si usano DB e DW.
+
+### Differenze nei programmi
+
+Gli elementi di un vettore di parole distano 2 byte: l’indice avanza di 2.
+
+vet DW 3, 8, 1 // sezione dati: vet occupa i byte 0..5
+
+mov si, 0
+
+mov cx, 3
+
+ciclo: add ax, [vet+si]
+
+add si, 2 // parola successiva
+
+loop ciclo
+
+Anche i parametri di una procedura distano 2 byte: dopo push bp e mov bp, sp l’indirizzo di ritorno è in [bp+2] e i parametri in [bp+4], [bp+6]; ret 4 rimuove due parametri.
+
+somma: push bp
+
+mov bp, sp
+
+mov ax, [bp+4] // ultimo parametro depositato
+
+add ax, [bp+6]
+
+pop bp
+
+ret 4
+
+Una tabella di salto contiene parole: l’indice si moltiplica per 2 prima di jmp [tab+bx] o call [proc+bx].
+
+mov bl, scelta
+
+mov bh, 0
+
+shl bx, 1 // due byte per elemento
+
+jmp [tab+bx]
+
+Gli esempi della cartella Docs/samples/12-memoria-byte mostrano questi casi e gli errori di compilazione della modalità.
+
+### Pannelli
+
+Il pannello Memoria (byte) mostra 16 byte per riga, con valori da 0 a 255 (da 00 a FF in esadecimale); il pannello Stack mostra una parola per riga, all’indirizzo del suo byte basso; nella sezione Simboli il valore di una variabile DB è il suo primo byte, quello di una variabile DW la sua prima parola.

@@ -37,6 +37,7 @@ EasyCPU is an educational tool designed to make learning assembly language and C
 - **Infinite Loop Detection** – Safely interrupt runaway programs with configurable thresholds
 - **Code & Data Separation** – Organize assembly into code and data sections; the data section supports MASM-style `DB`/`DW` variables, `EQU` constants, strings, `DUP` and `ORG`
 - **Console I/O** – DOS-style `int 21h` services for keyboard input and text output
+- **x86-Faithful Byte Memory** – Optional per-program mode (*Esegui → Memoria a byte (x86)*, saved in the `.asj` file): 512 bytes, little-endian words, 2-byte stack steps, and x86 rules (`byte ptr`/`word ptr` required for ambiguous operands, no memory-to-memory operations)
 
 ### Educational Features
 - **Live Register & Flag Tracking** – Watch how each instruction modifies CPU state
@@ -116,6 +117,8 @@ MUL/DIV operate on unsigned values, IMUL/IDIV on signed values.
 
 `int 21h` provides DOS-style services selected via `AH`: `01h` read a character with echo (into `AL`), `02h` write the character in `DL`, `07h` read a character without echo, `09h` write the `$`-terminated string at `DX`, `0Ah` read a line into the buffer at `DX`, `4Ch` terminate the program. Output and keyboard input are shown/captured in the dedicated **Console** panel.
 
+By default memory is made of 256 16-bit cells (word model). The optional x86-faithful mode switches the program to a 512-byte memory with little-endian words, a 64-byte stack (SP starts at 512 and moves by 2), and x86 compile-time rules; see the *Modalità x86 fedele* chapter of the Assembly Reference.
+
 The data section supports MASM-style symbolic declarations: `DB`/`DW` variables, `EQU` constants, strings, `DUP`, `ORG` and `offset`; code labels can be used as values (`offset label` in code, `tab DW case0, case1` in data) to build jump tables. `byte ptr` and `word ptr` set the size of a memory operand (example programs in [`Docs/samples`](./Docs/samples)).
 
 For complete instruction documentation, register definitions, addressing modes, and flag behavior, see the [**Easy CPU Assembly Reference**](./Docs/Easy%20CPU%20%20Assembly%20Reference.md).
@@ -133,7 +136,7 @@ Side-by-side editors for assembly code and data section initialization. Supports
 Displays all CPU registers (AX, BX, CX, DX, SI, DI, BP, SP, IP) in the selected format, with the high and low bytes of AX–DX (`AX = 0141 [AH=01 AL=41]`). The flags are listed as C, Z, S, O, D (carry, zero, sign, overflow, direction).
 
 ### Memory Inspector
-Shows the data memory and the stack. Toggle between decimal, hexadecimal, and character formats (the choice is remembered); view the stack in one or two columns. Below the memory, the **Symbols** section lists the names defined in the data section and the code labels with their instruction number.
+Shows the data memory and the stack. Toggle between decimal, hexadecimal, and character formats (the choice is remembered); view the stack in one or two columns. In byte-memory mode the panel is titled *Memoria (byte)* and shows 16 bytes per row, while the stack shows one word per row. Below the memory, the **Symbols** section lists the names defined in the data section and the code labels with their instruction number.
 
 ### Console Panel
 Displays output and captures keyboard input for `int 21h` calls. Auto-activates on `int 21h` and shows a blinking cursor while waiting for a keypress.
@@ -165,7 +168,7 @@ Complete documentation is available in the `Docs/` folder:
 - **[EasyCPU IDE Tutorial](./Docs/EasyCPU%20%20IDE%20Tutorial.md)** – Step-by-step guide to using the IDE, debugging, and managing programs
 - **[Toolbar Icons Reference](./ICONE-TOOLBAR.md)** – Visual guide to IDE toolbar buttons
 
-Ready-to-run example programs (`.asj`) are available in [`Docs/samples/`](./Docs/samples), organized by topic (data transfer, arithmetic and flags, logic and shifts, stack and subroutines, data section, `int 21h` console, complete programs, jumps and loops, string instructions, errors, indirect jumps); each one starts with a comment describing what it shows and the expected result. The original examples in the legacy `.as` format are in `Docs/Subroutines/`.
+Ready-to-run example programs (`.asj`) are available in [`Docs/samples/`](./Docs/samples), organized by topic (data transfer, arithmetic and flags, logic and shifts, stack and subroutines, data section, `int 21h` console, complete programs, jumps and loops, string instructions, errors, indirect jumps, byte memory); each one starts with a comment describing what it shows and the expected result. The original examples in the legacy `.as` format are in `Docs/Subroutines/`.
 
 Design documents for the x86 extensions (roadmap, open proposals and their designs) are in [`Proposte/`](./Proposte).
 
