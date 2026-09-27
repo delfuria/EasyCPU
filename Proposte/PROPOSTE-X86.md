@@ -57,7 +57,7 @@ Pannello Registri con byte alto/basso e flag C, Z, S, O, D; pannello Memoria con
 
 ### Verifica
 
-95 test automatici (`EasyCpu.Assembler.Tests`) e 63 programmi di esempio in `Docs/samples`, suddivisi in 10 cartelle per argomento, ognuno con un commento iniziale che descrive il risultato atteso.
+96 test automatici (`EasyCpu.Assembler.Tests`) e 63 programmi di esempio in `Docs/samples`, suddivisi in 10 cartelle per argomento, ognuno con un commento iniziale che descrive il risultato atteso.
 
 ---
 
@@ -137,9 +137,9 @@ Salvare periodicamente nel browser il contenuto degli editor, per ritrovarlo dop
 Piccoli interventi emersi durante le fasi 0–4:
 
 1. **Manuale `.docx`/`.odt`** (`Docs/Easy CPU  Assembly Reference`): è aggiornata solo la versione Markdown; le altre due vanno riallineate.
-2. **Sezione OR mancante** nell'Assembly Reference (esistono AND, XOR, NOT e TEST).
-3. **Esempio «Struttura di un programma»** nel manuale: usa ancora il vecchio programma SommaDispari, in cui la cella 1 fa sia da indirizzo del vettore sia da suo primo elemento; sostituirlo con la versione corretta di `Docs/samples/07-programmi/programma-somma-dispari.asj`.
-4. **Backspace nel servizio 0Ah**: il pannello Console non invia il tasto Backspace, quindi durante la lettura di una riga non si può correggere; va aggiunto nel pannello Console e gestito nel servizio.
+2. ✅ **Sezione OR mancante** nell'Assembly Reference (esistono AND, XOR, NOT e TEST): aggiunta.
+3. ✅ **Esempio «Struttura di un programma»** nel manuale: usa ancora il vecchio programma SommaDispari, in cui la cella 1 fa sia da indirizzo del vettore sia da suo primo elemento; sostituirlo con la versione corretta di `Docs/samples/07-programmi/programma-somma-dispari.asj`. ✅ Sostituito.
+4. ✅ **Backspace nel servizio 0Ah**: il pannello Console ora invia il codice 8 e il servizio cancella l'ultimo carattere letto (test `Int21h_AH0A_BackspaceCancellaUltimoCarattere`).
 5. **Nota sul modello di memoria del codice** (IP = numero dell'istruzione) nel manuale, utile soprattutto dopo la proposta A.
 
 ---
@@ -157,7 +157,7 @@ Piccoli interventi emersi durante le fasi 0–4:
 
 | Ordine | Proposta | Perché in questa posizione |
 |---|---|---|
-| 1 | ✅ **D** – Persistenza nel browser | Fatta. Le piccole correzioni F.2–F.4 sono rimaste fuori (scelta di tenere la fase dedicata) e si possono fare in qualsiasi momento. |
+| 1 | ✅ **D** – Persistenza nel browser | Fatta. Subito dopo sono state fatte anche le piccole correzioni F.2–F.4. |
 | 2 | **A** – Salti indiretti | Completa il set di istruzioni 8086 di base in entrambe le modalità. Cambia l'ordine di compilazione: meglio farlo e stabilizzarlo **prima** del grande refactoring della fase 5. |
 | 3 | **C** – Modalità x86 fedele, con **B** attivo solo in questa modalità | La più invasiva, da affrontare con il resto stabile. Il divieto memoria-memoria nasce dentro una modalità nuova e opzionale, senza rompere i programmi esistenti. |
 | 4 | **E** – Bozza automatica | Miglioramento dell'IDE, può anche seguire subito D se la perdita del lavoro si rivela un problema frequente. |
@@ -166,7 +166,7 @@ Piccoli interventi emersi durante le fasi 0–4:
 
 ```
 D ✅ ──► A ──► C (+B) ──► F.1, F.5
-   └──► E e F.2–F.4 (in qualsiasi momento)
+   └──► E (in qualsiasi momento); F.2–F.4 ✅
                         B in modalità a parole: facoltativo, dopo C
 ```
 
@@ -182,10 +182,10 @@ Raccolte dai documenti di progetto; la scelta consigliata è indicata tra parent
 3. ~~Breakpoint identificati dal solo nome del file~~ — **deciso**: accettato così per l'uso didattico.
 
 **Salti indiretti (A)**
-4. Etichetta senza `offset` nel codice (`mov bx, caso0`): errore con suggerimento (consigliato) o costante?
-5. `jmp tab` con `tab` variabile DW: salto attraverso la memoria in stile MASM (consigliato) o solo `jmp [tab]`?
-6. Etichette nel pannello Simboli: sempre (consigliato)?
-7. Esempi in `08-salti-cicli` o in una cartella dedicata?
+4. ~~Etichetta senza `offset` nel codice~~ — **deciso**: errore con suggerimento.
+5. ~~`jmp tab` con `tab` variabile DW~~ — **deciso**: salto attraverso la memoria in stile MASM.
+6. ~~Etichette nel pannello Simboli~~ — **deciso**: sempre.
+7. ~~Cartella degli esempi~~ — **deciso**: nuova cartella `11-salti-indiretti`.
 
 **Modalità x86 fedele (C, B)**
 8. Scelta della modalità: direttiva `.MEMORIA BYTE` (consigliata) o campo nel file `.asj`?

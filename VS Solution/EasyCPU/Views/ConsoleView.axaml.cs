@@ -46,12 +46,14 @@ public partial class ConsoleView : UserControl
             vm.NotificaCarattere(c);
     }
 
-    // Invio (Enter) non genera TextInputEvent in Avalonia: va intercettato qui e
-    // tradotto nel codice CR (13), atteso dai programmi asm che leggono riga per riga.
+    // Invio (Enter) e Backspace non generano TextInputEvent in Avalonia: vanno intercettati
+    // qui e tradotti nei codici CR (13) e BS (8), attesi dai programmi asm che leggono righe.
     private void OnKeyDown(object? sender, KeyEventArgs e)
     {
         if (DataContext is not ConsoleViewModel vm) return;
         if (e.Key == Key.Enter)
             vm.NotificaCarattere('\r');
+        else if (e.Key == Key.Back)
+            vm.NotificaCarattere('\b');
     }
 }

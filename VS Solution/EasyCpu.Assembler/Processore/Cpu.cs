@@ -831,7 +831,8 @@ namespace EasyCpu.Assembler.Processore
         //   07h -> legge un carattere da tastiera (bloccante) senza eco, risultato in AL
         //   09h -> scrive su console la stringa terminata da '$' che inizia all'indirizzo in DX
         //   0Ah -> legge una riga nel buffer all'indirizzo DX: [DX] = caratteri massimi (Invio compreso),
-        //          [DX+1] = caratteri letti (Invio escluso), da [DX+2] i caratteri seguiti da 13
+        //          [DX+1] = caratteri letti (Invio escluso), da [DX+2] i caratteri seguiti da 13;
+        //          Backspace (8) cancella l'ultimo carattere
         //   4Ch -> termina il programma
         // Memoria a celle da 16 bit: ogni carattere occupa il byte basso di una cella.
         async Task ServizioSistema()
@@ -877,7 +878,15 @@ namespace EasyCpu.Assembler.Processore
                     return;
                 if (c == 13)
                     break;
-                if (letti < massimo - 1)    // a buffer pieno i caratteri vengono ignorati fino all'Invio
+                if (c == 8)                 // Backspace: cancella l'ultimo carattere letto, se c'è
+                {
+                    if (letti > 0)
+                    {
+                        letti--;
+                        ScriviCarattere(8);
+                    }
+                }
+                else if (letti < massimo - 1)    // a buffer pieno i caratteri vengono ignorati fino all'Invio
                 {
                     memoria[buffer + 2 + letti] = (short)(c & 0xFF);
                     letti++;

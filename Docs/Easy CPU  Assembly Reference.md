@@ -763,7 +763,7 @@ I caratteri letti e scritti compaiono nel pannello Console, che si apre automati
 
 Il tasto Invio corrisponde al codice 13 (CR). In scrittura, sia il codice 13 sia il codice 10 (LF) vanno a capo; la coppia 13, 10 usata nei programmi DOS produce un solo ritorno a capo.
 
-Il buffer del servizio 0Ah ha questo formato: la prima cella contiene il numero massimo di caratteri, Invio compreso; nella seconda cella il servizio scrive il numero di caratteri letti, Invio escluso; dalla terza cella in poi vengono memorizzati i caratteri letti, seguiti dal codice 13. Raggiunto il massimo, gli altri caratteri vengono ignorati fino alla pressione di Invio.
+Il buffer del servizio 0Ah ha questo formato: la prima cella contiene il numero massimo di caratteri, Invio compreso; nella seconda cella il servizio scrive il numero di caratteri letti, Invio escluso; dalla terza cella in poi vengono memorizzati i caratteri letti, seguiti dal codice 13. Raggiunto il massimo, gli altri caratteri vengono ignorati fino alla pressione di Invio. Il tasto Backspace cancella l’ultimo carattere digitato.
 
 buf DB 20, ?, 20 DUP(?) // buffer per una riga di al massimo 19 caratteri
 
@@ -1488,6 +1488,30 @@ mov ax, 2
 
 not ax // produce: -3 (FFFD in esadecim.)
 
+### OR – Somma logica
+
+Sintassi:
+
+**OR *destinazione*, *sorgente***
+
+Operazione svolta:
+
+**destinazione = destinazione | sorgente**
+
+Flag definiti:
+
+**SF, ZF; OF = 0, CF = 0**
+
+Descrizione:
+
+OR imposta a 1 i bit del risultato se almeno uno dei bit corrispondenti dei due operandi è 1; altrimenti li imposta a 0. Il risultato è memorizzato nell’operando destinazione.
+
+Esempio:
+
+mov ax, 2
+
+or ax, 4 // produce come risultato: 6
+
 ### POP – Prelevamento dallo stack
 
 Sintassi:
@@ -2053,7 +2077,7 @@ xor ax, 4 // produce come risultato: 6
 
 I programmi assembly compatibili con EasyCPU sono suddivisi in due sezioni, «codice» e «dati». La sezione codice contiene le istruzioni in linguaggio assembly e comincia con l’inizio del file. La parte dati, opzionale, è preceduta dalla direttiva «.DATA» e consente di definire variabili e costanti e di inizializzare il contenuto di una o più celle di memoria (vedi «La sezione dati»). All’interno dell’IDE di EasyCPU, le due sezioni vengono gestite mediante due editor separati. Un programma può inoltre contenere delle righe di commento, prefissate dal simbolo “//” oppure “;”. Un commento può anche seguire il testo di un’istruzione.
 
-Di seguito viene riportato un programma di esempio che calcola la somma degli elementi dispari all’interno di un sequenza. Questa è definita nella sezione dati a partire dell’indirizzo 1 di memoria. All’indirizzo 0 è memorizzato il numero di elementi.
+Di seguito viene riportato un programma di esempio che calcola la somma degli elementi dispari all’interno di un sequenza. All’indirizzo 0 di memoria è memorizzato il numero di elementi, all’indirizzo 1 l’indirizzo di partenza della sequenza, che nella sezione dati è definita a partire dall’indirizzo 2. Lo stesso programma è disponibile in «Docs/samples/07-programmi/programma-somma-dispari.asj».
 
 // Programma SommaDispari
 
@@ -2097,7 +2121,9 @@ stop
 
 0: 5
 
-1: 1, 3, 4, 6, 7
+1: 2
+
+2: 1, 3, 4, 6, 7
 
 ## La sezione dati
 

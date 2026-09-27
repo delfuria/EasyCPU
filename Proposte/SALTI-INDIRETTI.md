@@ -218,9 +218,11 @@ Ogni passo lascia il progetto compilabile e i test verdi.
 
 ---
 
-## 7. Decisioni aperte
+## 7. Decisioni
 
-1. **Etichetta senza `offset` nel codice** (`mov bx, caso0`): errore con suggerimento (consigliato, evita di confondere indirizzo e contenuto), oppure accettarla come costante?
-2. **`jmp tab`** con `tab` variabile DW: accettarlo come salto attraverso la memoria, in stile MASM (consigliato, coerente con `mov ax, conta`), oppure richiedere `jmp [tab]`?
-3. **Etichette nel pannello Simboli**: mostrarle sempre (consigliato) o solo se usate come valori?
-4. **Cartella degli esempi**: aggiungerli a `08-salti-cicli` o creare una cartella dedicata?
+Prese il 27 settembre 2026:
+
+1. **Etichetta senza `offset` nel codice** (`mov bx, caso0`): errore di compilazione con un messaggio che suggerisce `offset caso0`.
+2. **`jmp tab`** con `tab` variabile DW: accettato come salto attraverso la memoria, in stile MASM (equivale a `jmp [tab]`).
+3. **Etichette nel pannello Simboli**: mostrate sempre.
+4. **Cartella degli esempi**: nuova cartella `Docs/samples/11-salti-indiretti`.

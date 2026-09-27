@@ -119,7 +119,15 @@ public partial class MainViewModel : ObservableObject
         {
             Dispatcher.UIThread.Post(() =>
             {
-                if (_factory.Console is { } cv) cv.Output += c;
+                if (_factory.Console is not { } cv) return;
+                // Backspace: toglie l'ultimo carattere, senza risalire alla riga precedente
+                if (c == '\b')
+                {
+                    if (cv.Output.Length > 0 && cv.Output[^1] != '\n')
+                        cv.Output = cv.Output[..^1];
+                }
+                else
+                    cv.Output += c;
             });
         };
 

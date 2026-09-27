@@ -158,6 +158,18 @@ public class Fase2Tests
     }
 
     [Fact]
+    public async Task Int21h_AH0A_BackspaceCancellaUltimoCarattere()
+    {
+        string output = "";
+        var cpu = await EseguiConConsole(["mov ah, 0Ah", "mov dx, offset buf", "int 21h", "stop"],
+            ["buf DB 5, ?, 5 DUP(?)"], c => output += c, "\bab\bcd\b\b\bxyz\r");
+        Assert.Equal(3, cpu.LeggiMemoria(1));      // Backspace a riga vuota ignorato
+        Assert.Equal("xyz", string.Concat(Enumerable.Range(2, 3).Select(i => (char)cpu.LeggiMemoria(i))));
+        Assert.Equal(13, cpu.LeggiMemoria(5));
+        Assert.Equal("ab\bcd\b\b\bxyz\n", output);
+    }
+
+    [Fact]
     public async Task Int21h_AH02_UsaSoloDL_E_CrLfUnSoloACapo()
     {
         string output = "";
