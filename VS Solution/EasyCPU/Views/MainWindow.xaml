@@ -57,6 +57,8 @@
                         <NativeMenuItem Header="Ferma"                      Command="{Binding StopCommand}"             Gesture="F8"/>
                         <NativeMenuItemSeparator />
                         <NativeMenuItem Header="Imposta/Rimuovi breakpoint" Command="{Binding ToggleBreakpointCommand}" Gesture="F9"/>
+                        <NativeMenuItemSeparator />
+                        <NativeMenuItem Header="Memoria a byte (x86)"       Command="{Binding ToggleMemoriaAByteCommand}"/>
                     </NativeMenu>
                 </NativeMenuItem.Menu>
             </NativeMenuItem>
@@ -173,6 +175,10 @@
                 <Separator />
                 <MenuItem Header="Imposta/Rimuovi _breakpoint" Command="{Binding ToggleBreakpointCommand}" InputGesture="F9">
                     <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/breakpoint.png"/></MenuItem.Icon>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="Memoria a _byte (x86)" ToggleType="CheckBox" Command="{Binding ToggleMemoriaAByteCommand}" IsChecked="{ReflectionBinding IsMemoriaAByte, Mode=OneWay}">
+                    <MenuItem.Icon><icons:ThemedIcon Source="/images/toolbar/panel_memory.png"/></MenuItem.Icon>
                 </MenuItem>
             </MenuItem>
             <MenuItem Header="Fi_nestre">

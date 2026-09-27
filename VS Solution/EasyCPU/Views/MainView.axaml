@@ -195,6 +195,13 @@
                         <TextBlock Text="Imposta/Rimuovi breakpoint" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Button>
+                <Separator/>
+                <CheckBox Classes="drawer-item" Command="{Binding ToggleMemoriaAByteCommand}" IsChecked="{ReflectionBinding IsMemoriaAByte, Mode=OneWay}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <icons:ThemedIcon Source="/images/toolbar/panel_memory.png" Width="20" Height="20"/>
+                        <TextBlock Text="Memoria a byte (x86)" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </CheckBox>
 
                 <TextBlock Classes="drawer-header" Text="FINESTRE"/>
                 <CheckBox Classes="drawer-item" Command="{Binding ToggleCodeEditorCommand}" IsChecked="{ReflectionBinding IsCodeEditorVisible, Mode=OneWay}">

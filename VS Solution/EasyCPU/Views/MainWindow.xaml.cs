@@ -83,6 +83,7 @@ public partial class MainWindow : Window
                            or nameof(MainViewModel.IsMemoryVisible)
                            or nameof(MainViewModel.IsErrorsVisible)
                            or nameof(MainViewModel.IsConsoleVisible)
+                           or nameof(MainViewModel.IsMemoriaAByte)
             && sender is MainViewModel vm)
         {
             UpdateNativeCheckmarks(vm);
@@ -94,6 +95,9 @@ public partial class MainWindow : Window
         var nativeMenu = NativeMenu.GetMenu(this);
         if (nativeMenu is null || nativeMenu.Items.Count < 4) return;
         // Root order: File(0), Modifica(1), Esegui(2), Finestre(3), Strumenti(4)
+        // Esegui: l'ultima voce è «Memoria a byte (x86)»
+        if (nativeMenu.Items[2] is NativeMenuItem esegui && esegui.Menu is { Items.Count: > 0 } menuEsegui)
+            SetCheck(menuEsegui.Items[^1], vm.IsMemoriaAByte);
         if (nativeMenu.Items[3] is not NativeMenuItem finestre) return;
         var items = finestre.Menu?.Items;
         if (items is null || items.Count < 7) return;

@@ -1201,9 +1201,9 @@ namespace EasyCpu.Assembler.Processore
                         sim.Tipo == TipoSimbolo.Equ ? "EQU" : "ETICHETTA", sim.Valore));
                     continue;
                 }
-                short valore = memoria.LeggiParola(sim.Valore);
-                if (sim.Tipo == TipoSimbolo.Db)
-                    valore = (short)(valore & 0xFF);
+                short valore = sim.Tipo == TipoSimbolo.Db
+                    ? (short)(memoria.LeggiByte(sim.Valore) & 0xFF)
+                    : memoria.LeggiParola(sim.Valore);
                 string testo = Ambiente.FormatoDati == FormatoValore.Car
                     ? IntToChar(valore)
                     : string.Format(formatoDato, valore).Trim();
@@ -1215,22 +1215,42 @@ namespace EasyCpu.Assembler.Processore
             return dump;
         }
 
+        // Parole da da ad a (escluso), colonne per riga: celle nella modalità a parole,
+        // parole di due byte (indirizzi pari) nella modalità a byte, come nel pannello Stack
         public List<string> DumpMemoria(int da, int a, int colonne)
+        {
+            string formatoDato = "{0" + Ambiente.FD + "} ";
+            return Dump(da, a, colonne, memoria.Modello.PassoParola, i =>
+                Ambiente.FormatoDati == FormatoValore.Car
+                    ? string.Format(formatoDato, IntToChar(memoria.LeggiParola(i)))
+                    : string.Format(formatoDato, memoria.LeggiParola(i)));
+        }
+
+        // Modalità a byte: un byte per colonna, valori senza segno (00..FF oppure 0..255)
+        public List<string> DumpByte(int da, int a, int colonne)
+        {
+            string formatoDato = Ambiente.FormatoDati == FormatoValore.Hex ? "{0:X2} " : "{0,3} ";
+            return Dump(da, a, colonne, 1, i =>
+            {
+                int valore = memoria.LeggiByte(i) & 0xFF;
+                return Ambiente.FormatoDati == FormatoValore.Car
+                    ? string.Format(formatoDato, IntToChar(valore))
+                    : string.Format(formatoDato, valore);
+            });
+        }
+
+        List<string> Dump(int da, int a, int colonne, int passo, Func<int, string> valore)
         {
             if (memoria == null) return null;
             string formatoIndirizzo = "{0" + Ambiente.FI + "}: ";
-            string formatoDato = "{0" + Ambiente.FD + "} ";
 
             List<string> dump = new List<string>();
             string s = string.Format(formatoIndirizzo, da);
             for (int i = da; i < a;)
             {
-                if (Ambiente.FormatoDati == FormatoValore.Car)
-                    s = s + string.Format(formatoDato, IntToChar(memoria.LeggiParola(i)));
-                else
-                    s = s + string.Format(formatoDato, memoria.LeggiParola(i));
-
-                if ((++i - da) % colonne == 0)
+                s = s + valore(i);
+                i += passo;
+                if ((i - da) / passo % colonne == 0)
                 {
                     dump.Add(s);
                     s = string.Format(formatoIndirizzo, i);

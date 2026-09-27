@@ -355,4 +355,34 @@ public class Fase5Tests
             ["tab DW c0, c1, c2"]);
         Assert.Equal(12, cpu.AX);
     }
+
+    // ── Passo 6: pannelli nella modalità a byte ───────────────────────────
+
+    [Fact]
+    public async Task Pannelli_ByteParoleESimboli()
+    {
+        Ambiente.Inizializza();
+        var compiler = new Compiler { Modello = B };
+        List<CompilerError>? errori = null;
+        string[] codice = ["push 1234h", "stop"];
+        var memoria = compiler.CompilaDati(["c DB 0FFh, 'A'", "w DW 1234h"], ref errori, codice.ToList());
+        var cpu = new Cpu();
+        cpu.Init(compiler.CompilaCodice(codice.ToList(), ref errori), memoria, true, 1000, B);
+        Assert.Null(errori);
+        await cpu.Run();
+        Ambiente.FormatoDati = FormatoValore.Hex;
+        try
+        {
+            Assert.Equal("0000: FF 41 34 12 ", cpu.DumpByte(0, 4, 16).Single());
+            Assert.Equal(["0000: FF 41 34 12 00 00 00 00 ", "0008: 00 00 00 00 00 00 00 00 "], cpu.DumpByte(0, 16, 8));
+            var stack = cpu.DumpMemoria(508, 512, 1);                    // una parola per riga
+            Assert.Equal(["01FC: 0000 ", "01FE: 1234 "], stack);
+            Assert.Equal(["c          [0000] DB x2 = 00FF", "w          [0002] DW = 1234"], cpu.DumpSimboli(compiler.Simboli));
+        }
+        finally
+        {
+            Ambiente.FormatoDati = FormatoValore.Dec;
+        }
+        Assert.Equal("   0: 255  65  52  18 ", cpu.DumpByte(0, 4, 16).Single());
+    }
 }

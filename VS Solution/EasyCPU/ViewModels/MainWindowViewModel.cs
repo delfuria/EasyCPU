@@ -259,6 +259,50 @@ public partial class MainViewModel : ObservableObject
         set => SetPanelVisible(_factory.Console, value);
     }
 
+    // ── Modello di memoria del programma ─────────────────────────────────────
+
+    // Modalità x86 fedele (memoria a byte): proprietà del programma, salvata nel file .asj
+    [ObservableProperty] private bool _isMemoriaAByte;
+
+    private ModelloMemoria ModelloProgramma => IsMemoriaAByte ? ModelloMemoria.Byte : ModelloMemoria.Parole;
+
+    [RelayCommand]
+    private void ToggleMemoriaAByte()
+    {
+        if (Cpu.Stato == Cpu.StatoCpu.Attiva)
+        {
+            StatusMessage = "Fermare l'esecuzione prima di cambiare la memoria";
+            OnPropertyChanged(nameof(IsMemoriaAByte));      // riallinea la spunta
+            return;
+        }
+        IsMemoriaAByte = !IsMemoriaAByte;
+        IsDirty = true;
+        StatusMessage = IsMemoriaAByte
+            ? "Memoria a byte (x86): ricompilare il programma"
+            : "Memoria a parole: ricompilare il programma";
+    }
+
+    // Il programma compilato non vale più: CPU e pannelli ripartono vuoti con la nuova memoria
+    partial void OnIsMemoriaAByteChanged(bool value)
+    {
+        Cpu.Stop();
+        AzzeraCpu();
+        if (_factory.Memory is { } mv) mv.Title = value ? "Memoria (byte)" : "Memoria";
+    }
+
+    // Azzera registri (se da opzione), memoria, stack e simboli, e aggiorna subito i pannelli
+    private void AzzeraCpu()
+    {
+        Compiler.AzzeraSimboli();
+        Cpu.Init(new List<Instruction>(), new int[ModelloProgramma.Dimensione].ToList(),
+            Ambiente.InizializzaRegistri, Ambiente.LoopInfinito, ModelloProgramma);
+        _atBreakpoint = false;
+        _pendingFirstStep = true;
+        CurrentSourceLine = -1;
+        RefreshDebugViews();
+        NotifyCpuStatusChanged();
+    }
+
     // ── Stato tema (per radio menu) ──────────────────────────────────────────
 
     public bool IsThemeLight => Settings.Theme == AppTheme.Light;
@@ -317,27 +361,23 @@ public partial class MainViewModel : ObservableObject
     private async Task LoadFromStreamAsync(string path, Stream stream, ISourceSerializer? ser = null)
     {
         ser ??= ISourceSerializer.ForPath(path);
-        var (code, data, _) = await ser.LoadAsync(stream);
+        var (code, data, memoria) = await ser.LoadAsync(stream);
         if (_currentFilePath is not null) SaveBreakpoints(_currentFilePath);
         SetEditorText(_factory.CodeEditor, string.Join("\n", code));
         SetEditorText(_factory.DataEditor, string.Join("\n", data));
         _currentFilePath = path;
         CurrentFileName = Path.GetFileName(path);
         _isLegacyFile = !path.EndsWith(".asj", StringComparison.OrdinalIgnoreCase);
+        IsMemoriaAByte = ModelloMemoria.DaNomeFile(memoria) == ModelloMemoria.Byte;
         RicaricaBreakpoints(path);
         await AddToRecentFilesAsync(path);
         IsDirty = false;
-        StatusMessage = $"Aperto: {Path.GetFileName(path)}";
+        StatusMessage = IsMemoriaAByte
+            ? $"Aperto: {Path.GetFileName(path)} (memoria a byte)"
+            : $"Aperto: {Path.GetFileName(path)}";
 
-        // Azzera registri (se da opzione), memoria e stack, e aggiorna subito i pannelli:
-        // il file appena aperto non è ancora stato compilato/eseguito.
-        Cpu.Init(new List<Instruction>(), new int[Cpu.Modello.Dimensione].ToList(),
-            Ambiente.InizializzaRegistri, Ambiente.LoopInfinito);
-        _atBreakpoint = false;
-        _pendingFirstStep = true;
-        CurrentSourceLine = -1;
-        RefreshDebugViews();
-        NotifyCpuStatusChanged();
+        // il file appena aperto non è ancora stato compilato/eseguito
+        AzzeraCpu();
     }
 
     private async void OpenFileFromPath(string path)
@@ -445,6 +485,7 @@ public partial class MainViewModel : ObservableObject
         _currentFilePath = null;
         _currentFile = null;
         _isLegacyFile = false;
+        IsMemoriaAByte = false;
         CurrentFileName = "Nuovo file";
         IsDirty = false;
         StatusMessage = "Nuovo file";
@@ -536,7 +577,7 @@ public partial class MainViewModel : ObservableObject
                 : File.Create(path))
             {
                 if (stream.CanSeek) stream.SetLength(0);
-                await new EasyFileSerializer().SaveAsync(stream, code, data);
+                await new EasyFileSerializer().SaveAsync(stream, code, data, ModelloProgramma.NomeFile);
             }
 
             SaveBreakpoints(path);
@@ -586,7 +627,7 @@ public partial class MainViewModel : ObservableObject
         {
             using var copia = new MemoryStream();
             await new EasyFileSerializer().SaveAsync(copia, Righe(_factory.CodeEditor?.SourceText),
-                Righe(_factory.DataEditor?.SourceText));
+                Righe(_factory.DataEditor?.SourceText), ModelloProgramma.NomeFile);
             Storage.Archivio.Scrivi(ArchivioFile.PrefissoProgramma + path, Encoding.UTF8.GetString(copia.ToArray()));
             foreach (var uscito in precedenti.Except(Ambiente.FileRecenti))
                 Storage.Archivio.Elimina(ArchivioFile.PrefissoProgramma + uscito);
@@ -750,6 +791,7 @@ public partial class MainViewModel : ObservableObject
         // i dati prima del codice: il codice usa i nomi definiti nella sezione dati;
         // le etichette del codice sono lette per prime, i dati possono usarle (tab DW caso0, caso1)
         List<CompilerError> dataErrors = null!;
+        Compiler.Modello = ModelloProgramma;
         var memory = Compiler.CompilaDati(dataLines, ref dataErrors, codeLines);
 
         List<CompilerError> codeErrors = null!;
@@ -781,10 +823,10 @@ public partial class MainViewModel : ObservableObject
             return false;
         }
 
-        StatusMessage = "Compilazione completata";
+        StatusMessage = IsMemoriaAByte ? "Compilazione completata (memoria a byte)" : "Compilazione completata";
         _atBreakpoint = false;
         _pendingFirstStep = true;
-        Cpu.Init(instructions, memory, Ambiente.InizializzaRegistri, Ambiente.LoopInfinito);
+        Cpu.Init(instructions, memory, Ambiente.InizializzaRegistri, Ambiente.LoopInfinito, Compiler.Modello);
         SyncBreakpointsToCpu();
         RefreshDebugViews();
         NotifyCpuStatusChanged();
@@ -1156,7 +1198,10 @@ public partial class MainViewModel : ObservableObject
             rv.Dump = string.Join("\n", regs) +
                       $"\nC={(Cpu.FlagCarry ? 1 : 0)}  Z={(Cpu.FlagZero ? 1 : 0)}  S={(Cpu.FlagSegno ? 1 : 0)}  O={(Cpu.FlagOverflow ? 1 : 0)}  D={(Cpu.FlagDirezione ? 1 : 0)}";
 
-        var mem = Cpu.DumpMemoria(0, Cpu.Modello.InizioStack, 8);
+        // memoria a byte: 16 byte per riga; memoria a parole: 8 celle per riga
+        var mem = Cpu.Modello == ModelloMemoria.Byte
+            ? Cpu.DumpByte(0, Cpu.Modello.InizioStack, 16)
+            : Cpu.DumpMemoria(0, Cpu.Modello.InizioStack, 8);
         if (mem is not null && Compiler.Simboli.Count > 0)
             mem.AddRange(["", "Simboli:", .. Cpu.DumpSimboli(Compiler.Simboli)]);
         if (_factory.Memory is { } mv)

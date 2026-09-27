@@ -24,6 +24,9 @@ namespace EasyCpu.Assembler.Parsing
             set => _parser.Modello = value;
         }
 
+        // dimentica i nomi del programma precedente (nuovo programma o cambio di modello di memoria)
+        public void AzzeraSimboli() => _parser.AzzeraSimboli();
+
         public List<int> InstrToLineMap { get; private set; }  // indice istruzione → riga sorgente (0-based)
         public int[] LineToInstrMap { get; private set; }      // riga sorgente (0-based) → indice istruzione (-1 se non eseguibile)
 
