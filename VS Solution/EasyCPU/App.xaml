@@ -18,9 +18,12 @@
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">
                     <SolidColorBrush x:Key="SfondoValoreCambiato" Color="#FFE680" />
+                    <SolidColorBrush x:Key="TestoValoreCambiato" Color="#1C1F23" />
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Dark">
-                    <SolidColorBrush x:Key="SfondoValoreCambiato" Color="#7A5C00" />
+                    <!-- sfondo chiaro anche nel tema scuro, per risaltare: il testo diventa scuro -->
+                    <SolidColorBrush x:Key="SfondoValoreCambiato" Color="#FFD54F" />
+                    <SolidColorBrush x:Key="TestoValoreCambiato" Color="#1C1F23" />
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
         </ResourceDictionary>
@@ -36,6 +39,7 @@
         </Style>
         <Style Selector="Run.cambiato">
             <Setter Property="Background" Value="{DynamicResource SfondoValoreCambiato}" />
+            <Setter Property="Foreground" Value="{DynamicResource TestoValoreCambiato}" />
         </Style>
     </Application.Styles>
 </Application>

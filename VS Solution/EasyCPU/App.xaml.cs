@@ -67,25 +67,8 @@ public class App : Application
             about.Show();
     }
 
-    // Palette per il tema scuro: stessi nomi dei <Color> di EasyCPU.xshd (che contiene quella chiara)
-    private static readonly Dictionary<string, string> ColoriTemaScuro = new()
-    {
-        ["Comment"]         = "#C5E1A5",
-        ["Register"]        = "#4EC9B0",
-        ["Indirect"]        = "#9CDCFE",
-        ["Directive"]       = "#C586C0",
-        ["Number"]          = "#B5CEA8",
-        ["CharConst"]       = "#CE9178",
-        ["Label"]           = "#DCDCAA",
-        ["OpcodeMove"]      = "#64B5F6",   // blu chiaro
-        ["OpcodeArith"]     = "#FFB74D",   // arancio
-        ["OpcodeLogic"]     = "#4DD0E1",   // ciano
-        ["OpcodeCmp"]       = "#F48FB1",   // rosa
-        ["OpcodeStack"]     = "#B39DDB",   // lavanda
-        ["OpcodeJump"]      = "#FF6E6E",   // rosso chiaro
-        ["OpcodeMisc"]      = "#B0BEC5",   // grigio-blu chiaro
-        ["OpcodeInterrupt"] = "#C5E1A5",   // verde chiaro
-    };
+    // Prefisso dei colori del tema scuro in EasyCPU.xshd: "Dark.X" sostituisce il colore "X"
+    public const string PrefissoTemaScuro = "Dark.";
 
     private static void RegisterEasyCpuHighlighting()
     {
@@ -94,13 +77,27 @@ public class App : Application
         if (chiaro is null || scuro is null) return;
 
         scuro.Name = "EasyCPU-Dark";
-        foreach (var colore in scuro.Elements.OfType<XshdColor>())
-            if (colore.Name is not null && ColoriTemaScuro.TryGetValue(colore.Name, out var hex))
-                colore.Foreground = new SimpleHighlightingBrush(Color.Parse(hex));
+        ApplicaTemaScuro(scuro);
 
         var manager = HighlightingManager.Instance;
         manager.RegisterHighlighting("EasyCPU", [".as", ".asj"], HighlightingLoader.Load(chiaro, manager));
         manager.RegisterHighlighting("EasyCPU-Dark", [], HighlightingLoader.Load(scuro, manager));
+    }
+
+    // Copia su ogni colore "X" gli attributi impostati in "Dark.X"; quelli assenti restano i chiari
+    public static void ApplicaTemaScuro(XshdSyntaxDefinition definizione)
+    {
+        var colori = definizione.Elements.OfType<XshdColor>().Where(c => c.Name is not null).ToList();
+        var scuri = colori.Where(c => c.Name!.StartsWith(PrefissoTemaScuro))
+                          .ToDictionary(c => c.Name![PrefissoTemaScuro.Length..]);
+        foreach (var colore in colori)
+        {
+            if (!scuri.TryGetValue(colore.Name!, out var scuro)) continue;
+            colore.Foreground = scuro.Foreground ?? colore.Foreground;
+            colore.Background = scuro.Background ?? colore.Background;
+            colore.FontWeight = scuro.FontWeight ?? colore.FontWeight;
+            colore.FontStyle = scuro.FontStyle ?? colore.FontStyle;
+        }
     }
 
     private static XshdSyntaxDefinition? CaricaXshd()

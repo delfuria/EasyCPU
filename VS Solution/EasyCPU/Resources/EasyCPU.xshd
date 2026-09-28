@@ -19,6 +19,25 @@
   <Color name="OpcodeMisc"  foreground="#546E7A" fontWeight="bold" />  <!-- nop stop         — grigio-blu -->
   <Color name="OpcodeInterrupt" foreground="#8BC34A" fontWeight="bold" />  <!-- int              — verde chiaro -->
 
+  <!-- Tema scuro: "Dark.X" sostituisce il colore "X" (gli attributi assenti restano quelli chiari).
+       Non usati dalle regole: li applica App.RegisterEasyCpuHighlighting. -->
+  <Color name="Dark.Comment"    foreground="#C5E1A5" />
+  <Color name="Dark.Register"   foreground="#4EC9B0" />
+  <Color name="Dark.Indirect"   foreground="#9CDCFE" />
+  <Color name="Dark.Directive"  foreground="#C586C0" />
+  <Color name="Dark.Number"     foreground="#B5CEA8" />
+  <Color name="Dark.CharConst"  foreground="#CE9178" />
+  <Color name="Dark.Label"      foreground="#DCDCAA" />
+
+  <Color name="Dark.OpcodeMove"  foreground="#64B5F6" />  <!-- blu chiaro -->
+  <Color name="Dark.OpcodeArith" foreground="#FFB74D" />  <!-- arancio -->
+  <Color name="Dark.OpcodeLogic" foreground="#4DD0E1" />  <!-- ciano -->
+  <Color name="Dark.OpcodeCmp"   foreground="#F48FB1" />  <!-- rosa -->
+  <Color name="Dark.OpcodeStack" foreground="#B39DDB" />  <!-- lavanda -->
+  <Color name="Dark.OpcodeJump"  foreground="#FF6E6E" />  <!-- rosso chiaro -->
+  <Color name="Dark.OpcodeMisc"  foreground="#B0BEC5" />  <!-- grigio-blu chiaro -->
+  <Color name="Dark.OpcodeInterrupt" foreground="#C5E1A5" />  <!-- verde chiaro -->
+
   <RuleSet ignoreCase="true">
 
     <!-- Commenti: // oppure ; fino a fine riga -->
