@@ -43,6 +43,7 @@ EasyCPU is an educational tool designed to make learning assembly language and C
 - **Live Register & Flag Tracking** – Watch how each instruction modifies CPU state
 - **Memory Inspection** – View memory and stack contents, plus a Symbols list with the address, type and current value of each data name
 - **Run-to-Instruction** – Execute all instructions up to a selected line for faster iteration
+- **Breakpoints** – Mark lines with F9 or a click in the editor margin; execution pauses there so the CPU state can be inspected
 - **Execution State Indicators** – Visual feedback on whether program is running, paused, or stopped
 - **Error Highlighting** – Clicking compilation errors jumps directly to problematic code
 - **Print** (Ctrl+P / ⌘P) – Prints the data section, with the memory address of each declaration, and the code with line numbers and syntax colors, through the browser's print dialog (which can also save as PDF)
@@ -150,6 +151,14 @@ Toolbar buttons and menu commands for:
 - **Run to Instruction** (Ctrl+F5) – Execute until selected line
 - **Stop** (F8) – Halt execution
 - **New/Open/Save** – File management, with the 10 most recent programs (in the browser, under the **Recenti** entry of the side menu)
+
+### Breakpoints
+A breakpoint pauses the program when execution reaches its line, leaving registers, memory and stack available for inspection; from there you can continue with Run or go on step by step.
+- **Set/remove** – Press **F9** (or *Esegui → Imposta/Rimuovi breakpoint*) on the line under the cursor, or click the margin to the left of the line numbers; the line is marked with a red dot
+- **Where they apply** – Run (F5), Run to Instruction (Ctrl+F5), and Step Over/Step Out (F10/Shift+F11) when a breakpoint is inside the subroutine being skipped
+- **Executable lines only** – Breakpoints on empty lines, comments or lines holding only a label are ignored
+- **`rep` string instructions** – Execution pauses when the instruction is reached, not at every repetition
+- **Saved per program** – Kept between sessions: in a `.bkpt` file next to the program on the desktop, in `localStorage` in the browser
 
 ### Compilation & Error Reporting
 Automatic compilation before execution. Syntax errors are listed with line numbers and descriptions; click an error to navigate directly to it in the editor. Errors detected while the program runs are shown in the same panel as *Esecuzione* errors, with the line of the instruction that caused them.
