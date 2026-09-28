@@ -3,7 +3,7 @@
              x:Class="EasyCPU.Controls.ThemedIcon"
              x:Name="Root"
              Width="16" Height="16">
-  <Border Background="{DynamicResource SystemControlForegroundBaseHighBrush}">
+  <Border Background="{DynamicResource SemiColorText0}">
     <Border.OpacityMask>
       <ImageBrush Source="{Binding #Root.Source}" Stretch="Uniform"/>
     </Border.OpacityMask>

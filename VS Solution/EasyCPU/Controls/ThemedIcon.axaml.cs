@@ -7,7 +7,7 @@ namespace EasyCPU.Controls;
 /// <summary>
 /// Icona monocromatica (PNG con canale alpha) colorata dinamicamente in base
 /// al tema attivo (Chiaro/Scuro), tramite OpacityMask su un Border il cui
-/// Background segue la risorsa di tema "SystemControlForegroundBaseHighBrush".
+/// Background segue la risorsa di tema "SemiColorText0".
 /// </summary>
 public partial class ThemedIcon : UserControl
 {

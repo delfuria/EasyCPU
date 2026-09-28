@@ -233,8 +233,8 @@
             <MenuItem Header="_Informazioni..." Command="{Binding ShowAboutCommand}"/>
         </Menu>
 
-        <Border DockPanel.Dock="Top" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
-            <StackPanel Orientation="Horizontal" Spacing="4" Margin="4,2">
+        <Border DockPanel.Dock="Top" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SemiColorBorder}">
+            <StackPanel Classes="toolbar" Orientation="Horizontal" Spacing="4" Margin="4,2">
                 <Button Command="{Binding NewCommand}"           Width="40" Height="40" Padding="8" ToolTip.Tip="Nuovo (Ctrl+N)">
                     <icons:ThemedIcon Source="/images/toolbar/new.png"         Width="20" Height="20"/>
                 </Button>
@@ -299,7 +299,7 @@
 
         <Border DockPanel.Dock="Bottom"
                 BorderThickness="0,1,0,0"
-                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                BorderBrush="{DynamicResource SemiColorBorder}"
                 Padding="8,3">
             <StackPanel Orientation="Horizontal" Spacing="8">
                 <TextBlock Text="{Binding CurrentFileName}"

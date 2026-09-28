@@ -27,6 +27,7 @@ public class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
+        ApplicaColorePrimario();
         RegisterEasyCpuHighlighting();
         Ambiente.Inizializza();
         Storage.LeggiOpzioni();
@@ -114,6 +115,43 @@ public class App : Application
     // Definizione di evidenziazione adatta al tema effettivo del controllo
     public static IHighlightingDefinition? EasyCpuHighlighting(ThemeVariant tema) =>
         HighlightingManager.Instance.GetDefinition(tema == ThemeVariant.Dark ? "EasyCPU-Dark" : "EasyCPU");
+
+    // Colore primario di Semi (blu) sostituito col teal dell'icona, preso dalla palette Teal di Semi.
+    // I temi Semi leggono questi brush con StaticResource: un override nelle risorse dell'app non
+    // li raggiungerebbe, quindi si ricolorano le istanze condivise.
+    private static readonly Dictionary<string, int> GradiTealChiaro = new()
+    {
+        ["SemiColorPrimary"] = 6, ["SemiColorPrimaryPointerover"] = 7, ["SemiColorPrimaryActive"] = 8,
+        ["SemiColorPrimaryDisabled"] = 2, ["SemiColorPrimaryLight"] = 0,
+        ["SemiColorPrimaryLightPointerover"] = 1, ["SemiColorPrimaryLightActive"] = 2,
+        ["SemiColorLink"] = 6, ["SemiColorLinkPointerover"] = 7, ["SemiColorLinkActive"] = 8,
+        ["SemiColorLinkVisited"] = 6, ["SemiColorFocusBorder"] = 6,
+    };
+
+    // Nel tema scuro i brush "Light" sono il primario con opacità, già impostata da Semi
+    private static readonly Dictionary<string, int> GradiTealScuro = new()
+    {
+        ["SemiColorPrimary"] = 5, ["SemiColorPrimaryPointerover"] = 6, ["SemiColorPrimaryActive"] = 7,
+        ["SemiColorPrimaryDisabled"] = 2, ["SemiColorPrimaryLight"] = 5,
+        ["SemiColorPrimaryLightPointerover"] = 5, ["SemiColorPrimaryLightActive"] = 5,
+        ["SemiColorLink"] = 5, ["SemiColorLinkPointerover"] = 6, ["SemiColorLinkActive"] = 7,
+        ["SemiColorLinkVisited"] = 5, ["SemiColorFocusBorder"] = 5,
+    };
+
+    private void ApplicaColorePrimario()
+    {
+        ApplicaColorePrimario(ThemeVariant.Default, GradiTealChiaro);
+        ApplicaColorePrimario(ThemeVariant.Light, GradiTealChiaro);
+        ApplicaColorePrimario(ThemeVariant.Dark, GradiTealScuro);
+    }
+
+    private void ApplicaColorePrimario(ThemeVariant tema, Dictionary<string, int> gradi)
+    {
+        foreach (var (chiave, grado) in gradi)
+            if (TryGetResource(chiave, tema, out var brush) && brush is SolidColorBrush solido
+                && TryGetResource($"SemiTeal{grado}Color", tema, out var colore) && colore is Color teal)
+                solido.Color = teal;
+    }
 
     public static void ApplyTheme(AppTheme theme)
     {

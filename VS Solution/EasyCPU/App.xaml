@@ -1,7 +1,7 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:EasyCPU"
-             xmlns:dockTheme="clr-namespace:Dock.Avalonia.Themes.Fluent;assembly=Dock.Avalonia.Themes.Fluent"
+             xmlns:semi="https://irihi.tech/semi"
              x:Class="EasyCPU.App"
              Name="EasyCPU">
     <NativeMenu.Menu>
@@ -26,10 +26,14 @@
         </ResourceDictionary>
     </Application.Resources>
     <Application.Styles>
-        <FluentTheme />
-        <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
-        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.v2.xaml" />
-        <dockTheme:DockFluentTheme />
+        <semi:SemiTheme Locale="it-IT" />
+        <semi:AvaloniaEditSemiTheme />
+        <semi:ProDataGridSemiTheme />
+        <semi:DockSemiTheme />
+        <!-- pulsanti della barra strumenti senza sfondo, come nelle IDE moderne -->
+        <Style Selector="StackPanel.toolbar > Button">
+            <Setter Property="Theme" Value="{DynamicResource BorderlessButton}" />
+        </Style>
         <Style Selector="Run.cambiato">
             <Setter Property="Background" Value="{DynamicResource SfondoValoreCambiato}" />
         </Style>

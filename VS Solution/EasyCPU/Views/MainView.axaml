@@ -13,12 +13,21 @@
       <Setter Property="MinHeight" Value="44"/>
       <Setter Property="Padding" Value="16,8"/>
       <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Foreground" Value="{DynamicResource SemiColorText0}"/>
+      <Setter Property="FontWeight" Value="Normal"/>
       <Setter Property="CornerRadius" Value="0"/>
+    </Style>
+    <Style Selector="Button.drawer-item:pointerover">
+      <Setter Property="Background" Value="{DynamicResource SemiColorFill0}"/>
+    </Style>
+    <Style Selector="Button.drawer-item:pressed">
+      <Setter Property="Background" Value="{DynamicResource SemiColorFill1}"/>
     </Style>
     <Style Selector="CheckBox.drawer-item, RadioButton.drawer-item">
       <Setter Property="HorizontalAlignment" Value="Stretch"/>
       <Setter Property="MinHeight" Value="44"/>
-      <Setter Property="Padding" Value="16,8"/>
+      <Setter Property="Margin" Value="16,0,0,0"/>
+      <Setter Property="Padding" Value="8,8"/>
     </Style>
     <Style Selector="TextBlock.drawer-header">
       <Setter Property="FontSize" Value="12"/>
@@ -35,7 +44,7 @@
                OpenPaneLength="280"
                PanePlacement="Left">
       <SplitView.Pane>
-        <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}">
+        <Border Background="{DynamicResource SemiColorBackground2}">
           <ScrollViewer>
             <StackPanel x:Name="DrawerItems" Margin="0,8">
                 <TextBlock Classes="drawer-header" Text="FILE"/>
@@ -296,9 +305,9 @@
             <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*" Height="48">
                 <Button Classes="hamburger-button" Grid.Column="0" Click="OnHamburgerClick" Width="48" Height="48" Padding="0" Background="Transparent" ToolTip.Tip="Menu">
                     <StackPanel Orientation="Vertical" Spacing="4" VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <Rectangle Width="20" Height="2" Fill="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
-                        <Rectangle Width="20" Height="2" Fill="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
-                        <Rectangle Width="20" Height="2" Fill="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+                        <Rectangle Width="20" Height="2" Fill="{DynamicResource SemiColorText0}"/>
+                        <Rectangle Width="20" Height="2" Fill="{DynamicResource SemiColorText0}"/>
+                        <Rectangle Width="20" Height="2" Fill="{DynamicResource SemiColorText0}"/>
                     </StackPanel>
                 </Button>
                 <TextBlock Grid.Column="1" Text="EasyCPU" VerticalAlignment="Center" Margin="4,0,0,0" FontWeight="SemiBold"/>
@@ -306,7 +315,7 @@
             <ScrollViewer DockPanel.Dock="Top"
                           HorizontalScrollBarVisibility="Auto"
                           VerticalScrollBarVisibility="Disabled">
-                <StackPanel Orientation="Horizontal" Spacing="4" Margin="4,2">
+                <StackPanel Classes="toolbar" Orientation="Horizontal" Spacing="4" Margin="4,2">
                     <Button Command="{Binding NewCommand}"     Width="40" Height="40" Padding="8" ToolTip.Tip="Nuovo">
                         <icons:ThemedIcon Source="/images/toolbar/new.png"     Width="20" Height="20"/>
                     </Button>
@@ -370,7 +379,7 @@
             </ScrollViewer>
             <Border DockPanel.Dock="Bottom"
                     BorderThickness="0,1,0,0"
-                    BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                    BorderBrush="{DynamicResource SemiColorBorder}"
                     Padding="8,3">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <TextBlock Text="{Binding CurrentFileName}"
@@ -393,8 +402,8 @@
     </SplitView>
 
     <Border Background="#AA000000" IsVisible="{Binding IsOptionsOpen}">
-      <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
-              BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+      <Border Background="{DynamicResource SemiColorBackground2}"
+              BorderBrush="{DynamicResource SemiColorBorder}"
               BorderThickness="1" CornerRadius="4"
               Width="460" MaxHeight="600" Padding="16"
               HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -413,8 +422,8 @@
     </Border>
 
     <Border Background="#AA000000" IsVisible="{Binding IsCompileResultOpen}">
-      <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
-              BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+      <Border Background="{DynamicResource SemiColorBackground2}"
+              BorderBrush="{DynamicResource SemiColorBorder}"
               BorderThickness="1" CornerRadius="4"
               Width="320" Padding="16"
               HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -426,8 +435,8 @@
     </Border>
 
     <Border Background="#AA000000" IsVisible="{Binding IsConfirmDiscardOpen}">
-      <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
-              BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+      <Border Background="{DynamicResource SemiColorBackground2}"
+              BorderBrush="{DynamicResource SemiColorBorder}"
               BorderThickness="1" CornerRadius="4"
               Width="320" Padding="16"
               HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -449,8 +458,8 @@
     </Border>
 
     <Border Background="#AA000000" IsVisible="{Binding IsSospendiOpen}">
-      <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
-              BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+      <Border Background="{DynamicResource SemiColorBackground2}"
+              BorderBrush="{DynamicResource SemiColorBorder}"
               BorderThickness="1" CornerRadius="4"
               Width="320" Padding="16"
               HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -472,8 +481,8 @@
     </Border>
 
     <Border Background="#AA000000" IsVisible="{Binding IsAboutOpen}">
-      <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
-              BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+      <Border Background="{DynamicResource SemiColorBackground2}"
+              BorderBrush="{DynamicResource SemiColorBorder}"
               BorderThickness="1" CornerRadius="4"
               Width="320" Padding="16"
               HorizontalAlignment="Center" VerticalAlignment="Center">

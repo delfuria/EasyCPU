@@ -31,14 +31,16 @@
 
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="12.0.5" />
-<PackageReference Include="Avalonia.Themes.Fluent" Version="12.0.5" />
+<PackageReference Include="Semi.Avalonia" Version="12.0.3" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="Avalonia.AvaloniaEdit" Version="12.0.0" />
     <PackageReference Include="AvaloniaEdit.TextMate" Version="12.0.0" />
     <PackageReference Include="Dock.Avalonia" Version="12.0.0.2" />
     <PackageReference Include="Dock.Model.Mvvm" Version="12.0.0.2" />
     <PackageReference Include="Dock.Serializer.SystemTextJson" Version="12.0.0.2" />
-    <PackageReference Include="Dock.Avalonia.Themes.Fluent" Version="12.0.0.2" />
+    <PackageReference Include="Semi.Avalonia.Dock" Version="12.0.0.2" />
+    <PackageReference Include="Semi.Avalonia.ProDataGrid" Version="12.0.0.1" />
+    <PackageReference Include="Semi.Avalonia.AvaloniaEdit" Version="12.0.0" />
     <PackageReference Include="ProDataGrid" Version="12.0.4" />
   </ItemGroup>
 
